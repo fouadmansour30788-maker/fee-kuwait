@@ -3,6 +3,8 @@ import Footer from '@/components/layout/Footer'
 import ChatWidget from '@/components/chat/ChatWidget'
 import DemoBanner from '@/components/ui/DemoBanner'
 import FallingLeaf from '@/components/ui/FallingLeaf'
+import SmoothScrollProvider from '@/components/ui/SmoothScrollProvider'
+import ScrollProgressBar from '@/components/ui/ScrollProgressBar'
 import HeroSection from '@/components/sections/HeroSection'
 import ImpactCounters from '@/components/sections/ImpactCounters'
 import ProgrammeCards from '@/components/sections/ProgrammeCards'
@@ -20,7 +22,8 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <>
+    <SmoothScrollProvider>
+      <ScrollProgressBar />
       {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' && <DemoBanner />}
       <Navbar />
       <FallingLeaf />
@@ -36,6 +39,6 @@ export default function HomePage() {
       </main>
       <Footer />
       <ChatWidget />
-    </>
+    </SmoothScrollProvider>
   )
 }

@@ -3,17 +3,11 @@
 import { Toaster } from 'sonner'
 import { LangProvider } from '@/context/LangContext'
 import ErrorBoundary from './ErrorBoundary'
-import SmoothScrollProvider from './SmoothScrollProvider'
-import ScrollProgressBar from './ScrollProgressBar'
-
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundary>
       <LangProvider>
-        <SmoothScrollProvider>
-          <ScrollProgressBar />
-          {children}
-        </SmoothScrollProvider>
+        {children}
         <Toaster
           position="top-right"
           toastOptions={{
