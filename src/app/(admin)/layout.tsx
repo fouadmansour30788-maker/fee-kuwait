@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileCheck, Award, Newspaper,
   Users, BarChart3, UserCog, Leaf, Menu, X,
-  LogOut, ChevronRight, Bell, Search, LineChart, Map,
+  LogOut, ChevronRight, Bell, Search, LineChart,
 } from 'lucide-react'
 
 const ADMIN_NAV = [

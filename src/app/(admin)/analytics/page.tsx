@@ -1,23 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
 } from 'recharts'
-import {
-  BarChart2, Map, TrendingUp, Award, School, Building2,
-  School as SchoolIcon, Filter,
-} from 'lucide-react'
-
-const KuwaitMap = dynamic(() => import('./KuwaitMap'), { ssr: false, loading: () => (
-  <div className="flex items-center justify-center h-full rounded-2xl" style={{ background: '#F8FAFC' }}>
-    <p className="text-sm" style={{ color: '#94A3B8' }}>Loading map…</p>
-  </div>
-) })
+import { TrendingUp, Award, School, Building2 } from 'lucide-react'
 
 /* ── Data ───────────────────────────────────────────────── */
 
@@ -58,19 +47,9 @@ const YEARLY = [
   { year: '2025', Schools: 160, Businesses: 96 },
 ]
 
-const MAP_FILTERS = [
-  { key: 'all',         label: 'All Sites',   color: '#475569' },
-  { key: 'Eco-Schools', label: 'Eco-Schools', color: '#52B788' },
-  { key: 'Blue Flag',   label: 'Blue Flag',   color: '#3B9ECC' },
-  { key: 'Green Key',   label: 'Green Key',   color: '#C8A951' },
-  { key: 'LEAF',        label: 'LEAF',        color: '#40916C' },
-  { key: 'YRE',         label: 'YRE',         color: '#7C3AED' },
-  { key: 'Eco-Campus',  label: 'Eco-Campus',  color: '#1B4332' },
-]
-
 /* ── Custom tooltip ─────────────────────────────────────── */
 
-function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: {name: string; value: number; color: string}[]; label?: string }) {
+function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-white border rounded-xl px-3 py-2.5 shadow-lg text-xs" style={{ borderColor: '#E2E8F0' }}>
@@ -86,8 +65,6 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
   )
 }
 
-/* ── Pie label ──────────────────────────────────────────── */
-
 function PieLabel({ cx, cy, midAngle, outerRadius, name, percent }: { cx: number; cy: number; midAngle: number; outerRadius: number; name: string; percent: number }) {
   if (percent < 0.05) return null
   const rad = Math.PI / 180
@@ -102,40 +79,13 @@ function PieLabel({ cx, cy, midAngle, outerRadius, name, percent }: { cx: number
 
 /* ── Page ───────────────────────────────────────────────── */
 
-type Tab = 'charts' | 'map'
-
 export default function AnalyticsPage() {
-  const [tab, setTab] = useState<Tab>('charts')
-  const [mapFilter, setMapFilter] = useState('all')
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Analytics</h1>
-            <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>Interactive dashboards and certified-sites map</p>
-          </div>
-          <div className="flex gap-1 p-1 rounded-xl" style={{ background: '#F1F5F9' }}>
-            {([
-              { key: 'charts', label: 'Charts', Icon: BarChart2 },
-              { key: 'map',    label: 'Map',    Icon: Map        },
-            ] as { key: Tab; label: string; Icon: React.ElementType }[]).map(({ key, label, Icon }) => (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                style={tab === key
-                  ? { background: '#fff', color: '#0F172A', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }
-                  : { color: '#64748B' }}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Analytics</h1>
+        <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>Interactive dashboards · Jan–May 2026</p>
       </motion.div>
 
       {/* KPI row */}
@@ -171,155 +121,106 @@ export default function AnalyticsPage() {
         ))}
       </motion.div>
 
-      {/* ── CHARTS TAB ── */}
-      {tab === 'charts' && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
+      {/* Monthly activity */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.18 }}>
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Monthly Activity — Jan to May 2026</h2>
+          <ResponsiveContainer width="100%" height={240}>
+            <LineChart data={MONTHLY} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+              <Tooltip content={<ChartTooltip />} />
+              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
+              <Line type="monotone" dataKey="Applications"   stroke="#3B82F6" strokeWidth={2.5} dot={{ r: 4, fill: '#3B82F6' }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="Certifications" stroke="#52B788" strokeWidth={2.5} dot={{ r: 4, fill: '#52B788' }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="Renewals"       stroke="#C8A951" strokeWidth={2.5} dot={{ r: 4, fill: '#C8A951' }} activeDot={{ r: 6 }} strokeDasharray="5 3" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
 
-          {/* Monthly activity */}
-          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-            <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Monthly Activity — Jan to May 2026</h2>
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={MONTHLY} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
-                <Line type="monotone" dataKey="Applications"  stroke="#3B82F6" strokeWidth={2.5} dot={{ r: 4, fill: '#3B82F6' }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="Certifications" stroke="#52B788" strokeWidth={2.5} dot={{ r: 4, fill: '#52B788' }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="Renewals"      stroke="#C8A951" strokeWidth={2.5} dot={{ r: 4, fill: '#C8A951' }} activeDot={{ r: 6 }} strokeDasharray="5 3" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Pie + Bar row */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Programme distribution */}
-            <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-              <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Certified Sites by Programme</h2>
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie
-                    data={PROGRAMME_PIE}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={58}
-                    outerRadius={88}
-                    paddingAngle={3}
-                    dataKey="value"
-                    labelLine={false}
-                    label={PieLabel as never}
-                  >
-                    {PROGRAMME_PIE.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<ChartTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2">
-                {PROGRAMME_PIE.map(p => (
-                  <div key={p.name} className="flex items-center gap-1.5 text-xs" style={{ color: '#64748B' }}>
-                    <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: p.color }} />
-                    {p.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* By governorate */}
-            <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-              <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Certified Sites by Governorate</h2>
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={GOV_DATA} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false} width={110} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Bar dataKey="Certified" fill="#52B788" radius={[0, 4, 4, 0]} barSize={10} />
-                  <Bar dataKey="Pending"   fill="#FDE68A" radius={[0, 4, 4, 0]} barSize={10} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Year-over-year growth */}
-          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-            <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Cumulative Growth 2019 – 2025</h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={YEARLY} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
-                <defs>
-                  <linearGradient id="gradSchools" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#52B788" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#52B788" stopOpacity={0.02} />
-                  </linearGradient>
-                  <linearGradient id="gradBiz" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#3B82F6" stopOpacity={0.20} />
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
-                <Area type="monotone" dataKey="Schools"    stroke="#52B788" strokeWidth={2.5} fill="url(#gradSchools)" dot={false} activeDot={{ r: 5 }} />
-                <Area type="monotone" dataKey="Businesses" stroke="#3B82F6" strokeWidth={2.5} fill="url(#gradBiz)"     dot={false} activeDot={{ r: 5 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ── MAP TAB ── */}
-      {tab === 'map' && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-4">
-          {/* Programme filter */}
-          <div className="flex flex-wrap gap-2 items-center">
-            <Filter className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />
-            {MAP_FILTERS.map(f => (
-              <button
-                key={f.key}
-                onClick={() => setMapFilter(f.key)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
-                style={mapFilter === f.key
-                  ? { background: f.color, color: '#fff' }
-                  : { background: '#fff', color: '#64748B', border: '1px solid #E2E8F0' }}
+      {/* Pie + Bar row */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.24 }}
+        className="grid lg:grid-cols-2 gap-6"
+      >
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Certified Sites by Programme</h2>
+          <ResponsiveContainer width="100%" height={240}>
+            <PieChart>
+              <Pie
+                data={PROGRAMME_PIE}
+                cx="50%"
+                cy="50%"
+                innerRadius={58}
+                outerRadius={88}
+                paddingAngle={3}
+                dataKey="value"
+                labelLine={false}
+                label={PieLabel as never}
               >
-                {f.key !== 'all' && (
-                  <span className="w-2 h-2 rounded-full" style={{ background: mapFilter === f.key ? '#fff' : f.color }} />
-                )}
-                {f.label}
-              </button>
+                {PROGRAMME_PIE.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<ChartTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2">
+            {PROGRAMME_PIE.map(p => (
+              <div key={p.name} className="flex items-center gap-1.5 text-xs" style={{ color: '#64748B' }}>
+                <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: p.color }} />
+                {p.name}
+              </div>
             ))}
           </div>
+        </div>
 
-          {/* Map */}
-          <div className="rounded-2xl overflow-hidden border" style={{ height: 560, borderColor: '#E2E8F0' }}>
-            <KuwaitMap filter={mapFilter} />
-          </div>
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Certified Sites by Governorate</h2>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={GOV_DATA} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false} width={110} />
+              <Tooltip content={<ChartTooltip />} />
+              <Bar dataKey="Certified" fill="#52B788" radius={[0, 4, 4, 0]} barSize={10} />
+              <Bar dataKey="Pending"   fill="#FDE68A" radius={[0, 4, 4, 0]} barSize={10} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
 
-          {/* Legend */}
-          <div className="bg-white rounded-2xl border p-4" style={{ borderColor: '#E2E8F0' }}>
-            <p className="text-xs font-semibold mb-3" style={{ color: '#64748B' }}>LEGEND</p>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              {MAP_FILTERS.filter(f => f.key !== 'all').map(f => (
-                <div key={f.key} className="flex items-center gap-2 text-xs" style={{ color: '#475569' }}>
-                  <div className="w-3 h-3 rounded-full border-2 border-white shadow" style={{ background: f.color }} />
-                  {f.label}
-                </div>
-              ))}
-              <div className="w-px self-stretch" style={{ background: '#E2E8F0' }} />
-              <div className="flex items-center gap-2 text-xs" style={{ color: '#475569' }}>
-                <div className="w-3 h-3 rounded-full" style={{ background: '#059669' }} /> Active
-              </div>
-              <div className="flex items-center gap-2 text-xs" style={{ color: '#475569' }}>
-                <div className="w-3 h-3 rounded-full" style={{ background: '#D97706' }} /> Pending
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
+      {/* Year-over-year growth */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.30 }}>
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Cumulative Growth 2019 – 2025</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={YEARLY} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
+              <defs>
+                <linearGradient id="gradSchools" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#52B788" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#52B788" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="gradBiz" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#3B82F6" stopOpacity={0.20} />
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+              <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+              <Tooltip content={<ChartTooltip />} />
+              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
+              <Area type="monotone" dataKey="Schools"    stroke="#52B788" strokeWidth={2.5} fill="url(#gradSchools)" dot={false} activeDot={{ r: 5 }} />
+              <Area type="monotone" dataKey="Businesses" stroke="#3B82F6" strokeWidth={2.5} fill="url(#gradBiz)"     dot={false} activeDot={{ r: 5 }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
     </div>
   )
 }
