@@ -2,6 +2,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ChatWidget from '@/components/chat/ChatWidget'
 import DemoBanner from '@/components/ui/DemoBanner'
+import FallingLeaf from '@/components/ui/FallingLeaf'
 import HeroSection from '@/components/sections/HeroSection'
 import ImpactCounters from '@/components/sections/ImpactCounters'
 import ProgrammeCards from '@/components/sections/ProgrammeCards'
@@ -22,6 +23,7 @@ export default function HomePage() {
     <>
       {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' && <DemoBanner />}
       <Navbar />
+      <FallingLeaf />
       <main>
         <HeroSection />
         <ImpactCounters />
