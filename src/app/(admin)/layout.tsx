@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileCheck, Award, Newspaper,
   Users, BarChart3, UserCog, Leaf, Menu, X,
-  LogOut, ChevronRight, Bell, Search,
+  LogOut, ChevronRight, Bell, Search, LineChart, Map,
 } from 'lucide-react'
 
 const ADMIN_NAV = [
@@ -14,6 +14,7 @@ const ADMIN_NAV = [
   { href: '/applications', icon: FileCheck,       label: 'Applications' },
   { href: '/certificates', icon: Award,           label: 'Certificates' },
   { href: '/members',      icon: Users,           label: 'Members' },
+  { href: '/analytics',    icon: LineChart,       label: 'Analytics' },
   { href: '/content',      icon: Newspaper,       label: 'Content' },
   { href: '/reports',      icon: BarChart3,       label: 'Reports' },
   { href: '/staff',        icon: UserCog,         label: 'Staff' },
