@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import {
   ArrowRight, ChevronDown,
   School, Building2,
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import { t } from '@/i18n'
+import { useRef } from 'react'
 
 const programmes = [
   { label: 'Eco-Schools', href: '/programmes/eco-schools', color: '#52B788', Icon: School },
@@ -23,38 +24,73 @@ const AVATARS = ['#52B788', '#C8A951', '#3B9ECC', '#74C69D', '#7C3AED']
 const AVATAR_LETTERS = ['S', 'F', 'K', 'N', 'A']
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] as const } },
+  hidden: { opacity: 0, y: 28, filter: 'blur(6px)' },
+  show:   { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as const } },
 }
-const stagger = { show: { transition: { staggerChildren: 0.1 } } }
+const stagger = { show: { transition: { staggerChildren: 0.11 } } }
 
 export default function HeroSection() {
   const { lang } = useLang()
+  const ref = useRef<HTMLElement>(null)
+
+  const { scrollY } = useScroll()
+
+  // Content parallax
+  const contentY       = useTransform(scrollY, [0, 700], [0, -110])
+  const contentOpacity = useTransform(scrollY, [0, 500], [1, 0])
+
+  // Glow parallax (each at different speed for depth)
+  const glow1Y = useTransform(scrollY, [0, 700], [0,  80])
+  const glow2Y = useTransform(scrollY, [0, 700], [0, -50])
+  const glow3Y = useTransform(scrollY, [0, 700], [0,  40])
+  const glow4Y = useTransform(scrollY, [0, 700], [0,  20])
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
+    <section className="relative min-h-screen flex flex-col justify-center overflow-hidden" ref={ref}>
 
       {/* Base gradient */}
       <div className="absolute inset-0"
         style={{ background: 'linear-gradient(160deg, #071410 0%, #0C2018 40%, #071410 100%)' }} />
 
-      {/* Ambient glows */}
+      {/* Ambient glows — each moves at its own parallax speed */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-5%] right-[5%] w-[600px] h-[500px] rounded-full"
-          style={{ background: 'radial-gradient(ellipse, rgba(27,67,50,0.55) 0%, transparent 65%)', filter: 'blur(60px)' }} />
-        <div className="absolute bottom-[10%] right-[18%] w-[420px] h-[320px] rounded-full"
-          style={{ background: 'radial-gradient(ellipse, rgba(64,145,108,0.22) 0%, transparent 65%)', filter: 'blur(80px)' }} />
-        <div className="absolute top-[35%] right-[1%] w-[280px] h-[280px] rounded-full"
-          style={{ background: 'radial-gradient(ellipse, rgba(82,183,136,0.14) 0%, transparent 70%)', filter: 'blur(50px)' }} />
-        <div className="absolute top-[20%] left-[10%] w-[300px] h-[200px] rounded-full"
-          style={{ background: 'radial-gradient(ellipse, rgba(27,67,50,0.30) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+        <motion.div style={{ y: glow1Y }}
+          className="absolute top-[-5%] right-[5%] w-[600px] h-[500px] rounded-full"
+        >
+          <div className="w-full h-full rounded-full"
+            style={{ background: 'radial-gradient(ellipse, rgba(27,67,50,0.55) 0%, transparent 65%)', filter: 'blur(60px)' }} />
+        </motion.div>
+
+        <motion.div style={{ y: glow2Y }}
+          className="absolute bottom-[10%] right-[18%] w-[420px] h-[320px] rounded-full"
+        >
+          <div className="w-full h-full rounded-full"
+            style={{ background: 'radial-gradient(ellipse, rgba(64,145,108,0.22) 0%, transparent 65%)', filter: 'blur(80px)' }} />
+        </motion.div>
+
+        <motion.div style={{ y: glow3Y }}
+          className="absolute top-[35%] right-[1%] w-[280px] h-[280px] rounded-full"
+        >
+          <div className="w-full h-full rounded-full"
+            style={{ background: 'radial-gradient(ellipse, rgba(82,183,136,0.14) 0%, transparent 70%)', filter: 'blur(50px)' }} />
+        </motion.div>
+
+        <motion.div style={{ y: glow4Y }}
+          className="absolute top-[20%] left-[10%] w-[300px] h-[200px] rounded-full"
+        >
+          <div className="w-full h-full rounded-full"
+            style={{ background: 'radial-gradient(ellipse, rgba(27,67,50,0.30) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+        </motion.div>
       </div>
 
       {/* Top hairline */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#40916C]/40 to-transparent" />
 
-      {/* Content */}
-      <div className="relative z-10 w-full container-fee pt-32 pb-24">
+      {/* Content — parallax wrapper */}
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="relative z-10 w-full container-fee pt-32 pb-24"
+      >
         <div className="max-w-2xl">
           <motion.div variants={stagger} initial="hidden" animate="show">
 
@@ -162,9 +198,9 @@ export default function HeroSection() {
 
           {/* Programme badges */}
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.7 }}
+            initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ delay: 1.1, duration: 0.8 }}
             className="mt-14"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] mb-3.5"
@@ -186,7 +222,7 @@ export default function HeroSection() {
             </div>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Scroll indicator */}
       <motion.div

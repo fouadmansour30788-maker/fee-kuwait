@@ -23,9 +23,9 @@ export default function NewsSection() {
 
         {/* Header row */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+          animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
           className="flex items-end justify-between mb-14 gap-6"
         >
           <div>
@@ -55,9 +55,9 @@ export default function NewsSection() {
           {FEATURED.map((article, i) => (
             <motion.article
               key={article.id}
-              initial={{ opacity: 0, y: 40 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.55, delay: i * 0.12 }}
+              initial={{ opacity: 0, y: 48, scale: 0.97 }}
+              animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+              transition={{ duration: 0.65, delay: i * 0.13, ease: [0.22, 1, 0.36, 1] }}
               className="group flex flex-col bg-white rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.10)]"
               style={{ border: '1px solid #E2EDE6', boxShadow: '0 2px 12px rgba(64,145,108,0.06)' }}
             >

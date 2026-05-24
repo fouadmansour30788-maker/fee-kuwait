@@ -35,9 +35,9 @@ export default function ProgrammeCards() {
     <section className="py-28" style={{ background: '#F4F9F5' }} ref={ref}>
       <div className="container-fee">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+          animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-5"
@@ -59,9 +59,9 @@ export default function ProgrammeCards() {
             return (
               <motion.div
                 key={prog.id}
-                initial={{ opacity: 0, y: 32 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.55, delay: i * 0.09 }}
+                initial={{ opacity: 0, y: 40, scale: 0.96 }}
+                animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                transition={{ duration: 0.65, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               >
                 <Link
                   href={`/programmes/${prog.id}`}

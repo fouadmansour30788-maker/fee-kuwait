@@ -46,9 +46,9 @@ export default function HowItWorks() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+          animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
           className="text-center mb-20"
         >
           <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-5"
@@ -77,9 +77,9 @@ export default function HowItWorks() {
             return (
               <motion.div
                 key={step.num}
-                initial={{ opacity: 0, y: 40 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: i * 0.15 }}
+                initial={{ opacity: 0, y: 50, filter: 'blur(6px)', scale: 0.96 }}
+                animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 } : {}}
+                transition={{ duration: 0.7, delay: i * 0.18, ease: [0.22, 1, 0.36, 1] }}
                 className="relative flex flex-col items-center text-center"
               >
                 {/* Large background number */}

@@ -44,9 +44,9 @@ export default function ImpactCounters() {
 
         {/* Section label */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+          animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-4"
@@ -59,7 +59,12 @@ export default function ImpactCounters() {
         </motion.div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[#E8F5EC] rounded-3xl overflow-hidden border border-[#C8E6D0]">
+        <motion.div
+          initial={{ opacity: 0, y: 32, scale: 0.97 }}
+          animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[#E8F5EC] rounded-3xl overflow-hidden border border-[#C8E6D0]"
+        >
           {STATS.map((stat, i) => {
             const Icon = stat.icon
             return (
@@ -67,7 +72,7 @@ export default function ImpactCounters() {
                 key={stat.key}
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.55, delay: i * 0.1 }}
+                transition={{ duration: 0.55, delay: 0.2 + i * 0.1 }}
                 className="bg-white flex flex-col items-center justify-center py-12 px-6 text-center group hover:bg-[#F4FBF7] transition-colors duration-300"
               >
                 {/* Icon */}
@@ -93,13 +98,13 @@ export default function ImpactCounters() {
               </motion.div>
             )
           })}
-        </div>
+        </motion.div>
 
         {/* Sub-label */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
           className="text-center text-xs mt-6"
           style={{ color: '#94A3B8' }}
         >
