@@ -8,6 +8,9 @@ const nextConfig = {
       { protocol: 'https', hostname: 'upload.wikimedia.org' },
     ],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

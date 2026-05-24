@@ -73,7 +73,7 @@ export default function ContactPage() {
             <h1 className="text-4xl md:text-5xl font-bold text-white leading-[1.1] tracking-tight mb-5">
               {lang === 'ar'
                 ? <><span className="text-light">نحن هنا</span><br />لمساعدتك</>
-                : <>We're Here<br /><span className="text-light">to Help</span></>}
+                : <>We&apos;re Here<br /><span className="text-light">to Help</span></>}
             </h1>
             <p className="text-white/55 text-lg leading-relaxed">
               {lang === 'ar'

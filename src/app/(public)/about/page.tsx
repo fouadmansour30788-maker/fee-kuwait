@@ -299,7 +299,7 @@ export default function AboutPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-5">
                 {lang === 'ar'
                   ? <>جزء من أكبر شبكة<br /><span className="text-light">تعليم بيئي في العالم</span></>
-                  : <>Part of the World's Largest<br /><span className="text-light">Environmental Education Network</span></>}
+                  : <>Part of the World&apos;s Largest<br /><span className="text-light">Environmental Education Network</span></>}
               </h2>
               <p className="text-white/55 text-sm leading-relaxed mb-8">
                 {lang === 'ar'

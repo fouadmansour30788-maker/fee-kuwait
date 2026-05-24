@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import {
-  Newspaper, Camera, Mic, PenLine, Trophy, Users, Globe, ArrowRight,
+  Newspaper, Camera, Mic, PenLine, Trophy, Globe, ArrowRight,
   Calendar, Star, Lightbulb, TreePine,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
@@ -316,7 +316,7 @@ export default function YouthPage() {
                     {lang === 'ar' ? w.school_ar : w.school_en}
                   </p>
                   <p className="text-xs leading-relaxed italic" style={{ color: '#5A6672' }}>
-                    "{lang === 'ar' ? w.topic_ar : w.topic_en}"
+                    &ldquo;{lang === 'ar' ? w.topic_ar : w.topic_en}&rdquo;
                   </p>
                 </div>
               </FadeIn>
