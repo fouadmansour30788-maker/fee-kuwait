@@ -19,7 +19,7 @@ const RESOURCES = [
     category: 'guide',
     type: 'PDF',
     Icon: FileText,
-    color: '#40916C',
+    color: '#7B8266',
     title_en: 'Eco-Schools Programme Guide',
     title_ar: 'دليل برنامج المدارس البيئية',
     desc_en: 'Complete guide to achieving the Green Flag award in Kuwait.',
@@ -75,7 +75,7 @@ const RESOURCES = [
     category: 'guide',
     type: 'PDF',
     Icon: BookOpen,
-    color: '#74C69D',
+    color: '#A9B6A4',
     title_en: 'Biodiversity Survey Handbook',
     title_ar: 'دليل مسح التنوع البيولوجي',
     desc_en: 'Step-by-step guide for surveying plants and animals on school grounds.',
@@ -89,7 +89,7 @@ const RESOURCES = [
     category: 'template',
     type: 'PDF',
     Icon: FileText,
-    color: '#52B788',
+    color: '#8B9B88',
     title_en: 'Eco-Committee Meeting Minutes',
     title_ar: 'محضر اجتماع اللجنة البيئية',
     desc_en: 'Official template for recording committee meeting decisions.',
@@ -103,7 +103,7 @@ const RESOURCES = [
     category: 'external',
     type: 'Link',
     Icon: Globe,
-    color: '#1B4332',
+    color: '#182019',
     title_en: 'FEE International Website',
     title_ar: 'موقع FEE الدولي',
     desc_en: 'Access global Eco-Schools resources and country reports.',
@@ -168,7 +168,7 @@ export default function ResourcesPage() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder={lang === 'ar' ? 'ابحث في الموارد...' : 'Search resources...'}
-            className="w-full bg-white border border-[#C8E6D0] rounded-2xl pl-11 pr-4 py-3 text-sm text-forest placeholder:text-[#A8BFB0] focus:outline-none focus:border-[#52B788] transition-colors"
+            className="w-full bg-warmwhite border border-[#E7E4D6] rounded-2xl pl-11 pr-4 py-3 text-sm text-forest placeholder:text-[#A9B6A4] focus:outline-none focus:border-[#8B9B88] transition-colors"
           />
         </div>
       </FadeIn>
@@ -180,8 +180,8 @@ export default function ResourcesPage() {
             <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
               className="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all"
               style={activeCategory === cat.id
-                ? { background: '#40916C', color: '#fff' }
-                : { background: '#F4F9F5', color: '#7A9080' }}>
+                ? { background: '#7B8266', color: '#fff' }
+                : { background: '#FBF8F0', color: '#7A9080' }}>
               {lang === 'ar' ? cat.ar : cat.en}
             </button>
           ))}
@@ -194,7 +194,7 @@ export default function ResourcesPage() {
           const Icon = res.Icon
           return (
             <FadeIn key={res.id} delay={0.1 + i * 0.03}>
-              <div className="bg-white rounded-2xl border border-[#C8E6D0] p-5 flex flex-col gap-3 hover:border-[#52B788]/50 transition-colors group">
+              <div className="bg-warmwhite rounded-2xl border border-[#E7E4D6] p-5 flex flex-col gap-3 hover:border-[#8B9B88]/50 transition-colors group">
                 <div className="flex items-start justify-between gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: `${res.color}14`, border: `1px solid ${res.color}28` }}>
@@ -203,13 +203,13 @@ export default function ResourcesPage() {
                   <div className="flex items-center gap-1.5">
                     {res.new && (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{ background: '#EDF7F1', color: '#40916C' }}>
+                        style={{ background: '#E8ECE1', color: '#7B8266' }}>
                         {lang === 'ar' ? 'جديد' : 'New'}
                       </span>
                     )}
-                    <button className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[#EDF7F1]">
-                      <Bookmark className="w-3.5 h-3.5" style={{ color: res.bookmarked ? '#40916C' : '#C8E6D0' }}
-                        fill={res.bookmarked ? '#40916C' : 'none'} />
+                    <button className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[#E8ECE1]">
+                      <Bookmark className="w-3.5 h-3.5" style={{ color: res.bookmarked ? '#7B8266' : '#E7E4D6' }}
+                        fill={res.bookmarked ? '#7B8266' : 'none'} />
                     </button>
                   </div>
                 </div>
@@ -222,11 +222,11 @@ export default function ResourcesPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span className="text-[11px] font-semibold px-2 py-0.5 rounded"
-                      style={{ background: '#F4F9F5', color: '#7A9080' }}>{res.type}</span>
-                    {res.size && <span className="text-[11px]" style={{ color: '#A8BFB0' }}>{res.size}</span>}
+                      style={{ background: '#FBF8F0', color: '#7A9080' }}>{res.type}</span>
+                    {res.size && <span className="text-[11px]" style={{ color: '#A9B6A4' }}>{res.size}</span>}
                   </div>
                   <button className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-all"
-                    style={{ background: 'linear-gradient(135deg, #40916C, #52B788)', color: '#fff' }}>
+                    style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)', color: '#fff' }}>
                     {res.category === 'external'
                       ? <><ExternalLink className="w-3 h-3" />{lang === 'ar' ? 'فتح' : 'Open'}</>
                       : res.category === 'video'

@@ -49,7 +49,7 @@ const ACTIVITIES = [
     id: 3,
     category: 'waste',
     Icon: Recycle,
-    color: '#52B788',
+    color: '#8B9B88',
     title_en: 'Recycling Station Launch',
     title_ar: 'إطلاق محطات إعادة التدوير',
     desc_en: 'Set up colour-coded recycling bins for paper, plastic, and organic waste across the campus.',
@@ -64,7 +64,7 @@ const ACTIVITIES = [
     id: 4,
     category: 'biodiversity',
     Icon: TreePine,
-    color: '#40916C',
+    color: '#7B8266',
     title_en: 'School Garden Project',
     title_ar: 'مشروع حديقة المدرسة',
     desc_en: 'Students planted 40 native Kuwaiti plant species in the school garden to support local biodiversity.',
@@ -79,7 +79,7 @@ const ACTIVITIES = [
     id: 5,
     category: 'community',
     Icon: Users,
-    color: '#74C69D',
+    color: '#A9B6A4',
     title_en: 'Parent Eco-Awareness Day',
     title_ar: 'يوم التوعية البيئية لأولياء الأمور',
     desc_en: 'Hosted an open day where students presented their environmental projects to parents and community members.',
@@ -116,9 +116,9 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 }
 
 const STATUS_STYLE = {
-  completed: { bg: '#EDF7F1', color: '#40916C', en: 'Completed', ar: 'مكتملة' },
+  completed: { bg: '#E8ECE1', color: '#7B8266', en: 'Completed', ar: 'مكتملة' },
   'in-progress': { bg: '#FEF9EC', color: '#C8A951', en: 'In Progress', ar: 'جارية' },
-  planned: { bg: '#F4F9F5', color: '#7A9080', en: 'Planned', ar: 'مخططة' },
+  planned: { bg: '#FBF8F0', color: '#7A9080', en: 'Planned', ar: 'مخططة' },
 }
 
 export default function ActivitiesPage() {
@@ -140,7 +140,7 @@ export default function ActivitiesPage() {
             </p>
           </div>
           <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}>
+            style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)' }}>
             <Plus className="w-4 h-4" />
             {lang === 'ar' ? 'إضافة نشاط' : 'Log Activity'}
           </button>
@@ -151,11 +151,11 @@ export default function ActivitiesPage() {
       <FadeIn delay={0.05}>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label_en: 'Total Activities', label_ar: 'إجمالي الأنشطة', value: ACTIVITIES.length, Icon: Leaf, color: '#52B788' },
+            { label_en: 'Total Activities', label_ar: 'إجمالي الأنشطة', value: ACTIVITIES.length, Icon: Leaf, color: '#8B9B88' },
             { label_en: 'Participants', label_ar: 'المشاركون', value: ACTIVITIES.reduce((s, a) => s + a.participants, 0), Icon: Users, color: '#006994' },
-            { label_en: 'Completed', label_ar: 'مكتملة', value: completedCount, Icon: CheckCircle2, color: '#40916C' },
+            { label_en: 'Completed', label_ar: 'مكتملة', value: completedCount, Icon: CheckCircle2, color: '#7B8266' },
           ].map(card => (
-            <div key={card.label_en} className="bg-white rounded-2xl border border-[#C8E6D0] p-4">
+            <div key={card.label_en} className="bg-warmwhite rounded-2xl border border-[#E7E4D6] p-4">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: `${card.color}14` }}>
                 <card.Icon className="w-4 h-4" style={{ color: card.color }} />
               </div>
@@ -173,8 +173,8 @@ export default function ActivitiesPage() {
             <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
               className="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all"
               style={activeCategory === cat.id
-                ? { background: '#40916C', color: '#fff' }
-                : { background: '#F4F9F5', color: '#7A9080' }}>
+                ? { background: '#7B8266', color: '#fff' }
+                : { background: '#FBF8F0', color: '#7A9080' }}>
               {lang === 'ar' ? cat.ar : cat.en}
             </button>
           ))}
@@ -189,9 +189,9 @@ export default function ActivitiesPage() {
           const status = STATUS_STYLE[activity.status as keyof typeof STATUS_STYLE]
           return (
             <FadeIn key={activity.id} delay={0.1 + i * 0.04}>
-              <div className="bg-white rounded-3xl border border-[#C8E6D0] overflow-hidden">
+              <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] overflow-hidden">
                 <button onClick={() => setOpen(isOpen ? null : activity.id)}
-                  className="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-[#F9FBF9] transition-colors">
+                  className="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-[#FCFAF5] transition-colors">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: `${activity.color}14`, border: `1px solid ${activity.color}28` }}>
                     <Icon className="w-5 h-5" style={{ color: activity.color }} />
@@ -215,7 +215,7 @@ export default function ActivitiesPage() {
                     <motion.div
                       initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.22 }} className="overflow-hidden">
-                      <div className="px-6 pb-5 pt-2 border-t border-[#F4F9F5] space-y-3">
+                      <div className="px-6 pb-5 pt-2 border-t border-[#FBF8F0] space-y-3">
                         <p className="text-sm leading-relaxed" style={{ color: '#5A6672' }}>
                           {lang === 'ar' ? activity.desc_ar : activity.desc_en}
                         </p>

@@ -29,7 +29,7 @@ const TESTIMONIALS: Testimonial[] = [
     role_ar: 'مديرة مدرسة الصباح النموذجية',
     initials: 'SR',
     programme: 'Eco-Schools',
-    color: '#52B788',
+    color: '#8B9B88',
     Icon: School,
   },
   {
@@ -53,7 +53,7 @@ const TESTIMONIALS: Testimonial[] = [
     role_ar: 'رئيسة الاستدامة، جامعة الخليج',
     initials: 'NA',
     programme: 'Eco-Campus',
-    color: '#74C69D',
+    color: '#A9B6A4',
     Icon: GraduationCap,
   },
 ]
@@ -65,14 +65,14 @@ export default function TestimonialsSection() {
 
   return (
     <section className="py-28 relative overflow-hidden" ref={ref}
-      style={{ background: 'linear-gradient(160deg, #071410 0%, #0C2018 50%, #071410 100%)' }}>
+      style={{ background: 'linear-gradient(160deg, #0F140F 0%, #0C2018 50%, #0F140F 100%)' }}>
 
       {/* Ambient glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] left-[15%] w-[500px] h-[400px] rounded-full"
-          style={{ background: 'radial-gradient(ellipse, rgba(27,67,50,0.5) 0%, transparent 65%)', filter: 'blur(80px)' }} />
+          style={{ background: 'radial-gradient(ellipse, rgba(24,32,25,0.5) 0%, transparent 65%)', filter: 'blur(80px)' }} />
         <div className="absolute bottom-[0%] right-[10%] w-[400px] h-[300px] rounded-full"
-          style={{ background: 'radial-gradient(ellipse, rgba(64,145,108,0.18) 0%, transparent 65%)', filter: 'blur(70px)' }} />
+          style={{ background: 'radial-gradient(ellipse, rgba(123,130,102,0.18) 0%, transparent 65%)', filter: 'blur(70px)' }} />
       </div>
 
       <div className="container-fee relative z-10">
@@ -85,7 +85,7 @@ export default function TestimonialsSection() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-5"
-            style={{ background: 'rgba(82,183,136,0.12)', border: '1px solid rgba(82,183,136,0.25)', color: '#74C69D' }}>
+            style={{ background: 'rgba(139,155,136,0.12)', border: '1px solid rgba(139,155,136,0.25)', color: '#A9B6A4' }}>
             {lang === 'ar' ? 'قصص النجاح' : 'Success Stories'}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-white">

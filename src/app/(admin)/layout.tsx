@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#F0F4F8' }}>
+    <div className="min-h-screen flex" style={{ background: '#FBF8F0' }}>
       {sidebarOpen && (
         <div className="fixed inset-0 z-20 bg-black/40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
@@ -37,7 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         {/* Brand */}
         <div className="h-16 flex items-center gap-3 px-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)' }}>
             <Leaf className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -85,7 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 flex items-center gap-4 px-6 border-b bg-white" style={{ borderColor: '#E2E8F0' }}>
+        <header className="h-16 flex items-center gap-4 px-6 border-b bg-warmwhite" style={{ borderColor: '#E2E8F0' }}>
           <button className="lg:hidden p-2 rounded-lg" style={{ color: '#475569' }} onClick={() => setSidebarOpen(true)}>
             <Menu className="w-5 h-5" />
           </button>
@@ -104,7 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #182019, #7B8266)' }}>
               A
             </div>
             <div className="hidden md:block">

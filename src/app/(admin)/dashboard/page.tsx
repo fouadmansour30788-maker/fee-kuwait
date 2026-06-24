@@ -10,7 +10,7 @@ import {
 
 const STATS = [
   { label: 'Pending Applications', value: 14, delta: '+3 this week', icon: FileCheck,   color: '#F59E0B', bg: '#FEF3C7' },
-  { label: 'Active Certificates',  value: 210, delta: '+8 this month', icon: Award,     color: '#10B981', bg: '#D1FAE5' },
+  { label: 'Active Certificates',  value: 210, delta: '+8 this month', icon: Award,     color: '#8B9B88', bg: '#E8ECE1' },
   { label: 'Member Institutions',  value: 248, delta: '+12 this month', icon: Users,    color: '#3B82F6', bg: '#DBEAFE' },
   { label: 'Renewals Due (30d)',    value: 22,  delta: '5 overdue',     icon: TrendingUp, color: '#EF4444', bg: '#FEE2E2' },
 ]
@@ -25,18 +25,18 @@ const RECENT_APPLICATIONS = [
 ]
 
 const PROGRAMME_STATS = [
-  { name: 'Eco-Schools', count: 142, color: '#52B788',  Icon: School },
+  { name: 'Eco-Schools', count: 142, color: '#8B9B88',  Icon: School },
   { name: 'Blue Flag',   count: 18,  color: '#90E0EF',  Icon: Waves  },
   { name: 'Green Key',   count: 34,  color: '#C8A951',  Icon: KeyRound },
-  { name: 'LEAF',        count: 28,  color: '#74C69D',  Icon: Leaf   },
+  { name: 'LEAF',        count: 28,  color: '#A9B6A4',  Icon: Leaf   },
   { name: 'YRE',         count: 19,  color: '#A8DADC',  Icon: Newspaper },
-  { name: 'Eco-Campus',  count: 7,   color: '#52B788',  Icon: GraduationCap },
+  { name: 'Eco-Campus',  count: 7,   color: '#8B9B88',  Icon: GraduationCap },
 ]
 
 const STATUS_CONFIG = {
   pending:  { label: 'Pending',  color: '#F59E0B', bg: '#FEF3C7', Icon: Clock          },
   review:   { label: 'In Review',color: '#3B82F6', bg: '#DBEAFE', Icon: AlertCircle    },
-  approved: { label: 'Approved', color: '#10B981', bg: '#D1FAE5', Icon: CheckCircle2   },
+  approved: { label: 'Approved', color: '#8B9B88', bg: '#E8ECE1', Icon: CheckCircle2   },
 }
 
 function FadeIn({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -58,7 +58,7 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Dashboard</h1>
             <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>Sunday, 25 May 2026 — Overview</p>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium" style={{ background: '#D1FAE5', color: '#065F46' }}>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium" style={{ background: '#E8ECE1', color: '#065F46' }}>
             <Activity className="w-3.5 h-3.5" />
             System Operational
           </div>
@@ -71,7 +71,7 @@ export default function AdminDashboard() {
           const Icon = s.icon
           return (
             <FadeIn key={s.label} delay={i * 0.07}>
-              <div className="bg-white rounded-2xl p-5 border" style={{ borderColor: '#E2E8F0' }}>
+              <div className="bg-warmwhite rounded-2xl p-5 border" style={{ borderColor: '#E2E8F0' }}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: s.bg }}>
                     <Icon className="w-5 h-5" style={{ color: s.color }} />
@@ -90,7 +90,7 @@ export default function AdminDashboard() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent applications */}
         <FadeIn delay={0.28} className="lg:col-span-2">
-          <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
+          <div className="bg-warmwhite rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
             <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: '#F1F5F9' }}>
               <h2 className="font-bold text-sm" style={{ color: '#0F172A' }}>Recent Applications</h2>
               <a href="/applications" className="text-xs font-semibold" style={{ color: '#3B82F6' }}>View all →</a>
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
 
         {/* Programme breakdown */}
         <FadeIn delay={0.34}>
-          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <div className="bg-warmwhite rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
             <h2 className="font-bold text-sm mb-5" style={{ color: '#0F172A' }}>Certified by Programme</h2>
             <div className="space-y-3.5">
               {PROGRAMME_STATS.map((p) => {

@@ -28,7 +28,7 @@ function FadeIn({ children, delay = 0, className = '' }: { children: React.React
 const CATEGORIES = [
   {
     Icon: PenLine,
-    color: '#52B788',
+    color: '#8B9B88',
     title_en: 'Written Article',
     title_ar: 'المقال المكتوب',
     desc_en: 'In-depth investigative pieces on local environmental issues — from waste management to water conservation.',
@@ -53,24 +53,24 @@ const CATEGORIES = [
 ]
 
 const TIMELINE = [
-  { month_en: 'Sep – Nov', month_ar: 'سبتمبر – نوفمبر', label_en: 'Registration & Training', label_ar: 'التسجيل والتدريب', color: '#52B788' },
+  { month_en: 'Sep – Nov', month_ar: 'سبتمبر – نوفمبر', label_en: 'Registration & Training', label_ar: 'التسجيل والتدريب', color: '#8B9B88' },
   { month_en: 'Dec – Feb', month_ar: 'ديسمبر – فبراير',  label_en: 'Investigation & Reporting', label_ar: 'التحقيق وإعداد التقارير', color: '#3B82F6' },
   { month_en: 'Mar',       month_ar: 'مارس',              label_en: 'Submissions Deadline', label_ar: 'الموعد النهائي للتقديم', color: '#7C3AED' },
   { month_en: 'Apr – May', month_ar: 'أبريل – مايو',     label_en: 'National Judging', label_ar: 'التحكيم الوطني', color: '#D97706' },
-  { month_en: 'Jun',       month_ar: 'يونيو',             label_en: 'Winners & Awards', label_ar: 'الفائزون والجوائز', color: '#059669' },
+  { month_en: 'Jun',       month_ar: 'يونيو',             label_en: 'Winners & Awards', label_ar: 'الفائزون والجوائز', color: '#7B8266' },
 ]
 
 const PAST_WINNERS = [
-  { year: 2025, name_en: 'Mariam Al-Rashidi', name_ar: 'مريم الراشدي', school_en: 'Kuwait Model School', school_ar: 'مدرسة الكويت النموذجية', topic_en: 'Microplastics in Kuwait Bay', topic_ar: 'الميكروبلاستيك في خليج الكويت', cat: 'Written', color: '#52B788' },
+  { year: 2025, name_en: 'Mariam Al-Rashidi', name_ar: 'مريم الراشدي', school_en: 'Kuwait Model School', school_ar: 'مدرسة الكويت النموذجية', topic_en: 'Microplastics in Kuwait Bay', topic_ar: 'الميكروبلاستيك في خليج الكويت', cat: 'Written', color: '#8B9B88' },
   { year: 2025, name_en: 'Nasser Al-Mutairi', name_ar: 'ناصر المطيري', school_en: 'Al-Sabah School', school_ar: 'مدرسة الصباح', topic_en: 'Desert Reforestation Efforts', topic_ar: 'جهود إعادة التشجير في الصحراء', cat: 'Photo', color: '#3B82F6' },
   { year: 2024, name_en: 'Fatima Al-Oseimi', name_ar: 'فاطمة العصيمي', school_en: 'Rumaithiya Secondary', school_ar: 'ثانوية الرميثية', topic_en: 'Youth Climate Activism', topic_ar: 'النشاط المناخي للشباب', cat: 'Video', color: '#7C3AED' },
 ]
 
 const WHY_JOIN = [
-  { Icon: Globe,  color: '#52B788', title_en: 'Global Stage', title_ar: 'المنصة العالمية', desc_en: 'Top entries compete in the international YRE competition, reaching audiences in 80+ countries.', desc_ar: 'تتنافس أبرز الأعمال في مسابقة YRE الدولية أمام جماهير في 80+ دولة.' },
+  { Icon: Globe,  color: '#8B9B88', title_en: 'Global Stage', title_ar: 'المنصة العالمية', desc_en: 'Top entries compete in the international YRE competition, reaching audiences in 80+ countries.', desc_ar: 'تتنافس أبرز الأعمال في مسابقة YRE الدولية أمام جماهير في 80+ دولة.' },
   { Icon: Trophy, color: '#D97706', title_en: 'Real Prizes', title_ar: 'جوائز حقيقية', desc_en: 'National winners receive certificates, trophies, and sponsored study visits to environmental sites.', desc_ar: 'يحصل الفائزون الوطنيون على شهادات وكؤوس وزيارات دراسية مدعومة للمواقع البيئية.' },
   { Icon: Lightbulb, color: '#7C3AED', title_en: 'Journalism Skills', title_ar: 'مهارات الصحافة', desc_en: 'Free workshops in environmental reporting, data journalism, photography, and video production.', desc_ar: 'ورش عمل مجانية في التقارير البيئية وصحافة البيانات والتصوير وإنتاج الفيديو.' },
-  { Icon: TreePine, color: '#059669', title_en: 'Real Impact', title_ar: 'أثر حقيقي', desc_en: 'Past YRE articles have influenced local council decisions on recycling and beach clean-up.', desc_ar: 'أثّرت مقالات YRE السابقة في قرارات المجالس المحلية بشأن إعادة التدوير وتنظيف الشواطئ.' },
+  { Icon: TreePine, color: '#7B8266', title_en: 'Real Impact', title_ar: 'أثر حقيقي', desc_en: 'Past YRE articles have influenced local council decisions on recycling and beach clean-up.', desc_ar: 'أثّرت مقالات YRE السابقة في قرارات المجالس المحلية بشأن إعادة التدوير وتنظيف الشواطئ.' },
 ]
 
 export default function YouthPage() {
@@ -80,10 +80,10 @@ export default function YouthPage() {
     <>
       {/* Hero */}
       <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(155deg, #0A1C2E 0%, #0F2A18 55%, #1B4332 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(155deg, #0A1C2E 0%, #0F2A18 55%, #182019 100%)' }} />
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-10 right-1/3 w-[420px] h-[300px] rounded-full opacity-20"
-            style={{ background: 'radial-gradient(ellipse, #52B788 0%, transparent 70%)', filter: 'blur(90px)' }} />
+            style={{ background: 'radial-gradient(ellipse, #8B9B88 0%, transparent 70%)', filter: 'blur(90px)' }} />
           <div className="absolute bottom-0 left-1/4 w-[320px] h-[200px] rounded-full opacity-15"
             style={{ background: 'radial-gradient(ellipse, #3B82F6 0%, transparent 70%)', filter: 'blur(80px)' }} />
         </div>
@@ -91,15 +91,15 @@ export default function YouthPage() {
         <div className="container-fee relative z-10 text-center max-w-2xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-7"
-              style={{ border: '1px solid rgba(82,183,136,0.3)', color: 'rgba(116,198,157,0.9)', background: 'rgba(82,183,136,0.08)' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#74C69D] animate-pulse" />
+              style={{ border: '1px solid rgba(139,155,136,0.3)', color: 'rgba(169,182,164,0.9)', background: 'rgba(139,155,136,0.08)' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A9B6A4] animate-pulse" />
               {lang === 'ar' ? 'برنامج الشباب' : 'Youth Programme'}
             </span>
 
             <h1 className="text-4xl md:text-5xl font-bold text-white leading-[1.1] tracking-tight mb-5">
               {lang === 'ar'
-                ? <>{' '}مراسلون شباب{' '}<br /><span style={{ color: '#74C69D' }}>من أجل البيئة</span></>
-                : <>Young Reporters<br /><span style={{ color: '#74C69D' }}>for the Environment</span></>}
+                ? <>{' '}مراسلون شباب{' '}<br /><span style={{ color: '#A9B6A4' }}>من أجل البيئة</span></>
+                : <>Young Reporters<br /><span style={{ color: '#A9B6A4' }}>for the Environment</span></>}
             </h1>
 
             <p className="text-lg leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.52)' }}>
@@ -112,7 +112,7 @@ export default function YouthPage() {
               <Link
                 href="/register?programme=yre"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}
+                style={{ background: 'linear-gradient(135deg, #182019, #7B8266)' }}
               >
                 {lang === 'ar' ? 'سجّل الآن' : 'Register Now'}
                 <ArrowRight className="w-4 h-4" />
@@ -130,11 +130,11 @@ export default function YouthPage() {
       </section>
 
       {/* Quick stats */}
-      <section className="py-14 border-b" style={{ background: '#fff', borderColor: '#C8E6D0' }}>
+      <section className="py-14 border-b" style={{ background: '#fff', borderColor: '#E7E4D6' }}>
         <div className="container-fee">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
-              { n: '320+', label_en: 'Young Reporters', label_ar: 'مراسل شاب', color: '#52B788' },
+              { n: '320+', label_en: 'Young Reporters', label_ar: 'مراسل شاب', color: '#8B9B88' },
               { n: '13–25', label_en: 'Age Range', label_ar: 'الفئة العمرية', color: '#3B82F6' },
               { n: '3',    label_en: 'Entry Categories', label_ar: 'فئات التقديم', color: '#7C3AED' },
               { n: '80+',  label_en: 'Global Countries', label_ar: 'دولة عالمية', color: '#D97706' },
@@ -151,15 +151,15 @@ export default function YouthPage() {
       </section>
 
       {/* Entry categories */}
-      <section className="py-24" style={{ background: '#F4F9F5' }}>
+      <section className="py-24" style={{ background: '#FBF8F0' }}>
         <div className="container-fee">
           <FadeIn>
             <div className="text-center mb-14">
               <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-4"
-                style={{ background: '#D1FAE5', color: '#059669' }}>
+                style={{ background: '#E8ECE1', color: '#7B8266' }}>
                 {lang === 'ar' ? 'فئات التقديم' : 'Entry Categories'}
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: '#0F2318' }}>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: '#182019' }}>
                 {lang === 'ar' ? 'اختر طريقة تعبيرك' : 'Choose How You Tell Your Story'}
               </h2>
               <p className="text-base max-w-xl mx-auto leading-relaxed" style={{ color: '#5A6672' }}>
@@ -173,14 +173,14 @@ export default function YouthPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {CATEGORIES.map((cat, i) => (
               <FadeIn key={i} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl p-7 border hover:shadow-lg transition-shadow" style={{ borderColor: '#E2E8F0' }}>
+                <div className="bg-warmwhite rounded-2xl p-7 border hover:shadow-lg transition-shadow" style={{ borderColor: '#E2E8F0' }}>
                   <div
                     className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
                     style={{ background: `${cat.color}15`, border: `1px solid ${cat.color}30` }}
                   >
                     <cat.Icon className="w-6 h-6" style={{ color: cat.color }} />
                   </div>
-                  <h3 className="font-bold text-lg mb-3" style={{ color: '#0F2318' }}>
+                  <h3 className="font-bold text-lg mb-3" style={{ color: '#182019' }}>
                     {lang === 'ar' ? cat.title_ar : cat.title_en}
                   </h3>
                   <p className="text-sm leading-relaxed" style={{ color: '#5A6672' }}>
@@ -194,15 +194,15 @@ export default function YouthPage() {
       </section>
 
       {/* Why join */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-warmwhite">
         <div className="container-fee">
           <FadeIn>
             <div className="text-center mb-14">
               <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-4"
-                style={{ background: '#D1FAE5', color: '#059669' }}>
+                style={{ background: '#E8ECE1', color: '#7B8266' }}>
                 {lang === 'ar' ? 'لماذا تنضم؟' : 'Why Join?'}
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold" style={{ color: '#0F2318' }}>
+              <h2 className="text-3xl md:text-4xl font-bold" style={{ color: '#182019' }}>
                 {lang === 'ar' ? 'ما الذي ستكسبه؟' : 'What You\'ll Gain'}
               </h2>
             </div>
@@ -219,7 +219,7 @@ export default function YouthPage() {
                     <item.Icon className="w-5 h-5" style={{ color: item.color }} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm mb-1" style={{ color: '#0F2318' }}>
+                    <h3 className="font-bold text-sm mb-1" style={{ color: '#182019' }}>
                       {lang === 'ar' ? item.title_ar : item.title_en}
                     </h3>
                     <p className="text-xs leading-relaxed" style={{ color: '#5A6672' }}>
@@ -234,15 +234,15 @@ export default function YouthPage() {
       </section>
 
       {/* Competition timeline */}
-      <section className="py-24" style={{ background: '#F4F9F5' }}>
+      <section className="py-24" style={{ background: '#FBF8F0' }}>
         <div className="container-fee">
           <FadeIn>
             <div className="text-center mb-14">
               <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-4"
-                style={{ background: '#D1FAE5', color: '#059669' }}>
+                style={{ background: '#E8ECE1', color: '#7B8266' }}>
                 {lang === 'ar' ? 'جدول المسابقة' : 'Competition Calendar'}
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold" style={{ color: '#0F2318' }}>
+              <h2 className="text-3xl md:text-4xl font-bold" style={{ color: '#182019' }}>
                 {lang === 'ar' ? 'رحلة المسابقة 2025–2026' : '2025–2026 Competition Journey'}
               </h2>
             </div>
@@ -251,7 +251,7 @@ export default function YouthPage() {
           <div className="max-w-3xl mx-auto">
             <div className="relative">
               {/* Vertical line */}
-              <div className="absolute left-8 top-0 bottom-0 w-px" style={{ background: '#C8E6D0' }} />
+              <div className="absolute left-8 top-0 bottom-0 w-px" style={{ background: '#E7E4D6' }} />
 
               <div className="space-y-6">
                 {TIMELINE.map((step, i) => (
@@ -267,7 +267,7 @@ export default function YouthPage() {
                         <p className="text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: step.color }}>
                           {lang === 'ar' ? step.month_ar : step.month_en}
                         </p>
-                        <p className="font-bold text-base" style={{ color: '#0F2318' }}>
+                        <p className="font-bold text-base" style={{ color: '#182019' }}>
                           {lang === 'ar' ? step.label_ar : step.label_en}
                         </p>
                       </div>
@@ -281,7 +281,7 @@ export default function YouthPage() {
       </section>
 
       {/* Past winners */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-warmwhite">
         <div className="container-fee">
           <FadeIn>
             <div className="text-center mb-14">
@@ -289,7 +289,7 @@ export default function YouthPage() {
                 style={{ background: '#FEF3C7', color: '#D97706' }}>
                 {lang === 'ar' ? 'الفائزون السابقون' : 'Past Winners'}
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold" style={{ color: '#0F2318' }}>
+              <h2 className="text-3xl md:text-4xl font-bold" style={{ color: '#182019' }}>
                 {lang === 'ar' ? 'قصص ملهمة' : 'Inspiring Stories'}
               </h2>
             </div>
@@ -298,7 +298,7 @@ export default function YouthPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
             {PAST_WINNERS.map((w, i) => (
               <FadeIn key={i} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl border p-6 hover:shadow-md transition-shadow" style={{ borderColor: '#E2E8F0' }}>
+                <div className="bg-warmwhite rounded-2xl border p-6 hover:shadow-md transition-shadow" style={{ borderColor: '#E2E8F0' }}>
                   <div className="flex items-center gap-2 mb-4">
                     <Star className="w-4 h-4" style={{ color: '#D97706' }} />
                     <span className="text-xs font-semibold" style={{ color: '#D97706' }}>{w.year} Winner</span>
@@ -309,7 +309,7 @@ export default function YouthPage() {
                       {w.cat}
                     </span>
                   </div>
-                  <p className="font-bold text-sm mb-0.5" style={{ color: '#0F2318' }}>
+                  <p className="font-bold text-sm mb-0.5" style={{ color: '#182019' }}>
                     {lang === 'ar' ? w.name_ar : w.name_en}
                   </p>
                   <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>
@@ -327,14 +327,14 @@ export default function YouthPage() {
 
       {/* CTA */}
       <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(155deg, #0F2318 0%, #1B4332 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(155deg, #182019 0%, #182019 100%)' }} />
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full opacity-10"
-            style={{ background: 'radial-gradient(ellipse, #52B788 0%, transparent 70%)', filter: 'blur(100px)' }} />
+            style={{ background: 'radial-gradient(ellipse, #8B9B88 0%, transparent 70%)', filter: 'blur(100px)' }} />
         </div>
         <div className="container-fee relative z-10 text-center max-w-2xl mx-auto">
           <FadeIn>
-            <Newspaper className="w-12 h-12 mx-auto mb-6" style={{ color: '#74C69D' }} />
+            <Newspaper className="w-12 h-12 mx-auto mb-6" style={{ color: '#A9B6A4' }} />
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-5">
               {lang === 'ar'
                 ? 'صوتك يمكن أن يغيّر العالم'
@@ -349,7 +349,7 @@ export default function YouthPage() {
               <Link
                 href="/register?programme=yre"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #278A45, #52B788)' }}
+                style={{ background: 'linear-gradient(135deg, #278A45, #8B9B88)' }}
               >
                 {lang === 'ar' ? 'ابدأ رحلتك الآن' : 'Start Your Journey'}
                 <ArrowRight className="w-4 h-4" />

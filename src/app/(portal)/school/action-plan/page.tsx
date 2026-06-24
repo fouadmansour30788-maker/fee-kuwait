@@ -7,7 +7,7 @@ import { useLang } from '@/context/LangContext'
 
 const STEPS = [
   {
-    id: 1, Icon: Users, color: '#52B788',
+    id: 1, Icon: Users, color: '#8B9B88',
     title_en: 'Eco-Committee',
     title_ar: 'اللجنة البيئية',
     desc_en: 'Form a committee of students, teachers, and staff to drive environmental action.',
@@ -29,7 +29,7 @@ const STEPS = [
     done: [true, true, false, false, false],
   },
   {
-    id: 3, Icon: Leaf, color: '#40916C',
+    id: 3, Icon: Leaf, color: '#7B8266',
     title_en: 'Action Plan',
     title_ar: 'خطة العمل',
     desc_en: 'Create a concrete plan with goals, actions, and timelines based on your review.',
@@ -51,7 +51,7 @@ const STEPS = [
     done: [false, false, false, false],
   },
   {
-    id: 5, Icon: BookOpen, color: '#74C69D',
+    id: 5, Icon: BookOpen, color: '#A9B6A4',
     title_en: 'Curriculum Links',
     title_ar: 'الربط بالمنهج الدراسي',
     desc_en: 'Integrate environmental topics into classroom lessons across all subjects.',
@@ -62,7 +62,7 @@ const STEPS = [
     done: [false, false, false, false],
   },
   {
-    id: 6, Icon: Globe, color: '#1B4332',
+    id: 6, Icon: Globe, color: '#182019',
     title_en: 'Community Involvement',
     title_ar: 'إشراك المجتمع',
     desc_en: 'Engage parents, local organisations and the wider community in your efforts.',
@@ -110,7 +110,7 @@ export default function ActionPlanPage() {
             </p>
           </div>
           <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}>
+            style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)' }}>
             <Plus className="w-4 h-4" />
             {lang === 'ar' ? 'إضافة ملاحظة' : 'Add Note'}
           </button>
@@ -119,23 +119,23 @@ export default function ActionPlanPage() {
 
       {/* Overall progress */}
       <FadeIn delay={0.05}>
-        <div className="bg-white rounded-3xl border border-[#C8E6D0] p-5">
+        <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold text-forest">{lang === 'ar' ? 'التقدم الكلي' : 'Overall Progress'}</span>
             <span className="text-sm font-bold text-brand">{Math.round((doneCount / 7) * 100)}%</span>
           </div>
-          <div className="h-2.5 rounded-full" style={{ background: '#EDF7F1' }}>
+          <div className="h-2.5 rounded-full" style={{ background: '#E8ECE1' }}>
             <div className="h-2.5 rounded-full transition-all duration-700"
-              style={{ width: `${(doneCount / 7) * 100}%`, background: 'linear-gradient(90deg, #52B788, #40916C)' }} />
+              style={{ width: `${(doneCount / 7) * 100}%`, background: 'linear-gradient(90deg, #8B9B88, #7B8266)' }} />
           </div>
           <div className="flex justify-between mt-3">
             {STEPS.map(s => (
               <div key={s.id} className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold"
                 style={s.status === 'done'
-                  ? { background: '#40916C', color: '#fff' }
+                  ? { background: '#7B8266', color: '#fff' }
                   : s.status === 'active'
-                  ? { background: 'rgba(82,183,136,0.15)', border: '2px solid #52B788', color: '#52B788' }
-                  : { background: '#F4F9F5', color: '#7A9080' }}>
+                  ? { background: 'rgba(139,155,136,0.15)', border: '2px solid #8B9B88', color: '#8B9B88' }
+                  : { background: '#FBF8F0', color: '#7A9080' }}>
                 {s.id}
               </div>
             ))}
@@ -152,10 +152,10 @@ export default function ActionPlanPage() {
 
           return (
             <FadeIn key={step.id} delay={0.08 + i * 0.04}>
-              <div className="bg-white rounded-3xl border overflow-hidden"
-                style={{ borderColor: step.status === 'active' ? step.color + '60' : '#C8E6D0' }}>
+              <div className="bg-warmwhite rounded-3xl border overflow-hidden"
+                style={{ borderColor: step.status === 'active' ? step.color + '60' : '#E7E4D6' }}>
                 <button onClick={() => setOpen(isOpen ? null : step.id)}
-                  className="w-full flex items-center gap-4 px-6 py-5 text-left hover:bg-[#F9FBF9] transition-colors">
+                  className="w-full flex items-center gap-4 px-6 py-5 text-left hover:bg-[#FCFAF5] transition-colors">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: `${step.color}14`, border: `1px solid ${step.color}28` }}>
                     <Icon className="w-5 h-5" style={{ color: step.color }} />
@@ -178,8 +178,8 @@ export default function ActionPlanPage() {
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     {step.status === 'done'
-                      ? <CheckCircle2 className="w-5 h-5" style={{ color: '#40916C' }} />
-                      : <Circle className="w-5 h-5" style={{ color: '#C8E6D0' }} />}
+                      ? <CheckCircle2 className="w-5 h-5" style={{ color: '#7B8266' }} />
+                      : <Circle className="w-5 h-5" style={{ color: '#E7E4D6' }} />}
                     {isOpen ? <ChevronUp className="w-4 h-4" style={{ color: '#7A9080' }} /> : <ChevronDown className="w-4 h-4" style={{ color: '#7A9080' }} />}
                   </div>
                 </button>
@@ -191,7 +191,7 @@ export default function ActionPlanPage() {
                       transition={{ duration: 0.25 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-6 pb-6 pt-2 border-t" style={{ borderColor: '#F4F9F5' }}>
+                      <div className="px-6 pb-6 pt-2 border-t" style={{ borderColor: '#FBF8F0' }}>
                         <p className="text-sm mb-5 leading-relaxed" style={{ color: '#5A6672' }}>
                           {lang === 'ar' ? step.desc_ar : step.desc_en}
                         </p>
@@ -199,8 +199,8 @@ export default function ActionPlanPage() {
                           {step.tasks_en.map((task, ti) => (
                             <label key={ti} className="flex items-center gap-3 cursor-pointer group">
                               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${step.done[ti] ? 'border-transparent' : ''}`}
-                                style={step.done[ti] ? { background: step.color, borderColor: step.color } : { borderColor: '#C8E6D0' }}>
-                                {step.done[ti] && <div className="w-2 h-2 rounded-full bg-white" />}
+                                style={step.done[ti] ? { background: step.color, borderColor: step.color } : { borderColor: '#E7E4D6' }}>
+                                {step.done[ti] && <div className="w-2 h-2 rounded-full bg-warmwhite" />}
                               </div>
                               <span className={`text-sm ${step.done[ti] ? 'line-through' : 'text-forest'}`}
                                 style={step.done[ti] ? { color: '#7A9080' } : {}}>

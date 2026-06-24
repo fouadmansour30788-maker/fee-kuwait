@@ -19,8 +19,8 @@ const MEMBERS = [
 ]
 
 const TYPE_ICONS = { school: School, business: Building2, university: GraduationCap }
-const TYPE_COLORS = { school: '#52B788', business: '#C8A951', university: '#3B82F6' }
-const TYPE_BG = { school: '#D1FAE5', business: '#FEF3C7', university: '#DBEAFE' }
+const TYPE_COLORS = { school: '#8B9B88', business: '#C8A951', university: '#3B82F6' }
+const TYPE_BG = { school: '#E8ECE1', business: '#FEF3C7', university: '#DBEAFE' }
 
 export default function MembersPage() {
   const [search, setSearch] = useState('')
@@ -57,7 +57,7 @@ export default function MembersPage() {
 
       {/* Search */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.08 }}>
-        <div className="flex items-center gap-2.5 max-w-sm px-3.5 py-2.5 rounded-xl bg-white" style={{ border: '1px solid #E2E8F0' }}>
+        <div className="flex items-center gap-2.5 max-w-sm px-3.5 py-2.5 rounded-xl bg-warmwhite" style={{ border: '1px solid #E2E8F0' }}>
           <Search className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search members…" className="bg-transparent text-sm outline-none w-full" style={{ color: '#1E293B' }} />
         </div>
@@ -71,7 +71,7 @@ export default function MembersPage() {
             const color = TYPE_COLORS[member.type as keyof typeof TYPE_COLORS]
             const bg = TYPE_BG[member.type as keyof typeof TYPE_BG]
             return (
-              <div key={member.id} className="bg-white rounded-2xl border p-5 hover:shadow-md transition-shadow" style={{ borderColor: '#E2E8F0' }}>
+              <div key={member.id} className="bg-warmwhite rounded-2xl border p-5 hover:shadow-md transition-shadow" style={{ borderColor: '#E2E8F0' }}>
                 <div className="flex items-start gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
                     <Icon className="w-5 h-5" style={{ color }} />
@@ -110,7 +110,7 @@ export default function MembersPage() {
           })}
         </div>
         {filtered.length === 0 && (
-          <div className="py-16 text-center bg-white rounded-2xl border" style={{ borderColor: '#E2E8F0', color: '#94A3B8' }}>
+          <div className="py-16 text-center bg-warmwhite rounded-2xl border" style={{ borderColor: '#E2E8F0', color: '#94A3B8' }}>
             <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
             <p className="text-sm">No members found</p>
           </div>

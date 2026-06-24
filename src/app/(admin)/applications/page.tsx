@@ -26,7 +26,7 @@ const APPLICATIONS = [
 const STATUS_CONFIG = {
   pending:  { label: 'Pending',   color: '#D97706', bg: '#FEF3C7', Icon: Clock         },
   review:   { label: 'In Review', color: '#2563EB', bg: '#DBEAFE', Icon: AlertCircle   },
-  approved: { label: 'Approved',  color: '#059669', bg: '#D1FAE5', Icon: CheckCircle2  },
+  approved: { label: 'Approved',  color: '#7B8266', bg: '#E8ECE1', Icon: CheckCircle2  },
   rejected: { label: 'Rejected',  color: '#DC2626', bg: '#FEE2E2', Icon: XCircle       },
 }
 
@@ -56,7 +56,7 @@ export default function ApplicationsPage() {
             <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Applications</h1>
             <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>{APPLICATIONS.length} total applications</p>
           </div>
-          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
+          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #182019, #7B8266)' }}>
             <Download className="w-4 h-4" />
             Export CSV
           </button>
@@ -86,7 +86,7 @@ export default function ApplicationsPage() {
 
       {/* Search + filter */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }} className="flex gap-3">
-        <div className="flex items-center gap-2.5 flex-1 max-w-sm px-3.5 py-2.5 rounded-xl bg-white" style={{ border: '1px solid #E2E8F0' }}>
+        <div className="flex items-center gap-2.5 flex-1 max-w-sm px-3.5 py-2.5 rounded-xl bg-warmwhite" style={{ border: '1px solid #E2E8F0' }}>
           <Search className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />
           <input
             value={search}
@@ -96,7 +96,7 @@ export default function ApplicationsPage() {
             style={{ color: '#1E293B' }}
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white" style={{ border: '1px solid #E2E8F0', color: '#64748B' }}>
+        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-warmwhite" style={{ border: '1px solid #E2E8F0', color: '#64748B' }}>
           <Filter className="w-4 h-4" />
           Filter
           <ChevronDown className="w-3.5 h-3.5" />
@@ -105,7 +105,7 @@ export default function ApplicationsPage() {
 
       {/* Table */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.14 }}>
-        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
+        <div className="bg-warmwhite rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
           <table className="w-full text-sm">
             <thead>
               <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>

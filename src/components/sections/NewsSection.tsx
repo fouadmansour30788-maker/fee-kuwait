@@ -18,7 +18,7 @@ export default function NewsSection() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section className="py-28 bg-white" ref={ref}>
+    <section className="py-28 bg-warmwhite" ref={ref}>
       <div className="container-fee">
 
         {/* Header row */}
@@ -30,10 +30,10 @@ export default function NewsSection() {
         >
           <div>
             <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-5"
-              style={{ background: '#D1FAE5', color: '#059669' }}>
+              style={{ background: '#E8ECE1', color: '#7B8266' }}>
               {lang === 'ar' ? 'أحدث الأخبار' : 'Latest News'}
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3" style={{ color: '#0F2318' }}>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3" style={{ color: '#182019' }}>
               {t(lang, 'news.title')}
             </h2>
             <p className="text-base leading-relaxed max-w-lg" style={{ color: '#5A6672' }}>
@@ -43,7 +43,7 @@ export default function NewsSection() {
           <Link
             href="/news"
             className="hidden md:inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm flex-shrink-0 transition-all duration-200 hover:-translate-y-0.5"
-            style={{ background: '#0F2318', color: '#fff', boxShadow: '0 4px 16px rgba(15,35,24,0.22)' }}
+            style={{ background: '#182019', color: '#fff', boxShadow: '0 4px 16px rgba(24,32,25,0.22)' }}
           >
             {t(lang, 'news.view_all')}
             <ArrowRight className="w-4 h-4" />
@@ -58,11 +58,11 @@ export default function NewsSection() {
               initial={{ opacity: 0, y: 48, scale: 0.97 }}
               animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
               transition={{ duration: 0.65, delay: i * 0.13, ease: [0.22, 1, 0.36, 1] }}
-              className="group flex flex-col bg-white rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.10)]"
-              style={{ border: '1px solid #E2EDE6', boxShadow: '0 2px 12px rgba(64,145,108,0.06)' }}
+              className="group flex flex-col bg-warmwhite rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.10)]"
+              style={{ border: '1px solid #E7E4D6', boxShadow: '0 2px 12px rgba(123,130,102,0.06)' }}
             >
               {/* Photo */}
-              <div className="relative h-56 overflow-hidden bg-[#F4F9F5] flex-shrink-0">
+              <div className="relative h-56 overflow-hidden bg-[#FBF8F0] flex-shrink-0">
                 <Image
                   src={article.image_url}
                   alt={lang === 'ar' ? article.title_ar : article.title_en}
@@ -76,7 +76,7 @@ export default function NewsSection() {
                 <div className="absolute top-3 left-3 flex items-center gap-2">
                   {i === 0 && (
                     <span className="text-[10px] font-bold px-2.5 py-1 rounded-full text-white"
-                      style={{ background: '#40916C' }}>
+                      style={{ background: '#7B8266' }}>
                       {lang === 'ar' ? 'مميز' : 'Featured'}
                     </span>
                   )}
@@ -97,8 +97,8 @@ export default function NewsSection() {
                   <Calendar className="w-3.5 h-3.5" />
                   {format(new Date(article.published_at), 'dd MMM yyyy')}
                 </div>
-                <h3 className="font-bold text-base leading-snug mb-3 flex-1 group-hover:text-[#40916C] transition-colors line-clamp-2"
-                  style={{ color: '#0F2318' }}>
+                <h3 className="font-bold text-base leading-snug mb-3 flex-1 group-hover:text-[#7B8266] transition-colors line-clamp-2"
+                  style={{ color: '#182019' }}>
                   {lang === 'ar' ? article.title_ar : article.title_en}
                 </h3>
                 <p className="text-sm leading-relaxed line-clamp-2 mb-5" style={{ color: '#5A6672' }}>
@@ -107,7 +107,7 @@ export default function NewsSection() {
                 <Link
                   href={`/news/${article.slug}`}
                   className="inline-flex items-center gap-1.5 text-sm font-semibold transition-all duration-200 group-hover:gap-2.5"
-                  style={{ color: '#40916C' }}
+                  style={{ color: '#7B8266' }}
                 >
                   {t(lang, 'news.read_more')}
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
@@ -122,7 +122,7 @@ export default function NewsSection() {
           <Link
             href="/news"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200"
-            style={{ background: '#0F2318', color: '#fff' }}
+            style={{ background: '#182019', color: '#fff' }}
           >
             {t(lang, 'news.view_all')} <ArrowRight className="w-4 h-4" />
           </Link>

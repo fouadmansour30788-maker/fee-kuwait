@@ -13,7 +13,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           toastOptions={{
             style: {
               background: '#fff',
-              border: '1px solid #B7E4C7',
+              border: '1px solid #D4DCCD',
               color: '#1C1F1D',
             },
           }}

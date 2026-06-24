@@ -5,7 +5,7 @@ export const PROGRAMMES: ProgrammeInfo[] = [
     id: 'eco-schools',
     name_en: 'Eco-Schools',
     name_ar: 'المدارس البيئية',
-    color: '#52B788',
+    color: '#7B8266',
     icon: 'School',
     description_en: 'Empowering schools to become centres of environmental action and education.',
     description_ar: 'تمكين المدارس لتصبح مراكز للعمل والتعليم البيئي.',
@@ -14,7 +14,7 @@ export const PROGRAMMES: ProgrammeInfo[] = [
     id: 'blue-flag',
     name_en: 'Blue Flag',
     name_ar: 'العلم الأزرق',
-    color: '#006994',
+    color: '#3A6B6E',
     icon: 'Waves',
     description_en: 'Certifying the world\'s finest beaches, marinas, and sustainable boating operators.',
     description_ar: 'شهادة لأفضل الشواطئ والمراسي ومشغلي القوارب المستدامة.',
@@ -32,7 +32,7 @@ export const PROGRAMMES: ProgrammeInfo[] = [
     id: 'leaf',
     name_en: 'LEAF',
     name_ar: 'ورقة الشجر',
-    color: '#1B4332',
+    color: '#2C3A2D',
     icon: 'Leaf',
     description_en: 'Learning about Forests and their relationship with our environment.',
     description_ar: 'التعلم عن الغابات وعلاقتها ببيئتنا.',
@@ -41,7 +41,7 @@ export const PROGRAMMES: ProgrammeInfo[] = [
     id: 'yre',
     name_en: 'Young Reporters for the Environment',
     name_ar: 'المراسلون الشباب للبيئة',
-    color: '#74C69D',
+    color: '#8B9B88',
     icon: 'Newspaper',
     description_en: 'Training young people in journalism to report on environmental issues.',
     description_ar: 'تدريب الشباب على الصحافة للتغطية القضايا البيئية.',
@@ -50,7 +50,7 @@ export const PROGRAMMES: ProgrammeInfo[] = [
     id: 'eco-campus',
     name_en: 'Eco-Campus',
     name_ar: 'الحرم البيئي',
-    color: '#40916C',
+    color: '#5E6B52',
     icon: 'GraduationCap',
     description_en: 'Recognising universities and colleges as leaders in environmental sustainability.',
     description_ar: 'تكريم الجامعات والكليات كرواد في الاستدامة البيئية.',
@@ -62,5 +62,5 @@ export function getProgramme(id: Programme): ProgrammeInfo | undefined {
 }
 
 export function getProgrammeColor(id: Programme): string {
-  return getProgramme(id)?.color ?? '#40916C'
+  return getProgramme(id)?.color ?? '#2C3A2D'
 }

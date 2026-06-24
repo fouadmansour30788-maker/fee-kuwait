@@ -39,10 +39,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const portalName = isSchool
     ? (lang === 'ar' ? 'بوابة المدرسة' : 'School Portal')
     : (lang === 'ar' ? 'بوابة المنشأة' : 'Business Portal')
-  const portalColor = isSchool ? '#52B788' : '#C8A951'
+  const portalColor = isSchool ? '#8B9B88' : '#C8A951'
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#F4F9F5' }}>
+    <div className="min-h-screen flex" style={{ background: '#FBF8F0' }}>
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
@@ -54,12 +54,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-30 w-64 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ background: 'linear-gradient(180deg, #0F2318 0%, #1B4332 100%)' }}
+        style={{ background: 'linear-gradient(180deg, #182019 0%, #182019 100%)' }}
       >
         {/* Logo */}
         <div className="h-16 flex items-center gap-3 px-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
           <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: `linear-gradient(135deg, ${portalColor}, #40916C)` }}>
+            style={{ background: `linear-gradient(135deg, ${portalColor}, #7B8266)` }}>
             <Leaf className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -110,25 +110,25 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header
-          className="h-16 flex items-center gap-4 px-6 border-b bg-white"
-          style={{ borderColor: '#C8E6D0' }}
+          className="h-16 flex items-center gap-4 px-6 border-b bg-warmwhite"
+          style={{ borderColor: '#E7E4D6' }}
         >
           <button
             className="lg:hidden p-2 rounded-lg transition-colors"
-            style={{ color: '#40916C' }}
+            style={{ color: '#7B8266' }}
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1" />
           {/* Notification bell */}
-          <button className="relative p-2 rounded-xl transition-colors hover:bg-[#EDF7F1]" style={{ color: '#40916C' }}>
+          <button className="relative p-2 rounded-xl transition-colors hover:bg-[#E8ECE1]" style={{ color: '#7B8266' }}>
             <Bell className="w-5 h-5" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: '#E53E3E' }} />
           </button>
           {/* Avatar */}
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-            style={{ background: `linear-gradient(135deg, ${portalColor}, #40916C)` }}>
+            style={{ background: `linear-gradient(135deg, ${portalColor}, #7B8266)` }}>
             S
           </div>
         </header>

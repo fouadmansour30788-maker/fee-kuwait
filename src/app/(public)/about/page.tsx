@@ -20,7 +20,7 @@ const TEAM = [
     role_en: 'Executive Director',
     role_ar: 'المدير التنفيذي',
     initials: 'AS',
-    color: '#52B788',
+    color: '#8B9B88',
   },
   {
     name_en: 'Lulwa Al-Kandari',
@@ -47,7 +47,7 @@ const VALUES = [
     title_ar: 'معايير عالمية',
     desc_en: 'All our programmes are backed by FEE International — the world\'s largest environmental education organisation operating in 80+ countries.',
     desc_ar: 'جميع برامجنا مدعومة من FEE الدولية — أكبر منظمة تعليم بيئي في العالم تعمل في أكثر من 80 دولة.',
-    color: '#52B788',
+    color: '#8B9B88',
   },
   {
     icon: Award,
@@ -71,7 +71,7 @@ const VALUES = [
     title_ar: 'ملاءمة محلية',
     desc_en: 'Every programme is adapted to Kuwait\'s unique environment — from desert ecosystems and marine biodiversity to urban sustainability challenges.',
     desc_ar: 'كل برنامج مُكيَّف مع البيئة الكويتية الفريدة — من النظم البيئية الصحراوية والتنوع البحري إلى تحديات الاستدامة الحضرية.',
-    color: '#40916C',
+    color: '#7B8266',
   },
 ]
 
@@ -98,7 +98,7 @@ export default function AboutPage() {
     <>
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="section-forest py-28 relative overflow-hidden" ref={heroRef}>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(82,183,136,0.15),transparent_55%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(139,155,136,0.15),transparent_55%)] pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(0,105,148,0.10),transparent_50%)] pointer-events-none" />
         <div className="container-fee relative z-10 max-w-3xl">
           <motion.div
@@ -166,10 +166,10 @@ export default function AboutPage() {
             <FadeInSection delay={0.15}>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { num: '2019', label_en: 'Year Founded', label_ar: 'سنة التأسيس', color: '#52B788' },
+                  { num: '2019', label_en: 'Year Founded', label_ar: 'سنة التأسيس', color: '#8B9B88' },
                   { num: '80+', label_en: 'FEE Countries', label_ar: 'دول FEE', color: '#006994' },
                   { num: '200+', label_en: 'Certified Sites', label_ar: 'موقع معتمد', color: '#C8A951' },
-                  { num: '6', label_en: 'Programmes', label_ar: 'برامج', color: '#40916C' },
+                  { num: '6', label_en: 'Programmes', label_ar: 'برامج', color: '#7B8266' },
                 ].map((s) => (
                   <div key={s.num} className="card p-6 text-center">
                     <p className="text-4xl font-bold mb-1" style={{ color: s.color }}>{s.num}</p>
@@ -288,7 +288,7 @@ export default function AboutPage() {
 
       {/* ── FEE International ────────────────────────────── */}
       <section className="section-forest py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(82,183,136,0.10),transparent_65%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,155,136,0.10),transparent_65%)] pointer-events-none" />
         <div className="container-fee relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <FadeInSection>
@@ -323,12 +323,12 @@ export default function AboutPage() {
             <FadeInSection delay={0.15}>
               <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4">
                 {[
-                  { prog: 'Eco-Schools', note_en: 'Largest environmental education programme in the world', note_ar: 'أكبر برنامج تعليم بيئي في العالم', color: '#52B788' },
+                  { prog: 'Eco-Schools', note_en: 'Largest environmental education programme in the world', note_ar: 'أكبر برنامج تعليم بيئي في العالم', color: '#8B9B88' },
                   { prog: 'Blue Flag', note_en: 'Most recognised beach certification globally', note_ar: 'أشهر شهادة شواطئ على مستوى العالم', color: '#006994' },
                   { prog: 'Green Key', note_en: 'Leading sustainable tourism standard', note_ar: 'المعيار الرائد للسياحة المستدامة', color: '#C8A951' },
-                  { prog: 'YRE', note_en: 'Empowering young environmental journalists', note_ar: 'تمكين الصحفيين البيئيين الشباب', color: '#74C69D' },
-                  { prog: 'LEAF', note_en: 'Connecting schools to forest ecosystems', note_ar: 'ربط المدارس بالنظم البيئية الحرجية', color: '#1B4332' },
-                  { prog: 'Eco-Campus', note_en: 'Certifying universities in sustainability leadership', note_ar: 'اعتماد الجامعات في قيادة الاستدامة', color: '#40916C' },
+                  { prog: 'YRE', note_en: 'Empowering young environmental journalists', note_ar: 'تمكين الصحفيين البيئيين الشباب', color: '#A9B6A4' },
+                  { prog: 'LEAF', note_en: 'Connecting schools to forest ecosystems', note_ar: 'ربط المدارس بالنظم البيئية الحرجية', color: '#182019' },
+                  { prog: 'Eco-Campus', note_en: 'Certifying universities in sustainability leadership', note_ar: 'اعتماد الجامعات في قيادة الاستدامة', color: '#7B8266' },
                 ].map((item) => (
                   <div key={item.prog} className="flex items-start gap-3">
                     <span className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: item.color }} />

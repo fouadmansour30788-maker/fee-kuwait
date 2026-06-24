@@ -67,9 +67,9 @@ export default function ResetPasswordPage() {
               >
                 <div
                   className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5"
-                  style={{ background: 'rgba(82,183,136,0.12)', border: '2px solid rgba(82,183,136,0.35)' }}
+                  style={{ background: 'rgba(139,155,136,0.12)', border: '2px solid rgba(139,155,136,0.35)' }}
                 >
-                  <CheckCircle2 className="w-10 h-10" style={{ color: '#52B788' }} />
+                  <CheckCircle2 className="w-10 h-10" style={{ color: '#8B9B88' }} />
                 </div>
                 <h2 className="text-xl font-bold text-forest mb-2">
                   {lang === 'ar' ? 'تحقق من بريدك!' : 'Check your inbox!'}
@@ -84,7 +84,7 @@ export default function ResetPasswordPage() {
                   <button
                     onClick={() => setSent(false)}
                     className="font-semibold transition-colors"
-                    style={{ color: '#40916C' }}
+                    style={{ color: '#7B8266' }}
                   >
                     {lang === 'ar' ? 'أعد المحاولة' : 'Try again'}
                   </button>
@@ -128,7 +128,7 @@ export default function ResetPasswordPage() {
                   type="submit"
                   disabled={loading}
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold text-white transition-all duration-200 disabled:opacity-70 hover:-translate-y-0.5 mt-1"
-                  style={{ background: 'linear-gradient(135deg, #40916C, #52B788)', boxShadow: '0 4px 16px rgba(64,145,108,0.4)' }}
+                  style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)', boxShadow: '0 4px 16px rgba(123,130,102,0.4)' }}
                 >
                   {loading ? (
                     <>
@@ -155,7 +155,7 @@ export default function ResetPasswordPage() {
           <Link
             href="/login"
             className="inline-flex items-center gap-1.5 font-semibold transition-colors"
-            style={{ color: '#74C69D' }}
+            style={{ color: '#A9B6A4' }}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             {lang === 'ar' ? 'العودة إلى تسجيل الدخول' : 'Back to sign in'}

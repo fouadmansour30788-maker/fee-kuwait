@@ -14,23 +14,23 @@ export default function Footer() {
   const { lang } = useLang()
 
   return (
-    <footer style={{ background: 'linear-gradient(160deg, #0F2318 0%, #1B4332 100%)' }}>
+    <footer style={{ background: 'linear-gradient(160deg, #182019 0%, #2C3A2D 100%)' }}>
       {/* Top border gradient */}
-      <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(82,183,136,0.35), transparent)' }} />
+      <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(139,155,136,0.40), transparent)' }} />
 
-      <div className="container-fee py-16">
+      <div className="container-fee py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
 
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-5 group w-fit">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105"
-                style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}>
-                <Leaf className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
+                style={{ background: 'linear-gradient(135deg, #2C3A2D, #8B9B88)' }}>
+                <Leaf className="w-5 h-5 text-cream" />
               </div>
-              <span className="font-bold text-xl text-white tracking-tight">FEE Kuwait</span>
+              <span className="font-serif font-medium text-xl text-cream tracking-tight">FEE Kuwait</span>
             </Link>
-            <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(183,228,199,0.65)' }}>
+            <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(247,243,234,0.55)' }}>
               {t(lang, 'footer.tagline')}
             </p>
 
@@ -45,12 +45,12 @@ export default function Footer() {
                   key={label}
                   href="#"
                   aria-label={label}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(82,183,136,0.25)'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'}
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5"
+                  style={{ background: 'rgba(247,243,234,0.07)', border: '1px solid rgba(247,243,234,0.12)' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(139,155,136,0.30)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(247,243,234,0.07)'}
                 >
-                  <svg className="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24"><path d={path} /></svg>
+                  <svg className="w-3.5 h-3.5 fill-cream" viewBox="0 0 24 24"><path d={path} /></svg>
                 </a>
               ))}
             </div>
@@ -58,7 +58,7 @@ export default function Footer() {
 
           {/* Programmes */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-[0.18em] mb-5" style={{ color: 'rgba(116,198,157,0.7)' }}>
+            <h4 className="text-xs font-bold uppercase tracking-[0.18em] mb-5" style={{ color: 'rgba(139,155,136,0.85)' }}>
               {t(lang, 'nav.programmes')}
             </h4>
             <ul className="space-y-2">
@@ -69,10 +69,10 @@ export default function Footer() {
                     <Link
                       href={`/programmes/${p.id}`}
                       className="flex items-center gap-2 text-sm transition-colors duration-200 group"
-                      style={{ color: 'rgba(255,255,255,0.58)' }}
+                      style={{ color: 'rgba(247,243,234,0.55)' }}
                     >
                       <Icon className="w-3.5 h-3.5 flex-shrink-0 transition-colors" style={{ color: p.color }} />
-                      <span className="group-hover:text-white transition-colors">
+                      <span className="group-hover:text-cream transition-colors">
                         {lang === 'ar' ? p.name_ar : p.name_en}
                       </span>
                     </Link>
@@ -84,7 +84,7 @@ export default function Footer() {
 
           {/* Quick links */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-[0.18em] mb-5" style={{ color: 'rgba(116,198,157,0.7)' }}>
+            <h4 className="text-xs font-bold uppercase tracking-[0.18em] mb-5" style={{ color: 'rgba(139,155,136,0.85)' }}>
               {lang === 'ar' ? 'روابط سريعة' : 'Quick Links'}
             </h4>
             <ul className="space-y-2">
@@ -100,8 +100,8 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm transition-colors duration-200 hover:text-white"
-                    style={{ color: 'rgba(255,255,255,0.58)' }}
+                    className="text-sm transition-colors duration-200 hover:text-cream"
+                    style={{ color: 'rgba(247,243,234,0.55)' }}
                   >
                     {link.label}
                   </Link>
@@ -112,7 +112,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-[0.18em] mb-5" style={{ color: 'rgba(116,198,157,0.7)' }}>
+            <h4 className="text-xs font-bold uppercase tracking-[0.18em] mb-5" style={{ color: 'rgba(139,155,136,0.85)' }}>
               {t(lang, 'nav.contact')}
             </h4>
             <div className="space-y-3 mb-6">
@@ -122,8 +122,8 @@ export default function Footer() {
                 { icon: Phone,  text_en: '+965 XXXX XXXX',      text_ar: '+965 XXXX XXXX' },
               ].map(({ icon: Icon, text_en, text_ar }, i) => (
                 <div key={i} className="flex items-start gap-2.5">
-                  <Icon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: 'rgba(116,198,157,0.55)' }} />
-                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.58)' }}>
+                  <Icon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: 'rgba(139,155,136,0.65)' }} />
+                  <span className="text-sm" style={{ color: 'rgba(247,243,234,0.55)' }}>
                     {lang === 'ar' ? text_ar : text_en}
                   </span>
                 </div>
@@ -144,16 +144,16 @@ export default function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+      <div style={{ borderTop: '1px solid rgba(247,243,234,0.07)' }}>
         <div className="container-fee py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.32)' }}>
+          <span className="text-xs" style={{ color: 'rgba(247,243,234,0.32)' }}>
             {t(lang, 'footer.rights')}
           </span>
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.32)' }}>
+          <span className="text-xs" style={{ color: 'rgba(247,243,234,0.32)' }}>
             {lang === 'ar' ? 'عضو في ' : 'Member of '}
             <a href="https://www.fee.global" target="_blank" rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
-              style={{ color: 'rgba(116,198,157,0.6)' }}>
+              className="hover:text-cream transition-colors"
+              style={{ color: 'rgba(139,155,136,0.75)' }}>
               FEE International
             </a>
           </span>

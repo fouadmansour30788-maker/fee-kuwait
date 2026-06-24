@@ -15,7 +15,7 @@ export default function PartnersStrip() {
   const doubled = [...PARTNERS_DATA, ...PARTNERS_DATA]
 
   return (
-    <section className="py-20 bg-[#F4F9F5]" ref={ref}>
+    <section className="py-20 bg-[#FBF8F0]" ref={ref}>
       <div className="container-fee mb-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -41,8 +41,8 @@ export default function PartnersStrip() {
               href={partner.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-shrink-0 flex items-center gap-3 px-6 py-4 rounded-2xl bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(64,145,108,0.12)] group"
-              style={{ border: '1px solid #C8E6D0' }}
+              className="flex-shrink-0 flex items-center gap-3 px-6 py-4 rounded-2xl bg-warmwhite transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(123,130,102,0.12)] group"
+              style={{ border: '1px solid #E7E4D6' }}
               title={lang === 'ar' ? partner.name_ar : partner.name_en}
             >
               {/* Logo */}
@@ -58,7 +58,7 @@ export default function PartnersStrip() {
               {/* Name */}
               <span
                 className="text-sm font-semibold whitespace-nowrap transition-colors duration-200"
-                style={{ color: '#3D4A42' }}
+                style={{ color: '#4A544C' }}
               >
                 {lang === 'ar' ? partner.name_ar : partner.name_en}
               </span>

@@ -32,7 +32,7 @@ const PAST = [
     result_en: 'Satisfactory — minor items to address',
     result_ar: 'مرضٍ — بنود بسيطة تحتاج معالجة',
     score: 78,
-    color: '#40916C',
+    color: '#7B8266',
     status: 'completed',
   },
   {
@@ -46,7 +46,7 @@ const PAST = [
     result_en: 'All documents verified',
     result_ar: 'تم التحقق من جميع المستندات',
     score: null,
-    color: '#52B788',
+    color: '#8B9B88',
     status: 'completed',
   },
 ]
@@ -125,7 +125,7 @@ export default function InspectionsPage() {
 
       {/* Pre-inspection checklist */}
       <FadeIn delay={0.1}>
-        <div className="bg-white rounded-3xl border border-[#C8E6D0] p-5">
+        <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-5">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="w-4 h-4" style={{ color: '#006994' }} />
             <p className="text-sm font-bold text-forest">{lang === 'ar' ? 'قائمة التحضير للفحص' : 'Pre-Inspection Checklist'}</p>
@@ -134,16 +134,16 @@ export default function InspectionsPage() {
             {CHECKLIST.map((item, i) => (
               <div key={i} className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                  style={item.done ? { background: '#006994', borderColor: '#006994' } : { borderColor: '#C8E6D0' }}>
-                  {item.done && <div className="w-2 h-2 rounded-full bg-white" />}
+                  style={item.done ? { background: '#006994', borderColor: '#006994' } : { borderColor: '#E7E4D6' }}>
+                  {item.done && <div className="w-2 h-2 rounded-full bg-warmwhite" />}
                 </div>
-                <span className="text-sm" style={item.done ? { color: '#7A9080', textDecoration: 'line-through' } : { color: '#3D5A47' }}>
+                <span className="text-sm" style={item.done ? { color: '#7A9080', textDecoration: 'line-through' } : { color: '#4A544C' }}>
                   {lang === 'ar' ? item.ar : item.en}
                 </span>
               </div>
             ))}
           </div>
-          <div className="mt-4 pt-4 border-t border-[#F4F9F5]">
+          <div className="mt-4 pt-4 border-t border-[#FBF8F0]">
             <div className="flex items-center justify-between text-xs" style={{ color: '#7A9080' }}>
               <span>{lang === 'ar' ? 'مكتمل' : 'Complete'}</span>
               <span>{CHECKLIST.filter(c => c.done).length}/{CHECKLIST.length}</span>
@@ -164,7 +164,7 @@ export default function InspectionsPage() {
           </p>
           <div className="space-y-3">
             {PAST.map(insp => (
-              <div key={insp.id} className="bg-white rounded-2xl border border-[#C8E6D0] p-4 flex items-center gap-4">
+              <div key={insp.id} className="bg-warmwhite rounded-2xl border border-[#E7E4D6] p-4 flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: `${insp.color}14` }}>
                   <CheckCircle2 className="w-5 h-5" style={{ color: insp.color }} />
@@ -182,7 +182,7 @@ export default function InspectionsPage() {
                     <p className="text-[11px]" style={{ color: '#7A9080' }}>{lang === 'ar' ? 'النتيجة' : 'Score'}</p>
                   </div>
                 )}
-                <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: '#C8E6D0' }} />
+                <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: '#E7E4D6' }} />
               </div>
             ))}
           </div>

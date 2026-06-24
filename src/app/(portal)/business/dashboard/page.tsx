@@ -19,8 +19,8 @@ const DEMO_TASKS = [
 const STATS = [
   { icon: CheckCircle2, value: '6/10', label_en: 'Criteria met',        label_ar: 'معايير مكتملة',   color: '#006994' },
   { icon: Award,        value: '2',    label_en: 'Active programmes',   label_ar: 'برامج نشطة',       color: '#C8A951' },
-  { icon: Calendar,     value: '14',   label_en: 'Days to inspection',  label_ar: 'يوم حتى التفتيش', color: '#52B788' },
-  { icon: TrendingUp,   value: '72%',  label_en: 'Compliance score',    label_ar: 'نسبة الامتثال',   color: '#40916C' },
+  { icon: Calendar,     value: '14',   label_en: 'Days to inspection',  label_ar: 'يوم حتى التفتيش', color: '#8B9B88' },
+  { icon: TrendingUp,   value: '72%',  label_en: 'Compliance score',    label_ar: 'نسبة الامتثال',   color: '#7B8266' },
 ]
 
 const PROGRAMME_COLOR = '#006994'
@@ -78,7 +78,7 @@ export default function BusinessDashboardPage() {
           const Icon = s.icon
           return (
             <FadeIn key={i} delay={i * 0.07}>
-              <div className="bg-white rounded-2xl p-5 border border-[#C8E6D0]">
+              <div className="bg-warmwhite rounded-2xl p-5 border border-[#E7E4D6]">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${s.color}12` }}>
                     <Icon className="w-4 h-4" style={{ color: s.color }} />
@@ -95,19 +95,19 @@ export default function BusinessDashboardPage() {
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Tasks */}
         <FadeIn delay={0.1} className="lg:col-span-3">
-          <div className="bg-white rounded-3xl border border-[#C8E6D0] overflow-hidden h-full">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#C8E6D0]">
+          <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] overflow-hidden h-full">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#E7E4D6]">
               <h2 className="font-bold text-forest">{lang === 'ar' ? 'المهام القادمة' : 'Upcoming Tasks'}</h2>
               <Link href="/business/criteria" className="text-xs font-semibold text-brand hover:text-emerald flex items-center gap-1">
                 {lang === 'ar' ? 'عرض الكل' : 'View all'} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="divide-y divide-[#F4F9F5]">
+            <div className="divide-y divide-[#FBF8F0]">
               {DEMO_TASKS.map(task => (
                 <div key={task.id} className="flex items-start gap-3.5 px-6 py-4">
                   <div className="mt-0.5 flex-shrink-0">
                     {task.done
-                      ? <CheckCircle2 className="w-5 h-5" style={{ color: '#52B788' }} />
+                      ? <CheckCircle2 className="w-5 h-5" style={{ color: '#8B9B88' }} />
                       : task.priority === 'high'
                       ? <AlertCircle className="w-5 h-5" style={{ color: '#E53E3E' }} />
                       : <Clock className="w-5 h-5" style={{ color: '#C8A951' }} />
@@ -144,7 +144,7 @@ export default function BusinessDashboardPage() {
         <div className="lg:col-span-2 space-y-5">
           {/* Compliance score */}
           <FadeIn delay={0.15}>
-            <div className="bg-white rounded-3xl border border-[#C8E6D0] p-6">
+            <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-6">
               <h2 className="font-bold text-forest mb-4">{lang === 'ar' ? 'تقدم الامتثال' : 'Compliance Progress'}</h2>
               <div className="space-y-3">
                 {[
@@ -158,10 +158,10 @@ export default function BusinessDashboardPage() {
                       <span className="font-medium text-forest">{lang === 'ar' ? item.label_ar : item.label_en}</span>
                       <span style={{ color: '#7A9080' }}>{item.pct}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full" style={{ background: '#EDF7F1' }}>
+                    <div className="h-1.5 rounded-full" style={{ background: '#E8ECE1' }}>
                       <div
                         className="h-1.5 rounded-full"
-                        style={{ width: `${item.pct}%`, background: item.pct === 100 ? '#40916C' : 'linear-gradient(90deg, #006994, #0090C8)' }}
+                        style={{ width: `${item.pct}%`, background: item.pct === 100 ? '#7B8266' : 'linear-gradient(90deg, #006994, #0090C8)' }}
                       />
                     </div>
                   </div>
@@ -172,7 +172,7 @@ export default function BusinessDashboardPage() {
 
           {/* Quick links */}
           <FadeIn delay={0.2}>
-            <div className="bg-white rounded-3xl border border-[#C8E6D0] p-6">
+            <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-6">
               <h2 className="font-bold text-forest mb-4">{lang === 'ar' ? 'روابط سريعة' : 'Quick Links'}</h2>
               <div className="space-y-2">
                 {[
@@ -183,12 +183,12 @@ export default function BusinessDashboardPage() {
                   <Link
                     key={href}
                     href={href}
-                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-[#F4F9F5] group"
-                    style={{ color: '#3D4A42' }}
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-[#FBF8F0] group"
+                    style={{ color: '#4A544C' }}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" style={{ color: '#40916C' }} />
+                    <Icon className="w-4 h-4 flex-shrink-0" style={{ color: '#7B8266' }} />
                     {lang === 'ar' ? ar : en}
-                    <ArrowRight className="w-3.5 h-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#40916C' }} />
+                    <ArrowRight className="w-3.5 h-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#7B8266' }} />
                   </Link>
                 ))}
               </div>
@@ -199,7 +199,7 @@ export default function BusinessDashboardPage() {
           <FadeIn delay={0.25}>
             <div
               className="rounded-3xl p-5"
-              style={{ background: 'linear-gradient(135deg, #EDF7F1, #E8F5FB)', border: '1px solid #C8E6D0' }}
+              style={{ background: 'linear-gradient(135deg, #E8ECE1, #E8F5FB)', border: '1px solid #E7E4D6' }}
             >
               <p className="text-xs font-bold text-forest mb-3">{lang === 'ar' ? 'برامجك النشطة' : 'Your Active Programmes'}</p>
               <div className="space-y-2">
@@ -207,7 +207,7 @@ export default function BusinessDashboardPage() {
                   { icon: Waves,    en: 'Blue Flag',  ar: 'العلم الأزرق',  color: '#006994', status_en: 'Under review', status_ar: 'قيد المراجعة' },
                   { icon: KeyRound, en: 'Green Key',  ar: 'المفتاح الأخضر', color: '#C8A951', status_en: 'Criteria check', status_ar: 'فحص المعايير' },
                 ].map(({ icon: Icon, en, ar, color, status_en, status_ar }) => (
-                  <div key={en} className="flex items-center gap-3 bg-white rounded-xl px-3.5 py-2.5" style={{ border: '1px solid #C8E6D0' }}>
+                  <div key={en} className="flex items-center gap-3 bg-warmwhite rounded-xl px-3.5 py-2.5" style={{ border: '1px solid #E7E4D6' }}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${color}12` }}>
                       <Icon className="w-3.5 h-3.5" style={{ color }} />
                     </div>

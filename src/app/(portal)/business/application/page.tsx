@@ -86,7 +86,7 @@ export default function BusinessApplicationPage() {
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Timeline */}
         <FadeIn delay={0.1}>
-          <div className="lg:col-span-2 bg-white rounded-3xl border border-[#C8E6D0] p-6">
+          <div className="lg:col-span-2 bg-warmwhite rounded-3xl border border-[#E7E4D6] p-6">
             <h2 className="font-bold text-forest mb-6 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-brand" />
               {lang === 'ar' ? 'مراحل الطلب' : 'Application Timeline'}
@@ -100,15 +100,15 @@ export default function BusinessApplicationPage() {
                         ? { background: '#006994', border: '2px solid #006994' }
                         : step.active
                         ? { background: 'rgba(0,105,148,0.1)', border: '2px solid #006994' }
-                        : { background: '#F4F9F5', border: '2px solid #C8E6D0' }}>
+                        : { background: '#FBF8F0', border: '2px solid #E7E4D6' }}>
                       {step.done
                         ? <CheckCircle2 className="w-4 h-4 text-white" />
                         : step.active
                         ? <div className="w-2 h-2 rounded-full bg-[#006994] animate-pulse" />
-                        : <div className="w-2 h-2 rounded-full" style={{ background: '#C8E6D0' }} />}
+                        : <div className="w-2 h-2 rounded-full" style={{ background: '#E7E4D6' }} />}
                     </div>
                     {i < TIMELINE.length - 1 && (
-                      <div className="w-0.5 flex-1 my-1" style={{ background: step.done ? '#006994' : '#E8F5EC', minHeight: '2rem' }} />
+                      <div className="w-0.5 flex-1 my-1" style={{ background: step.done ? '#006994' : '#E8ECE1', minHeight: '2rem' }} />
                     )}
                   </div>
                   <div className="pb-5 pt-1 flex-1">
@@ -128,17 +128,17 @@ export default function BusinessApplicationPage() {
         <div className="lg:col-span-3 space-y-4">
           {SECTIONS.map((section, si) => (
             <FadeIn key={section.id} delay={0.12 + si * 0.07}>
-              <div className="bg-white rounded-3xl border border-[#C8E6D0] overflow-hidden">
+              <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] overflow-hidden">
                 <button
                   onClick={() => setExpanded(expanded === section.id ? null : section.id)}
-                  className="w-full flex items-center justify-between px-6 py-5 hover:bg-[#F9FBF9] transition-colors">
+                  className="w-full flex items-center justify-between px-6 py-5 hover:bg-[#FCFAF5] transition-colors">
                   <h2 className="font-bold text-forest text-sm">{lang === 'ar' ? section.title_ar : section.title_en}</h2>
                   {expanded === section.id
                     ? <ChevronUp className="w-4 h-4" style={{ color: '#7A9080' }} />
                     : <ChevronDown className="w-4 h-4" style={{ color: '#7A9080' }} />}
                 </button>
                 {expanded === section.id && (
-                  <div className="px-6 pb-6 pt-2 border-t border-[#F4F9F5]">
+                  <div className="px-6 pb-6 pt-2 border-t border-[#FBF8F0]">
                     <div className="space-y-3">
                       {section.fields.map(f => {
                         const Icon = f.icon

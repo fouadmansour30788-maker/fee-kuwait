@@ -24,7 +24,7 @@ const STATIC_PAGES = [
 ]
 
 const STATUS_STYLES = {
-  published:  { label: 'Published',  color: '#059669', bg: '#D1FAE5' },
+  published:  { label: 'Published',  color: '#7B8266', bg: '#E8ECE1' },
   draft:      { label: 'Draft',      color: '#64748B', bg: '#F1F5F9' },
   scheduled:  { label: 'Scheduled',  color: '#7C3AED', bg: '#EDE9FE' },
 }
@@ -43,7 +43,7 @@ export default function ContentPage() {
             <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Content</h1>
             <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>Manage news, pages, and media</p>
           </div>
-          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
+          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #182019, #7B8266)' }}>
             <Plus className="w-4 h-4" />
             New Article
           </button>
@@ -75,12 +75,12 @@ export default function ContentPage() {
 
       {tab === 'news' && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-4">
-          <div className="flex items-center gap-2.5 max-w-sm px-3.5 py-2.5 rounded-xl bg-white" style={{ border: '1px solid #E2E8F0' }}>
+          <div className="flex items-center gap-2.5 max-w-sm px-3.5 py-2.5 rounded-xl bg-warmwhite" style={{ border: '1px solid #E2E8F0' }}>
             <Search className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search articles…" className="bg-transparent text-sm outline-none w-full" style={{ color: '#1E293B' }} />
           </div>
 
-          <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
+          <div className="bg-warmwhite rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
@@ -123,7 +123,7 @@ export default function ContentPage() {
 
       {tab === 'pages' && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-          <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
+          <div className="bg-warmwhite rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>

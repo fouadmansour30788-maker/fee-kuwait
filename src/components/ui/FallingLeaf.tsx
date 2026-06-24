@@ -13,10 +13,10 @@ function RealisticLeaf() {
       <defs>
         {/* Main body gradient: dark forest → mid green → lighter tip */}
         <linearGradient id="flBodyGrad" x1="0.2" y1="1" x2="0.8" y2="0">
-          <stop offset="0%"  stopColor="#1B4332" />
-          <stop offset="38%" stopColor="#2D6A4F" />
-          <stop offset="72%" stopColor="#40916C" />
-          <stop offset="100%" stopColor="#52B788" />
+          <stop offset="0%"  stopColor="#182019" />
+          <stop offset="38%" stopColor="#2C3A2D" />
+          <stop offset="72%" stopColor="#7B8266" />
+          <stop offset="100%" stopColor="#8B9B88" />
         </linearGradient>
 
         {/* Shine: semi-transparent white highlight on the left lobe */}
@@ -28,8 +28,8 @@ function RealisticLeaf() {
 
         {/* Darker underside tint on right edge */}
         <linearGradient id="flEdgeGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"  stopColor="#0d2b1d" stopOpacity="0" />
-          <stop offset="100%" stopColor="#0d2b1d" stopOpacity="0.18" />
+          <stop offset="0%"  stopColor="#182019" stopOpacity="0" />
+          <stop offset="100%" stopColor="#182019" stopOpacity="0.18" />
         </linearGradient>
 
         <clipPath id="flClip">
@@ -58,26 +58,26 @@ function RealisticLeaf() {
 
       {/* ── Veins ── */}
       {/* Center midrib */}
-      <path d="M28 90 Q28 55 28 4" stroke="#163d27" strokeWidth="0.9" fill="none" opacity="0.65" strokeLinecap="round"/>
+      <path d="M28 90 Q28 55 28 4" stroke="#2C3A2D" strokeWidth="0.9" fill="none" opacity="0.65" strokeLinecap="round"/>
 
       {/* Left lateral veins */}
-      <path d="M28 76 Q19 68 11 62" stroke="#163d27" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
-      <path d="M28 63 Q17 55 8  49" stroke="#163d27" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
-      <path d="M28 50 Q19 42 11 37" stroke="#163d27" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
-      <path d="M28 37 Q21 30 14 25" stroke="#163d27" strokeWidth="0.5"  fill="none" opacity="0.5"  strokeLinecap="round"/>
-      <path d="M28 25 Q23 19 17 14" stroke="#163d27" strokeWidth="0.45" fill="none" opacity="0.45" strokeLinecap="round"/>
-      <path d="M28 14 Q25  9 21  6" stroke="#163d27" strokeWidth="0.38" fill="none" opacity="0.38" strokeLinecap="round"/>
+      <path d="M28 76 Q19 68 11 62" stroke="#2C3A2D" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
+      <path d="M28 63 Q17 55 8  49" stroke="#2C3A2D" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
+      <path d="M28 50 Q19 42 11 37" stroke="#2C3A2D" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
+      <path d="M28 37 Q21 30 14 25" stroke="#2C3A2D" strokeWidth="0.5"  fill="none" opacity="0.5"  strokeLinecap="round"/>
+      <path d="M28 25 Q23 19 17 14" stroke="#2C3A2D" strokeWidth="0.45" fill="none" opacity="0.45" strokeLinecap="round"/>
+      <path d="M28 14 Q25  9 21  6" stroke="#2C3A2D" strokeWidth="0.38" fill="none" opacity="0.38" strokeLinecap="round"/>
 
       {/* Right lateral veins */}
-      <path d="M28 76 Q37 68 45 62" stroke="#163d27" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
-      <path d="M28 63 Q39 55 48 49" stroke="#163d27" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
-      <path d="M28 50 Q37 42 45 37" stroke="#163d27" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
-      <path d="M28 37 Q35 30 42 25" stroke="#163d27" strokeWidth="0.5"  fill="none" opacity="0.5"  strokeLinecap="round"/>
-      <path d="M28 25 Q33 19 39 14" stroke="#163d27" strokeWidth="0.45" fill="none" opacity="0.45" strokeLinecap="round"/>
-      <path d="M28 14 Q31  9 35  6" stroke="#163d27" strokeWidth="0.38" fill="none" opacity="0.38" strokeLinecap="round"/>
+      <path d="M28 76 Q37 68 45 62" stroke="#2C3A2D" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
+      <path d="M28 63 Q39 55 48 49" stroke="#2C3A2D" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
+      <path d="M28 50 Q37 42 45 37" stroke="#2C3A2D" strokeWidth="0.55" fill="none" opacity="0.55" strokeLinecap="round"/>
+      <path d="M28 37 Q35 30 42 25" stroke="#2C3A2D" strokeWidth="0.5"  fill="none" opacity="0.5"  strokeLinecap="round"/>
+      <path d="M28 25 Q33 19 39 14" stroke="#2C3A2D" strokeWidth="0.45" fill="none" opacity="0.45" strokeLinecap="round"/>
+      <path d="M28 14 Q31  9 35  6" stroke="#2C3A2D" strokeWidth="0.38" fill="none" opacity="0.38" strokeLinecap="round"/>
 
       {/* ── Stem ── */}
-      <path d="M28 92 Q27 95 27 96" stroke="#163d27" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+      <path d="M28 92 Q27 95 27 96" stroke="#2C3A2D" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
     </svg>
   )
 }

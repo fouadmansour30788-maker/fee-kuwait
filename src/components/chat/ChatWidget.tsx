@@ -86,7 +86,7 @@ export default function ChatWidget() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 26 }}
-            className="fixed bottom-24 right-6 z-50 w-96 max-h-[600px] bg-white rounded-3xl shadow-green-xl border border-mint flex flex-col overflow-hidden"
+            className="fixed bottom-24 right-6 z-50 w-96 max-h-[600px] bg-warmwhite rounded-3xl shadow-green-xl border border-mint flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="bg-forest px-5 py-4 flex items-center gap-3">

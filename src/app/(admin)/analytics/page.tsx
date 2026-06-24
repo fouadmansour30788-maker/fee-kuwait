@@ -19,12 +19,12 @@ const MONTHLY = [
 ]
 
 const PROGRAMME_PIE = [
-  { name: 'Eco-Schools', value: 142, color: '#52B788' },
+  { name: 'Eco-Schools', value: 142, color: '#8B9B88' },
   { name: 'Green Key',   value: 34,  color: '#C8A951' },
-  { name: 'LEAF',        value: 28,  color: '#40916C' },
+  { name: 'LEAF',        value: 28,  color: '#7B8266' },
   { name: 'YRE',         value: 19,  color: '#7C3AED' },
   { name: 'Blue Flag',   value: 18,  color: '#3B9ECC' },
-  { name: 'Eco-Campus',  value: 7,   color: '#1B4332' },
+  { name: 'Eco-Campus',  value: 7,   color: '#182019' },
 ]
 
 const GOV_DATA = [
@@ -52,7 +52,7 @@ const YEARLY = [
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-white border rounded-xl px-3 py-2.5 shadow-lg text-xs" style={{ borderColor: '#E2E8F0' }}>
+    <div className="bg-warmwhite border rounded-xl px-3 py-2.5 shadow-lg text-xs" style={{ borderColor: '#E2E8F0' }}>
       <p className="font-bold mb-1.5" style={{ color: '#0F172A' }}>{label}</p>
       {payload.map(entry => (
         <div key={entry.name} className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
         className="grid grid-cols-2 lg:grid-cols-4 gap-4"
       >
         {[
-          { label: 'Total Certified',  value: '248', delta: '+42 YTD',      color: '#059669', bg: '#D1FAE5', Icon: Award      },
+          { label: 'Total Certified',  value: '248', delta: '+42 YTD',      color: '#7B8266', bg: '#E8ECE1', Icon: Award      },
           { label: 'Schools',          value: '160', delta: '+18 this year', color: '#3B82F6', bg: '#DBEAFE', Icon: School     },
           { label: 'Businesses',       value: '88',  delta: '+7 this year',  color: '#D97706', bg: '#FEF3C7', Icon: Building2  },
           { label: 'Active Regions',   value: '7',   delta: 'All Kuwait',    color: '#7C3AED', bg: '#EDE9FE', Icon: TrendingUp },
@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.08 + i * 0.05 }}
-            className="bg-white rounded-2xl p-5 border"
+            className="bg-warmwhite rounded-2xl p-5 border"
             style={{ borderColor: '#E2E8F0' }}
           >
             <div className="flex items-start justify-between mb-3">
@@ -123,7 +123,7 @@ export default function AnalyticsPage() {
 
       {/* Monthly activity */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.18 }}>
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <div className="bg-warmwhite rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Monthly Activity — Jan to May 2026</h2>
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={MONTHLY} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
@@ -133,7 +133,7 @@ export default function AnalyticsPage() {
               <Tooltip content={<ChartTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
               <Line type="monotone" dataKey="Applications"   stroke="#3B82F6" strokeWidth={2.5} dot={{ r: 4, fill: '#3B82F6' }} activeDot={{ r: 6 }} />
-              <Line type="monotone" dataKey="Certifications" stroke="#52B788" strokeWidth={2.5} dot={{ r: 4, fill: '#52B788' }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="Certifications" stroke="#8B9B88" strokeWidth={2.5} dot={{ r: 4, fill: '#8B9B88' }} activeDot={{ r: 6 }} />
               <Line type="monotone" dataKey="Renewals"       stroke="#C8A951" strokeWidth={2.5} dot={{ r: 4, fill: '#C8A951' }} activeDot={{ r: 6 }} strokeDasharray="5 3" />
             </LineChart>
           </ResponsiveContainer>
@@ -147,7 +147,7 @@ export default function AnalyticsPage() {
         transition={{ duration: 0.35, delay: 0.24 }}
         className="grid lg:grid-cols-2 gap-6"
       >
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <div className="bg-warmwhite rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Certified Sites by Programme</h2>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <div className="bg-warmwhite rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Certified Sites by Governorate</h2>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={GOV_DATA} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 8 }}>
@@ -187,7 +187,7 @@ export default function AnalyticsPage() {
               <XAxis type="number" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false} width={110} />
               <Tooltip content={<ChartTooltip />} />
-              <Bar dataKey="Certified" fill="#52B788" radius={[0, 4, 4, 0]} barSize={10} />
+              <Bar dataKey="Certified" fill="#8B9B88" radius={[0, 4, 4, 0]} barSize={10} />
               <Bar dataKey="Pending"   fill="#FDE68A" radius={[0, 4, 4, 0]} barSize={10} />
             </BarChart>
           </ResponsiveContainer>
@@ -196,14 +196,14 @@ export default function AnalyticsPage() {
 
       {/* Year-over-year growth */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.30 }}>
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <div className="bg-warmwhite rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Cumulative Growth 2019 – 2025</h2>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={YEARLY} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
               <defs>
                 <linearGradient id="gradSchools" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#52B788" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#52B788" stopOpacity={0.02} />
+                  <stop offset="5%"  stopColor="#8B9B88" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#8B9B88" stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="gradBiz" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#3B82F6" stopOpacity={0.20} />
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
               <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
-              <Area type="monotone" dataKey="Schools"    stroke="#52B788" strokeWidth={2.5} fill="url(#gradSchools)" dot={false} activeDot={{ r: 5 }} />
+              <Area type="monotone" dataKey="Schools"    stroke="#8B9B88" strokeWidth={2.5} fill="url(#gradSchools)" dot={false} activeDot={{ r: 5 }} />
               <Area type="monotone" dataKey="Businesses" stroke="#3B82F6" strokeWidth={2.5} fill="url(#gradBiz)"     dot={false} activeDot={{ r: 5 }} />
             </AreaChart>
           </ResponsiveContainer>

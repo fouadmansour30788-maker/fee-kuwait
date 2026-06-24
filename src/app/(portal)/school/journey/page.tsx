@@ -8,7 +8,7 @@ const MILESTONES = [
   {
     id: 1,
     Icon: Users,
-    color: '#52B788',
+    color: '#8B9B88',
     title_en: 'Eco-Committee Formed',
     title_ar: 'تشكيل اللجنة البيئية',
     date: '2026-03-01',
@@ -32,7 +32,7 @@ const MILESTONES = [
   {
     id: 3,
     Icon: Leaf,
-    color: '#40916C',
+    color: '#7B8266',
     title_en: 'Action Plan Created',
     title_ar: 'إعداد خطة العمل',
     date: '—',
@@ -56,7 +56,7 @@ const MILESTONES = [
   {
     id: 5,
     Icon: BookOpen,
-    color: '#74C69D',
+    color: '#A9B6A4',
     title_en: 'Curriculum Integrated',
     title_ar: 'دمج المنهج الدراسي',
     date: '—',
@@ -68,7 +68,7 @@ const MILESTONES = [
   {
     id: 6,
     Icon: Globe,
-    color: '#1B4332',
+    color: '#182019',
     title_en: 'Community Engaged',
     title_ar: 'إشراك المجتمع',
     date: '—',
@@ -106,8 +106,8 @@ const MILESTONES = [
 
 const BADGES = [
   { Icon: Star, label_en: 'Early Starter', label_ar: 'البادئ الأول', color: '#C8A951', earned: true },
-  { Icon: Users, label_en: 'Team Builder', label_ar: 'بناء الفريق', color: '#52B788', earned: true },
-  { Icon: Leaf, label_en: 'Green Learner', label_ar: 'المتعلم الأخضر', color: '#40916C', earned: false },
+  { Icon: Users, label_en: 'Team Builder', label_ar: 'بناء الفريق', color: '#8B9B88', earned: true },
+  { Icon: Leaf, label_en: 'Green Learner', label_ar: 'المتعلم الأخضر', color: '#7B8266', earned: false },
   { Icon: Award, label_en: 'Eco Champion', label_ar: 'بطل البيئة', color: '#7A9080', earned: false },
 ]
 
@@ -138,21 +138,21 @@ export default function JourneyPage() {
 
       {/* Points hero */}
       <FadeIn delay={0.05}>
-        <div className="rounded-3xl p-6" style={{ background: 'linear-gradient(135deg, #0F2318, #1B4332)' }}>
+        <div className="rounded-3xl p-6" style={{ background: 'linear-gradient(135deg, #182019, #182019)' }}>
           <div className="flex items-center justify-between mb-5">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#74C69D' }}>
+              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#A9B6A4' }}>
                 {lang === 'ar' ? 'النقاط المكتسبة' : 'Points Earned'}
               </p>
               <p className="text-4xl font-bold text-white">{earnedPoints} <span className="text-lg font-normal" style={{ color: 'rgba(255,255,255,0.4)' }}>/ {totalPoints}</span></p>
             </div>
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(82,183,136,0.15)', border: '1px solid rgba(82,183,136,0.3)' }}>
-              <Trophy className="w-8 h-8" style={{ color: '#74C69D' }} />
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(139,155,136,0.15)', border: '1px solid rgba(139,155,136,0.3)' }}>
+              <Trophy className="w-8 h-8" style={{ color: '#A9B6A4' }} />
             </div>
           </div>
           <div className="h-2 rounded-full mb-2" style={{ background: 'rgba(255,255,255,0.08)' }}>
             <div className="h-2 rounded-full transition-all duration-700"
-              style={{ width: `${progress}%`, background: 'linear-gradient(90deg, #52B788, #74C69D)' }} />
+              style={{ width: `${progress}%`, background: 'linear-gradient(90deg, #8B9B88, #A9B6A4)' }} />
           </div>
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{progress}% {lang === 'ar' ? 'نحو العلم الأخضر' : 'toward Green Flag'}</p>
         </div>
@@ -160,7 +160,7 @@ export default function JourneyPage() {
 
       {/* Badges */}
       <FadeIn delay={0.08}>
-        <div className="bg-white rounded-3xl border border-[#C8E6D0] p-5">
+        <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-5">
           <p className="text-sm font-bold text-forest mb-4">{lang === 'ar' ? 'الشارات المكتسبة' : 'Earned Badges'}</p>
           <div className="flex gap-3 flex-wrap">
             {BADGES.map(badge => (
@@ -168,12 +168,12 @@ export default function JourneyPage() {
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
                   style={badge.earned
                     ? { background: `${badge.color}15`, border: `1.5px solid ${badge.color}40` }
-                    : { background: '#F4F9F5', border: '1.5px solid #E8F5EC', opacity: 0.45 }}>
+                    : { background: '#FBF8F0', border: '1.5px solid #E8ECE1', opacity: 0.45 }}>
                   {badge.earned
                     ? <badge.Icon className="w-5 h-5" style={{ color: badge.color }} />
-                    : <Lock className="w-4 h-4" style={{ color: '#C8E6D0' }} />}
+                    : <Lock className="w-4 h-4" style={{ color: '#E7E4D6' }} />}
                 </div>
-                <p className="text-[10px] font-semibold text-center" style={{ color: badge.earned ? '#3D5A47' : '#B0C9B8' }}>
+                <p className="text-[10px] font-semibold text-center" style={{ color: badge.earned ? '#4A544C' : '#A9B6A4' }}>
                   {lang === 'ar' ? badge.label_ar : badge.label_en}
                 </p>
               </div>
@@ -193,25 +193,25 @@ export default function JourneyPage() {
                 <div className="flex flex-col items-center">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 z-10"
                     style={m.status === 'done'
-                      ? { background: '#40916C', border: '2px solid #40916C' }
+                      ? { background: '#7B8266', border: '2px solid #7B8266' }
                       : m.status === 'active'
                       ? { background: `${m.color}18`, border: `2px solid ${m.color}` }
-                      : { background: '#F4F9F5', border: '2px solid #E8F5EC' }}>
+                      : { background: '#FBF8F0', border: '2px solid #E8ECE1' }}>
                     {m.status === 'done'
                       ? <CheckCircle2 className="w-5 h-5 text-white" />
                       : m.status === 'active'
                       ? <Icon className="w-4.5 h-4.5" style={{ color: m.color }} />
                       : m.isFinal
                       ? <Trophy className="w-4.5 h-4.5" style={{ color: '#E8D48B' }} />
-                      : <Lock className="w-4 h-4" style={{ color: '#C8E6D0' }} />}
+                      : <Lock className="w-4 h-4" style={{ color: '#E7E4D6' }} />}
                   </div>
                   {i < MILESTONES.length - 1 && (
-                    <div className="w-0.5 flex-1 my-1" style={{ background: m.status === 'done' ? '#40916C' : '#E8F5EC', minHeight: '2rem' }} />
+                    <div className="w-0.5 flex-1 my-1" style={{ background: m.status === 'done' ? '#7B8266' : '#E8ECE1', minHeight: '2rem' }} />
                   )}
                 </div>
                 {/* Card */}
                 <div className="pb-4 pt-1 flex-1">
-                  <div className={`bg-white rounded-2xl border p-4 ${m.isFinal ? 'border-[#C8A951]/40' : 'border-[#C8E6D0]'}`}
+                  <div className={`bg-warmwhite rounded-2xl border p-4 ${m.isFinal ? 'border-[#C8A951]/40' : 'border-[#E7E4D6]'}`}
                     style={m.isFinal ? { background: 'linear-gradient(135deg, #FFFBF0, #FFF8E6)' } : {}}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
@@ -220,12 +220,12 @@ export default function JourneyPage() {
                           {lang === 'ar' ? m.desc_ar : m.desc_en}
                         </p>
                         {m.date !== '—' && (
-                          <p className="text-[11px] mt-2 font-medium" style={{ color: '#A8BFB0' }}>{m.date}</p>
+                          <p className="text-[11px] mt-2 font-medium" style={{ color: '#A9B6A4' }}>{m.date}</p>
                         )}
                       </div>
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className="text-xs font-bold" style={{ color: m.isFinal ? '#C8A951' : '#52B788' }}>+{m.points}</span>
-                        <span className="text-[10px]" style={{ color: '#A8BFB0' }}>{lang === 'ar' ? 'نقطة' : 'pts'}</span>
+                        <span className="text-xs font-bold" style={{ color: m.isFinal ? '#C8A951' : '#8B9B88' }}>+{m.points}</span>
+                        <span className="text-[10px]" style={{ color: '#A9B6A4' }}>{lang === 'ar' ? 'نقطة' : 'pts'}</span>
                       </div>
                     </div>
                   </div>

@@ -43,24 +43,24 @@ export default function Navbar() {
       className={cn(
         'fixed top-0 inset-x-0 z-50 transition-all duration-300',
         scrolled
-          ? 'shadow-[0_2px_24px_rgba(0,0,0,0.25)] backdrop-blur-xl'
+          ? 'shadow-[0_4px_30px_rgba(24,32,25,0.06)] backdrop-blur-md border-b border-forest/5'
           : ''
       )}
       style={{
         background: scrolled
-          ? 'rgba(20, 51, 37, 0.96)'
+          ? 'rgba(247, 243, 234, 0.80)'
           : 'transparent',
       }}
     >
-      <nav className="container-fee h-[4.25rem] flex items-center justify-between gap-6">
+      <nav className="container-fee h-[4.5rem] flex items-center justify-between gap-6">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 text-white font-bold text-lg shrink-0 group">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105"
-            style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}>
-            <Leaf className="w-4.5 h-4.5 text-white" />
+        <Link href="/" className="flex items-center gap-2.5 text-forest font-semibold text-lg shrink-0 group">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
+            style={{ background: 'linear-gradient(135deg, #2C3A2D, #8B9B88)' }}>
+            <Leaf className="w-4.5 h-4.5 text-cream" />
           </div>
-          <span className="hidden sm:block tracking-tight">FEE Kuwait</span>
+          <span className="hidden sm:block font-serif tracking-tight text-forest">FEE Kuwait</span>
         </Link>
 
         {/* Desktop nav */}
@@ -69,10 +69,7 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-200"
-              style={{ color: 'rgba(255,255,255,0.78)' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.78)'; (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+              className="px-3.5 py-2 text-sm font-medium rounded-full text-forest/70 hover:text-forest hover:bg-forest/[0.04] transition-all duration-200"
             >
               {link.label}
             </Link>
@@ -82,8 +79,7 @@ export default function Navbar() {
           <div className="relative" onMouseLeave={() => setProgrammesOpen(false)}>
             <button
               onMouseEnter={() => setProgrammesOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-200"
-              style={{ color: 'rgba(255,255,255,0.78)' }}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-full text-forest/70 hover:text-forest hover:bg-forest/[0.04] transition-all duration-200"
               onFocus={() => setProgrammesOpen(true)}
             >
               {t(lang, 'nav.programmes')}
@@ -97,11 +93,11 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.98 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="absolute top-full mt-2.5 w-72 bg-white rounded-2xl overflow-hidden"
+                  className="absolute top-full mt-2.5 w-72 bg-warmwhite rounded-3xl overflow-hidden"
                   style={{
                     [dir === 'rtl' ? 'right' : 'left']: 0,
-                    boxShadow: '0 16px 48px rgba(27,67,50,0.18), 0 4px 12px rgba(0,0,0,0.08)',
-                    border: '1px solid #C8E6D0',
+                    boxShadow: '0 20px 56px rgba(24,32,25,0.14), 0 4px 12px rgba(24,32,25,0.06)',
+                    border: '1px solid #E7E4D6',
                   }}
                 >
                   <div className="p-1.5">
@@ -111,26 +107,26 @@ export default function Navbar() {
                         <Link
                           key={p.id}
                           href={`/programmes/${p.id}`}
-                          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-[#EDF7F1] transition-colors group"
+                          className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-pale transition-colors group"
                           onClick={() => setProgrammesOpen(false)}
                         >
                           <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ background: `${p.color}15` }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                            style={{ background: `${p.color}1f` }}
                           >
                             <Icon className="w-4 h-4" style={{ color: p.color }} />
                           </div>
-                          <span className="text-sm font-medium text-charcoal group-hover:text-brand transition-colors">
+                          <span className="text-sm font-medium text-charcoal group-hover:text-olive transition-colors">
                             {lang === 'ar' ? p.name_ar : p.name_en}
                           </span>
                         </Link>
                       )
                     })}
                   </div>
-                  <div className="px-4 py-3 border-t border-[#C8E6D0]">
+                  <div className="px-4 py-3 border-t border-[#E7E4D6]">
                     <Link
                       href="/programmes"
-                      className="text-xs font-semibold text-brand hover:text-emerald transition-colors flex items-center gap-1"
+                      className="text-xs font-semibold text-olive hover:text-forest transition-colors flex items-center gap-1"
                       onClick={() => setProgrammesOpen(false)}
                     >
                       {lang === 'ar' ? 'عرض جميع البرامج' : 'View all programmes'}
@@ -148,10 +144,7 @@ export default function Navbar() {
           {/* Language toggle */}
           <button
             onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-xl transition-all duration-200"
-            style={{ color: 'rgba(255,255,255,0.72)', border: '1px solid rgba(255,255,255,0.16)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.35)' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.72)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.16)' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full text-forest/70 hover:text-forest border border-forest/15 hover:border-forest/35 transition-all duration-200"
           >
             <Globe className="w-3.5 h-3.5" />
             {lang === 'en' ? 'ع' : 'EN'}
@@ -159,15 +152,13 @@ export default function Navbar() {
 
           <Link
             href="/login"
-            className="hidden sm:block text-sm font-medium px-3.5 py-1.5 rounded-xl transition-all duration-200"
-            style={{ color: 'rgba(255,255,255,0.72)' }}
+            className="hidden sm:block text-sm font-medium px-3.5 py-1.5 rounded-full text-forest/70 hover:text-forest transition-all duration-200"
           >
             {t(lang, 'nav.login')}
           </Link>
           <Link
             href="/register"
-            className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #40916C, #52B788)', boxShadow: '0 4px 12px rgba(64,145,108,0.35)' }}
+            className="hidden sm:inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-medium text-cream bg-forest hover:bg-emerald transition-all duration-300 hover:scale-[1.03] shadow-green-md hover:shadow-green-lg"
           >
             {t(lang, 'nav.register')}
           </Link>
@@ -175,8 +166,7 @@ export default function Navbar() {
           {/* Mobile toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2 rounded-xl transition-colors"
-            style={{ color: 'rgba(255,255,255,0.85)' }}
+            className="lg:hidden p-2 rounded-full text-forest transition-colors"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -192,22 +182,21 @@ export default function Navbar() {
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
             className="lg:hidden overflow-hidden"
-            style={{ background: 'rgba(20, 51, 37, 0.98)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ background: 'rgba(247, 243, 234, 0.98)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(24,32,25,0.07)' }}
           >
             <div className="container-fee py-4 flex flex-col gap-1">
               {navLinks.map(link => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="px-4 py-3 rounded-xl text-sm font-medium transition-all"
-                  style={{ color: 'rgba(255,255,255,0.78)' }}
+                  className="px-4 py-3 rounded-full text-sm font-medium text-forest/80 hover:bg-forest/[0.04] transition-all"
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
               <div className="px-4 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                <p className="text-[10px] font-semibold uppercase tracking-widest mb-2 text-forest/40">
                   {t(lang, 'nav.programmes')}
                 </p>
                 {PROGRAMMES.map(p => {
@@ -216,8 +205,7 @@ export default function Navbar() {
                     <Link
                       key={p.id}
                       href={`/programmes/${p.id}`}
-                      className="flex items-center gap-2.5 py-2 pl-2"
-                      style={{ color: 'rgba(255,255,255,0.65)' }}
+                      className="flex items-center gap-2.5 py-2 pl-2 text-forest/70"
                       onClick={() => setMobileOpen(false)}
                     >
                       <Icon className="w-3.5 h-3.5" style={{ color: p.color }} />
@@ -226,13 +214,12 @@ export default function Navbar() {
                   )
                 })}
               </div>
-              <div className="border-t mt-2 pt-3 flex gap-2" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                <Link href="/login" className="flex-1 text-center py-2.5 text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}
+              <div className="border-t mt-2 pt-3 flex gap-2 border-forest/10">
+                <Link href="/login" className="flex-1 text-center py-2.5 text-sm font-medium text-forest/70 rounded-full"
                   onClick={() => setMobileOpen(false)}>
                   {t(lang, 'nav.login')}
                 </Link>
-                <Link href="/register" className="flex-1 text-center py-2.5 text-sm font-semibold text-white rounded-xl"
-                  style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}
+                <Link href="/register" className="flex-1 text-center py-2.5 text-sm font-medium text-cream rounded-full bg-forest"
                   onClick={() => setMobileOpen(false)}>
                   {t(lang, 'nav.register')}
                 </Link>

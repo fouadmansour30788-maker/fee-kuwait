@@ -85,7 +85,7 @@ export default function ProgrammesPage() {
     <>
       {/* ── Hero ───────────────────────────────────────── */}
       <section className="section-forest py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(82,183,136,0.15),transparent_55%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(139,155,136,0.15),transparent_55%)] pointer-events-none" />
         <div className="container-fee relative z-10 text-center max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand/35 text-light text-[11px] font-semibold tracking-widest uppercase mb-7">
@@ -204,10 +204,10 @@ export default function ProgrammesPage() {
           <FadeIn delay={0.1}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: School, label_en: 'School', label_ar: 'مدرسة', progs_en: 'Eco-Schools · LEAF · YRE', progs_ar: 'المدارس البيئية · LEAF · YRE', color: '#52B788' },
+                { icon: School, label_en: 'School', label_ar: 'مدرسة', progs_en: 'Eco-Schools · LEAF · YRE', progs_ar: 'المدارس البيئية · LEAF · YRE', color: '#8B9B88' },
                 { icon: Waves, label_en: 'Beach / Marina', label_ar: 'شاطئ / مرسى', progs_en: 'Blue Flag', progs_ar: 'العلم الأزرق', color: '#006994' },
                 { icon: Building2, label_en: 'Hotel / Restaurant', label_ar: 'فندق / مطعم', progs_en: 'Green Key', progs_ar: 'المفتاح الأخضر', color: '#C8A951' },
-                { icon: GraduationCap, label_en: 'University', label_ar: 'جامعة', progs_en: 'Eco-Campus · YRE', progs_ar: 'الحرم البيئي · YRE', color: '#40916C' },
+                { icon: GraduationCap, label_en: 'University', label_ar: 'جامعة', progs_en: 'Eco-Campus · YRE', progs_ar: 'الحرم البيئي · YRE', color: '#7B8266' },
               ].map((row, i) => {
                 const Icon = row.icon
                 return (

@@ -60,12 +60,12 @@ export default function SchoolApplicationPage() {
 
       {/* Status banner */}
       <FadeIn delay={0.05}>
-        <div className="rounded-3xl p-6 flex items-center gap-5" style={{ background: 'linear-gradient(135deg, #0F2318, #1B4332)' }}>
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(82,183,136,0.18)', border: '1px solid rgba(82,183,136,0.35)' }}>
-            <Clock className="w-7 h-7" style={{ color: '#74C69D' }} />
+        <div className="rounded-3xl p-6 flex items-center gap-5" style={{ background: 'linear-gradient(135deg, #182019, #182019)' }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(139,155,136,0.18)', border: '1px solid rgba(139,155,136,0.35)' }}>
+            <Clock className="w-7 h-7" style={{ color: '#A9B6A4' }} />
           </div>
           <div className="flex-1">
-            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#74C69D' }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#A9B6A4' }}>
               {lang === 'ar' ? 'حالة الطلب' : 'Application Status'}
             </p>
             <p className="text-xl font-bold text-white">{lang === 'ar' ? 'قيد المراجعة' : 'Under Review'}</p>
@@ -84,7 +84,7 @@ export default function SchoolApplicationPage() {
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Timeline */}
         <FadeIn delay={0.1} className="lg:col-span-2">
-          <div className="bg-white rounded-3xl border border-[#C8E6D0] p-6 h-full">
+          <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-6 h-full">
             <h2 className="font-bold text-forest mb-6 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-brand" />
               {lang === 'ar' ? 'مراحل الطلب' : 'Application Timeline'}
@@ -95,18 +95,18 @@ export default function SchoolApplicationPage() {
                   <div className="flex flex-col items-center">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10"
                       style={step.done
-                        ? { background: '#40916C', border: '2px solid #40916C' }
+                        ? { background: '#7B8266', border: '2px solid #7B8266' }
                         : step.active
-                        ? { background: 'rgba(82,183,136,0.15)', border: '2px solid #52B788' }
-                        : { background: '#F4F9F5', border: '2px solid #C8E6D0' }}>
+                        ? { background: 'rgba(139,155,136,0.15)', border: '2px solid #8B9B88' }
+                        : { background: '#FBF8F0', border: '2px solid #E7E4D6' }}>
                       {step.done
                         ? <CheckCircle2 className="w-4 h-4 text-white" />
                         : step.active
-                        ? <div className="w-2 h-2 rounded-full bg-[#52B788] animate-pulse" />
-                        : <div className="w-2 h-2 rounded-full" style={{ background: '#C8E6D0' }} />}
+                        ? <div className="w-2 h-2 rounded-full bg-[#8B9B88] animate-pulse" />
+                        : <div className="w-2 h-2 rounded-full" style={{ background: '#E7E4D6' }} />}
                     </div>
                     {i < TIMELINE.length - 1 && (
-                      <div className="w-0.5 flex-1 my-1" style={{ background: step.done ? '#40916C' : '#E8F5EC', minHeight: '2rem' }} />
+                      <div className="w-0.5 flex-1 my-1" style={{ background: step.done ? '#7B8266' : '#E8ECE1', minHeight: '2rem' }} />
                     )}
                   </div>
                   <div className="pb-5 pt-1 flex-1">
@@ -126,10 +126,10 @@ export default function SchoolApplicationPage() {
         <div className="lg:col-span-3 space-y-4">
           {SECTIONS.map((section, si) => (
             <FadeIn key={section.id} delay={0.12 + si * 0.07}>
-              <div className="bg-white rounded-3xl border border-[#C8E6D0] overflow-hidden">
+              <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] overflow-hidden">
                 <button
                   onClick={() => setExpanded(expanded === section.id ? null : section.id)}
-                  className="w-full flex items-center justify-between px-6 py-5 hover:bg-[#F9FBF9] transition-colors"
+                  className="w-full flex items-center justify-between px-6 py-5 hover:bg-[#FCFAF5] transition-colors"
                 >
                   <h2 className="font-bold text-forest text-sm">
                     {lang === 'ar' ? section.title_ar : section.title_en}
@@ -139,13 +139,13 @@ export default function SchoolApplicationPage() {
                     : <ChevronDown className="w-4 h-4" style={{ color: '#7A9080' }} />}
                 </button>
                 {expanded === section.id && (
-                  <div className="px-6 pb-6 pt-2 border-t border-[#F4F9F5]">
+                  <div className="px-6 pb-6 pt-2 border-t border-[#FBF8F0]">
                     <div className="space-y-3">
                       {section.fields.map(f => {
                         const Icon = f.icon
                         return (
                           <div key={f.label_en} className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#EDF7F1' }}>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#E8ECE1' }}>
                               <Icon className="w-3.5 h-3.5 text-brand" />
                             </div>
                             <div>

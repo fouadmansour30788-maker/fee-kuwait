@@ -57,7 +57,7 @@ const PROGRAMMES = [
     id: 'eco-schools', en: 'Eco-Schools', ar: 'المدارس البيئية',
     desc_en: 'For schools committed to environmental action and the Green Flag.',
     desc_ar: 'للمدارس الملتزمة بالعمل البيئي والعلم الأخضر.',
-    color: '#52B788', Icon: School, eligible: ['school'],
+    color: '#8B9B88', Icon: School, eligible: ['school'],
   },
   {
     id: 'blue-flag', en: 'Blue Flag', ar: 'العلم الأزرق',
@@ -75,19 +75,19 @@ const PROGRAMMES = [
     id: 'leaf', en: 'LEAF', ar: 'LEAF',
     desc_en: 'Learning about forests — for primary and secondary schools.',
     desc_ar: 'التعلم عن الغابات — للمدارس الابتدائية والثانوية.',
-    color: '#1B4332', Icon: Leaf, eligible: ['school'],
+    color: '#182019', Icon: Leaf, eligible: ['school'],
   },
   {
     id: 'yre', en: 'Young Reporters (YRE)', ar: 'المراسلون الشباب (YRE)',
     desc_en: 'For young journalists aged 13–25 in schools or universities.',
     desc_ar: 'للصحفيين الشباب 13–25 في المدارس أو الجامعات.',
-    color: '#74C69D', Icon: Newspaper, eligible: ['school', 'business'],
+    color: '#A9B6A4', Icon: Newspaper, eligible: ['school', 'business'],
   },
   {
     id: 'eco-campus', en: 'Eco-Campus', ar: 'الحرم البيئي',
     desc_en: 'For universities and higher education institutions.',
     desc_ar: 'للجامعات ومؤسسات التعليم العالي.',
-    color: '#40916C', Icon: GraduationCap, eligible: ['business'],
+    color: '#7B8266', Icon: GraduationCap, eligible: ['business'],
   },
 ]
 
@@ -226,7 +226,7 @@ function RegisterForm() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           {[
-            { type: 'school' as const, Icon: School, color: '#52B788', en: 'A School', ar: 'مدرسة', subEn: 'Eco-Schools, LEAF, YRE', subAr: 'مدارس بيئية، LEAF، YRE' },
+            { type: 'school' as const, Icon: School, color: '#8B9B88', en: 'A School', ar: 'مدرسة', subEn: 'Eco-Schools, LEAF, YRE', subAr: 'مدارس بيئية، LEAF، YRE' },
             { type: 'business' as const, Icon: Building2, color: '#C8A951', en: 'A Business', ar: 'منشأة', subEn: 'Blue Flag, Green Key, Eco-Campus', subAr: 'علم أزرق، مفتاح أخضر، حرم بيئي' },
           ].map(({ type, Icon, color, en, ar, subEn, subAr }) => (
             <button
@@ -254,8 +254,8 @@ function RegisterForm() {
       <div className="w-full max-w-md mx-auto pt-8 text-center">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
           <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6"
-            style={{ background: 'rgba(82,183,136,0.15)', border: '2px solid rgba(82,183,136,0.4)' }}>
-            <CheckCircle2 className="w-12 h-12" style={{ color: '#52B788' }} />
+            style={{ background: 'rgba(139,155,136,0.15)', border: '2px solid rgba(139,155,136,0.4)' }}>
+            <CheckCircle2 className="w-12 h-12" style={{ color: '#8B9B88' }} />
           </div>
           <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">
             {lang === 'ar' ? 'تم التسجيل بنجاح!' : 'Registration Successful!'}
@@ -267,7 +267,7 @@ function RegisterForm() {
           </p>
           <div className="flex justify-center gap-1.5">
             {[0,1,2].map(i => (
-              <motion.div key={i} className="w-2 h-2 rounded-full" style={{ background: '#52B788' }}
+              <motion.div key={i} className="w-2 h-2 rounded-full" style={{ background: '#8B9B88' }}
                 animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
                 transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }} />
             ))}
@@ -289,7 +289,7 @@ function RegisterForm() {
       {/* Header */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-widest mb-5"
-          style={{ background: institutionType === 'school' ? 'rgba(82,183,136,0.12)' : 'rgba(200,169,81,0.12)', border: `1px solid ${institutionType === 'school' ? 'rgba(82,183,136,0.3)' : 'rgba(200,169,81,0.3)'}`, color: institutionType === 'school' ? '#74C69D' : '#C8A951' }}>
+          style={{ background: institutionType === 'school' ? 'rgba(139,155,136,0.12)' : 'rgba(200,169,81,0.12)', border: `1px solid ${institutionType === 'school' ? 'rgba(139,155,136,0.3)' : 'rgba(200,169,81,0.3)'}`, color: institutionType === 'school' ? '#A9B6A4' : '#C8A951' }}>
           {institutionType === 'school'
             ? <><School className="w-3 h-3" />{lang === 'ar' ? 'تسجيل مدرسة' : 'School Registration'}</>
             : <><Building2 className="w-3 h-3" />{lang === 'ar' ? 'تسجيل منشأة' : 'Business Registration'}</>}
@@ -308,22 +308,22 @@ function RegisterForm() {
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 flex-shrink-0"
                 style={i < step
-                  ? { background: '#40916C', color: '#fff' }
+                  ? { background: '#7B8266', color: '#fff' }
                   : i === step
-                  ? { background: 'rgba(82,183,136,0.2)', border: '2px solid #52B788', color: '#74C69D' }
+                  ? { background: 'rgba(139,155,136,0.2)', border: '2px solid #8B9B88', color: '#A9B6A4' }
                   : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.3)' }}
               >
                 {i < step ? <CheckCircle2 className="w-5 h-5" /> : i + 1}
               </div>
               <span className="text-[10px] font-semibold whitespace-nowrap hidden sm:block"
-                style={{ color: i === step ? '#74C69D' : 'rgba(255,255,255,0.3)' }}>
+                style={{ color: i === step ? '#A9B6A4' : 'rgba(255,255,255,0.3)' }}>
                 {lang === 'ar' ? s.ar : s.en}
               </span>
             </div>
             {/* Connector */}
             {i < STEPS.length - 1 && (
               <div className="flex-1 h-px mx-2 transition-colors duration-300"
-                style={{ background: i < step ? '#40916C' : 'rgba(255,255,255,0.08)' }} />
+                style={{ background: i < step ? '#7B8266' : 'rgba(255,255,255,0.08)' }} />
             )}
           </div>
         ))}
@@ -411,9 +411,9 @@ function RegisterForm() {
                     <div className="flex gap-1.5 items-center">
                       {[8, 12, 16].map((len, i) => (
                         <div key={i} className="h-1 flex-1 rounded-full transition-colors duration-300"
-                          style={{ background: data.password.length >= len ? '#40916C' : '#C8E6D0' }} />
+                          style={{ background: data.password.length >= len ? '#7B8266' : '#E7E4D6' }} />
                       ))}
-                      <span className="text-[10px] font-semibold ml-1" style={{ color: data.password.length >= 12 ? '#40916C' : '#7A9080' }}>
+                      <span className="text-[10px] font-semibold ml-1" style={{ color: data.password.length >= 12 ? '#7B8266' : '#7A9080' }}>
                         {data.password.length < 8 ? (lang === 'ar' ? 'ضعيف' : 'Weak') :
                          data.password.length < 12 ? (lang === 'ar' ? 'متوسط' : 'Fair') :
                          (lang === 'ar' ? 'قوي' : 'Strong')}
@@ -464,8 +464,8 @@ function RegisterForm() {
                           className="py-2.5 px-3 rounded-xl text-xs font-semibold text-center transition-all duration-200"
                           style={
                             (institutionType === 'school' ? data.schoolType : data.businessType) === t.value
-                              ? { background: '#40916C', color: '#fff' }
-                              : { background: '#F4F9F5', color: '#40916C', border: '1px solid #C8E6D0' }
+                              ? { background: '#7B8266', color: '#fff' }
+                              : { background: '#FBF8F0', color: '#7B8266', border: '1px solid #E7E4D6' }
                           }
                         >
                           {lang === 'ar' ? t.ar : t.en}
@@ -563,7 +563,7 @@ function RegisterForm() {
                 )}
 
                 {/* Eligible */}
-                <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: '#40916C' }}>
+                <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: '#7B8266' }}>
                   {lang === 'ar' ? 'مناسب لك' : 'Recommended for you'}
                 </p>
                 <div className="space-y-3 mb-6">
@@ -575,7 +575,7 @@ function RegisterForm() {
                         className="w-full flex items-start gap-4 p-4 rounded-2xl text-left transition-all duration-200"
                         style={selected
                           ? { background: `${prog.color}10`, border: `2px solid ${prog.color}` }
-                          : { background: '#F9FBF9', border: '2px solid #C8E6D0' }}>
+                          : { background: '#FCFAF5', border: '2px solid #E7E4D6' }}>
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
                           style={{ background: `${prog.color}15` }}>
                           <Icon className="w-5 h-5" style={{ color: prog.color }} />
@@ -585,8 +585,8 @@ function RegisterForm() {
                           <p className="text-xs mt-0.5" style={{ color: '#5A6672' }}>{lang === 'ar' ? prog.desc_ar : prog.desc_en}</p>
                         </div>
                         <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
-                          style={selected ? { background: prog.color, borderColor: prog.color } : { borderColor: '#C8E6D0' }}>
-                          {selected && <div className="w-2 h-2 rounded-full bg-white" />}
+                          style={selected ? { background: prog.color, borderColor: prog.color } : { borderColor: '#E7E4D6' }}>
+                          {selected && <div className="w-2 h-2 rounded-full bg-warmwhite" />}
                         </div>
                       </button>
                     )
@@ -604,13 +604,13 @@ function RegisterForm() {
                         const Icon = prog.Icon
                         return (
                           <div key={prog.id} className="flex items-center gap-3 p-3 rounded-xl opacity-50"
-                            style={{ background: '#F4F9F5', border: '1px solid #C8E6D0' }}>
+                            style={{ background: '#FBF8F0', border: '1px solid #E7E4D6' }}>
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                               style={{ background: `${prog.color}12` }}>
                               <Icon className="w-4 h-4" style={{ color: prog.color }} />
                             </div>
                             <p className="text-sm font-medium text-forest">{lang === 'ar' ? prog.ar : prog.en}</p>
-                            <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#E8F5EC', color: '#7A9080' }}>
+                            <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#E8ECE1', color: '#7A9080' }}>
                               {lang === 'ar' ? 'غير متاح لهذا النوع' : 'Not for this type'}
                             </span>
                           </div>
@@ -634,9 +634,9 @@ function RegisterForm() {
 
                 <div className="space-y-5">
                   {/* Account summary */}
-                  <div className="rounded-2xl p-5" style={{ background: '#F4F9F5', border: '1px solid #C8E6D0' }}>
+                  <div className="rounded-2xl p-5" style={{ background: '#FBF8F0', border: '1px solid #E7E4D6' }}>
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>
+                      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#7B8266' }}>
                         {lang === 'ar' ? 'الحساب' : 'Account'}
                       </p>
                       <button onClick={() => { setDirection(-1); setStep(0) }} className="text-xs font-semibold text-brand hover:text-emerald transition-colors">
@@ -650,9 +650,9 @@ function RegisterForm() {
                   </div>
 
                   {/* Institution summary */}
-                  <div className="rounded-2xl p-5" style={{ background: '#F4F9F5', border: '1px solid #C8E6D0' }}>
+                  <div className="rounded-2xl p-5" style={{ background: '#FBF8F0', border: '1px solid #E7E4D6' }}>
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>
+                      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#7B8266' }}>
                         {lang === 'ar' ? 'المؤسسة' : 'Institution'}
                       </p>
                       <button onClick={() => { setDirection(-1); setStep(1) }} className="text-xs font-semibold text-brand hover:text-emerald transition-colors">
@@ -668,9 +668,9 @@ function RegisterForm() {
                   </div>
 
                   {/* Programme summary */}
-                  <div className="rounded-2xl p-5" style={{ background: '#F4F9F5', border: '1px solid #C8E6D0' }}>
+                  <div className="rounded-2xl p-5" style={{ background: '#FBF8F0', border: '1px solid #E7E4D6' }}>
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>
+                      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#7B8266' }}>
                         {lang === 'ar' ? 'البرنامج' : 'Programme'}
                       </p>
                       <button onClick={() => { setDirection(-1); setStep(2) }} className="text-xs font-semibold text-brand hover:text-emerald transition-colors">
@@ -707,10 +707,10 @@ function RegisterForm() {
         </AnimatePresence>
 
         {/* Navigation footer */}
-        <div className="px-8 md:px-10 pb-8 flex items-center justify-between gap-4 border-t" style={{ borderColor: '#E8F5EC' }}>
+        <div className="px-8 md:px-10 pb-8 flex items-center justify-between gap-4 border-t" style={{ borderColor: '#E8ECE1' }}>
           <button onClick={back} disabled={step === 0}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-30"
-            style={{ color: '#40916C' }}>
+            style={{ color: '#7B8266' }}>
             <ChevronLeft className="w-4 h-4" />
             {lang === 'ar' ? 'السابق' : 'Back'}
           </button>
@@ -718,21 +718,21 @@ function RegisterForm() {
           <div className="flex gap-1.5">
             {STEPS.map((_, i) => (
               <div key={i} className="w-1.5 h-1.5 rounded-full transition-all duration-300"
-                style={{ background: i === step ? '#40916C' : '#C8E6D0', width: i === step ? '1.5rem' : '0.375rem' }} />
+                style={{ background: i === step ? '#7B8266' : '#E7E4D6', width: i === step ? '1.5rem' : '0.375rem' }} />
             ))}
           </div>
 
           {step < 3 ? (
             <button onClick={next}
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #40916C, #52B788)', boxShadow: '0 4px 12px rgba(64,145,108,0.35)' }}>
+              style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)', boxShadow: '0 4px 12px rgba(123,130,102,0.35)' }}>
               {lang === 'ar' ? 'التالي' : 'Next'}
               <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
             <button onClick={handleSubmit} disabled={submitting}
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 disabled:opacity-70"
-              style={{ background: 'linear-gradient(135deg, #40916C, #52B788)', boxShadow: '0 4px 12px rgba(64,145,108,0.35)' }}>
+              style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)', boxShadow: '0 4px 12px rgba(123,130,102,0.35)' }}>
               {submitting ? (
                 <>
                   <motion.div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent"
@@ -753,7 +753,7 @@ function RegisterForm() {
       {/* Sign-in link */}
       <p className="text-center mt-6 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
         {lang === 'ar' ? 'لديك حساب بالفعل؟ ' : 'Already have an account? '}
-        <Link href="/login" className="font-semibold transition-colors" style={{ color: '#74C69D' }}>
+        <Link href="/login" className="font-semibold transition-colors" style={{ color: '#A9B6A4' }}>
           {lang === 'ar' ? 'تسجيل الدخول' : 'Sign in'}
         </Link>
       </p>

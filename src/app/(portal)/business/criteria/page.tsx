@@ -57,7 +57,7 @@ const CRITERIA_GROUPS = [
   {
     id: 'environment',
     Icon: Leaf,
-    color: '#40916C',
+    color: '#7B8266',
     title_en: 'Environmental Education',
     title_ar: 'التعليم البيئي',
     desc_en: 'Educational activities and information for beach users about marine conservation.',
@@ -103,7 +103,7 @@ const CRITERIA_GROUPS = [
   {
     id: 'community',
     Icon: Users,
-    color: '#74C69D',
+    color: '#A9B6A4',
     title_en: 'Community Involvement',
     title_ar: 'إشراك المجتمع',
     desc_en: 'Engaging local community in beach management and conservation efforts.',
@@ -152,7 +152,7 @@ export default function CriteriaPage() {
 
       {/* Overall progress */}
       <FadeIn delay={0.05}>
-        <div className="bg-white rounded-3xl border border-[#C8E6D0] p-5">
+        <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold text-forest">{lang === 'ar' ? 'الاستعداد الإجمالي' : 'Overall Readiness'}</span>
             <span className="text-sm font-bold" style={{ color: '#006994' }}>{Math.round((totalDone / totalCriteria) * 100)}%</span>
@@ -199,10 +199,10 @@ export default function CriteriaPage() {
 
           return (
             <FadeIn key={group.id} delay={0.1 + i * 0.04}>
-              <div className="bg-white rounded-3xl border overflow-hidden"
-                style={{ borderColor: isOpen ? group.color + '50' : '#C8E6D0' }}>
+              <div className="bg-warmwhite rounded-3xl border overflow-hidden"
+                style={{ borderColor: isOpen ? group.color + '50' : '#E7E4D6' }}>
                 <button onClick={() => setOpen(isOpen ? null : group.id)}
-                  className="w-full flex items-center gap-4 px-6 py-5 text-left hover:bg-[#F9FBF9] transition-colors">
+                  className="w-full flex items-center gap-4 px-6 py-5 text-left hover:bg-[#FCFAF5] transition-colors">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: `${group.color}14`, border: `1px solid ${group.color}28` }}>
                     <Icon className="w-5 h-5" style={{ color: group.color }} />
@@ -226,7 +226,7 @@ export default function CriteriaPage() {
                     <motion.div
                       initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.22 }} className="overflow-hidden">
-                      <div className="px-6 pb-6 pt-2 border-t border-[#F4F9F5]">
+                      <div className="px-6 pb-6 pt-2 border-t border-[#FBF8F0]">
                         <p className="text-sm mb-4 leading-relaxed" style={{ color: '#5A6672' }}>
                           {lang === 'ar' ? group.desc_ar : group.desc_en}
                         </p>
@@ -236,10 +236,10 @@ export default function CriteriaPage() {
                               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0`}
                                 style={group.done[ci]
                                   ? { background: group.color, borderColor: group.color }
-                                  : { borderColor: '#C8E6D0' }}>
-                                {group.done[ci] && <div className="w-2 h-2 rounded-full bg-white" />}
+                                  : { borderColor: '#E7E4D6' }}>
+                                {group.done[ci] && <div className="w-2 h-2 rounded-full bg-warmwhite" />}
                               </div>
-                              <span className="text-sm" style={group.done[ci] ? { color: '#7A9080', textDecoration: 'line-through' } : { color: '#3D5A47' }}>
+                              <span className="text-sm" style={group.done[ci] ? { color: '#7A9080', textDecoration: 'line-through' } : { color: '#4A544C' }}>
                                 {lang === 'ar' ? group.criteria_ar[ci] : criterion}
                               </span>
                             </div>

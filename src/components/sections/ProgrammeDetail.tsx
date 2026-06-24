@@ -401,7 +401,7 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
             </p>
             <Link
               href={content.apply_link}
-              className="inline-flex items-center gap-2 px-9 py-4 bg-white font-bold rounded-2xl text-base transition-all duration-200 hover:scale-[1.03] shadow-lg"
+              className="inline-flex items-center gap-2 px-9 py-4 bg-warmwhite font-bold rounded-2xl text-base transition-all duration-200 hover:scale-[1.03] shadow-lg"
               style={{ color: prog.color }}
             >
               {lang === 'ar' ? 'ابدأ التقديم الآن' : 'Apply Now'}

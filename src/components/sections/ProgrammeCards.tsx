@@ -32,7 +32,7 @@ export default function ProgrammeCards() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section className="py-28" style={{ background: '#F4F9F5' }} ref={ref}>
+    <section className="py-28" style={{ background: '#FBF8F0' }} ref={ref}>
       <div className="container-fee">
         <motion.div
           initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
@@ -41,10 +41,10 @@ export default function ProgrammeCards() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-5"
-            style={{ background: '#D1FAE5', color: '#059669' }}>
+            style={{ background: '#E8ECE1', color: '#7B8266' }}>
             {t(lang, 'nav.programmes')}
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: '#0F2318' }}>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: '#182019' }}>
             {t(lang, 'programmes.title')}
           </h2>
           <p className="text-base max-w-xl mx-auto leading-relaxed" style={{ color: '#5A6672' }}>
@@ -65,8 +65,8 @@ export default function ProgrammeCards() {
               >
                 <Link
                   href={`/programmes/${prog.id}`}
-                  className="group flex flex-col h-full bg-white rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.10)]"
-                  style={{ border: '1px solid #E2EDE6', boxShadow: '0 2px 12px rgba(64,145,108,0.06)' }}
+                  className="group flex flex-col h-full bg-warmwhite rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.10)]"
+                  style={{ border: '1px solid #E7E4D6', boxShadow: '0 2px 12px rgba(123,130,102,0.06)' }}
                 >
                   {/* Coloured header */}
                   <div
@@ -94,7 +94,7 @@ export default function ProgrammeCards() {
 
                   {/* Card body */}
                   <div className="p-6 flex flex-col flex-1">
-                    <h3 className="text-base font-bold mb-2.5 transition-colors group-hover:text-brand" style={{ color: '#0F2318' }}>
+                    <h3 className="text-base font-bold mb-2.5 transition-colors group-hover:text-brand" style={{ color: '#182019' }}>
                       {lang === 'ar' ? prog.name_ar : prog.name_en}
                     </h3>
                     <p className="text-sm leading-relaxed flex-1 mb-5" style={{ color: '#5A6672' }}>
@@ -123,7 +123,7 @@ export default function ProgrammeCards() {
           <Link
             href="/programmes"
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5"
-            style={{ background: '#0F2318', color: '#fff', boxShadow: '0 4px 16px rgba(15,35,24,0.25)' }}
+            style={{ background: '#182019', color: '#fff', boxShadow: '0 4px 16px rgba(24,32,25,0.25)' }}
           >
             {lang === 'ar' ? 'عرض جميع البرامج' : 'View All Programmes'}
             <ArrowRight className="w-4 h-4" />

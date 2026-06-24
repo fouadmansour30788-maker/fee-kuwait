@@ -30,8 +30,8 @@ const STAFF = [
     phone: '+965 2241 1001',
     since: '2020',
     avatar: 'AM',
-    color: '#059669',
-    bg: '#D1FAE5',
+    color: '#7B8266',
+    bg: '#E8ECE1',
   },
   {
     id: 3,
@@ -56,8 +56,8 @@ const STAFF = [
     phone: '+965 2241 1003',
     since: '2021',
     avatar: 'KH',
-    color: '#059669',
-    bg: '#D1FAE5',
+    color: '#7B8266',
+    bg: '#E8ECE1',
   },
   {
     id: 5,
@@ -95,8 +95,8 @@ const STAFF = [
     phone: '+965 2241 1006',
     since: '2022',
     avatar: 'LA',
-    color: '#059669',
-    bg: '#D1FAE5',
+    color: '#7B8266',
+    bg: '#E8ECE1',
   },
   {
     id: 8,
@@ -115,7 +115,7 @@ const STAFF = [
 
 const ROLE_CONFIG = {
   admin:       { label: 'Admin',       color: '#7C3AED', bg: '#EDE9FE', Icon: Shield },
-  assessor:    { label: 'Assessor',    color: '#059669', bg: '#D1FAE5', Icon: Star   },
+  assessor:    { label: 'Assessor',    color: '#7B8266', bg: '#E8ECE1', Icon: Star   },
   coordinator: { label: 'Coordinator', color: '#2563EB', bg: '#DBEAFE', Icon: Users  },
 }
 
@@ -147,7 +147,7 @@ export default function StaffPage() {
           </div>
           <button
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}
+            style={{ background: 'linear-gradient(135deg, #182019, #7B8266)' }}
           >
             <UserPlus className="w-4 h-4" />
             Invite Member
@@ -165,7 +165,7 @@ export default function StaffPage() {
         {(['admin', 'assessor', 'coordinator'] as const).map(role => {
           const cfg = ROLE_CONFIG[role]
           return (
-            <div key={role} className="bg-white rounded-2xl p-5 border" style={{ borderColor: '#E2E8F0' }}>
+            <div key={role} className="bg-warmwhite rounded-2xl p-5 border" style={{ borderColor: '#E2E8F0' }}>
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: cfg.bg }}>
                   <cfg.Icon className="w-4 h-4" style={{ color: cfg.color }} />
@@ -202,7 +202,7 @@ export default function StaffPage() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white ml-auto" style={{ border: '1px solid #E2E8F0', minWidth: 220 }}>
+        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-warmwhite ml-auto" style={{ border: '1px solid #E2E8F0', minWidth: 220 }}>
           <Search className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />
           <input
             value={search}
@@ -229,7 +229,7 @@ export default function StaffPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: i * 0.04 }}
-                className="bg-white rounded-2xl border p-5 hover:shadow-md transition-shadow"
+                className="bg-warmwhite rounded-2xl border p-5 hover:shadow-md transition-shadow"
                 style={{ borderColor: '#E2E8F0' }}
               >
                 <div className="flex items-start gap-3 mb-4">
@@ -296,7 +296,7 @@ export default function StaffPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="py-16 text-center bg-white rounded-2xl border" style={{ borderColor: '#E2E8F0', color: '#94A3B8' }}>
+          <div className="py-16 text-center bg-warmwhite rounded-2xl border" style={{ borderColor: '#E2E8F0', color: '#94A3B8' }}>
             <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
             <p className="text-sm">No staff members found</p>
           </div>

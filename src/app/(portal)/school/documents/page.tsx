@@ -69,8 +69,8 @@ const REQUIRED_DOCS = [
 ]
 
 const STATUS_CONFIG = {
-  uploaded: { color: '#40916C', bg: '#EDF7F1', Icon: CheckCircle2, en: 'Uploaded', ar: 'تم الرفع' },
-  pending: { color: '#7A9080', bg: '#F4F9F5', Icon: Clock, en: 'Required', ar: 'مطلوب' },
+  uploaded: { color: '#7B8266', bg: '#E8ECE1', Icon: CheckCircle2, en: 'Uploaded', ar: 'تم الرفع' },
+  pending: { color: '#7A9080', bg: '#FBF8F0', Icon: Clock, en: 'Required', ar: 'مطلوب' },
   review: { color: '#C8A951', bg: '#FEF9EC', Icon: AlertCircle, en: 'Under Review', ar: 'قيد المراجعة' },
 }
 
@@ -103,7 +103,7 @@ export default function DocumentsPage() {
             </p>
           </div>
           <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}>
+            style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)' }}>
             <Plus className="w-4 h-4" />
             {lang === 'ar' ? 'رفع مستند' : 'Upload'}
           </button>
@@ -112,14 +112,14 @@ export default function DocumentsPage() {
 
       {/* Progress */}
       <FadeIn delay={0.05}>
-        <div className="bg-white rounded-3xl border border-[#C8E6D0] p-5">
+        <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold text-forest">{lang === 'ar' ? 'اكتمال المستندات' : 'Document Completion'}</span>
             <span className="text-sm font-bold text-brand">{Math.round((requiredUploaded / requiredCount) * 100)}%</span>
           </div>
-          <div className="h-2 rounded-full" style={{ background: '#EDF7F1' }}>
+          <div className="h-2 rounded-full" style={{ background: '#E8ECE1' }}>
             <div className="h-2 rounded-full transition-all duration-700"
-              style={{ width: `${(requiredUploaded / requiredCount) * 100}%`, background: 'linear-gradient(90deg, #52B788, #40916C)' }} />
+              style={{ width: `${(requiredUploaded / requiredCount) * 100}%`, background: 'linear-gradient(90deg, #8B9B88, #7B8266)' }} />
           </div>
           <div className="flex gap-4 mt-4">
             {[
@@ -142,9 +142,9 @@ export default function DocumentsPage() {
           onDragLeave={() => setDragging(false)}
           onDrop={() => setDragging(false)}
           className="rounded-3xl border-2 border-dashed p-8 flex flex-col items-center gap-3 transition-all cursor-pointer"
-          style={{ borderColor: dragging ? '#52B788' : '#C8E6D0', background: dragging ? '#F0FAF4' : '#F9FBF9' }}>
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: '#EDF7F1' }}>
-            <Upload className="w-6 h-6" style={{ color: '#40916C' }} />
+          style={{ borderColor: dragging ? '#8B9B88' : '#E7E4D6', background: dragging ? '#FBF8F0' : '#FCFAF5' }}>
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: '#E8ECE1' }}>
+            <Upload className="w-6 h-6" style={{ color: '#7B8266' }} />
           </div>
           <div className="text-center">
             <p className="text-sm font-semibold text-forest">
@@ -164,9 +164,9 @@ export default function DocumentsPage() {
           const StatusIcon = cfg.Icon
           return (
             <FadeIn key={doc.id} delay={0.1 + i * 0.04}>
-              <div className="bg-white rounded-2xl border border-[#C8E6D0] p-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#EDF7F1' }}>
-                  <FileText className="w-5 h-5" style={{ color: '#40916C' }} />
+              <div className="bg-warmwhite rounded-2xl border border-[#E7E4D6] p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#E8ECE1' }}>
+                  <FileText className="w-5 h-5" style={{ color: '#7B8266' }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -190,8 +190,8 @@ export default function DocumentsPage() {
                   </span>
                   {doc.file && (
                     <>
-                      <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#EDF7F1] transition-colors">
-                        <Download className="w-4 h-4" style={{ color: '#40916C' }} />
+                      <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#E8ECE1] transition-colors">
+                        <Download className="w-4 h-4" style={{ color: '#7B8266' }} />
                       </button>
                       <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#FEF0F0] transition-colors">
                         <Trash2 className="w-4 h-4" style={{ color: '#D64545' }} />
@@ -200,7 +200,7 @@ export default function DocumentsPage() {
                   )}
                   {!doc.file && (
                     <button className="text-xs font-semibold px-3 py-1.5 rounded-xl transition-all"
-                      style={{ background: 'linear-gradient(135deg, #40916C, #52B788)', color: '#fff' }}>
+                      style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)', color: '#fff' }}>
                       {lang === 'ar' ? 'رفع' : 'Upload'}
                     </button>
                   )}

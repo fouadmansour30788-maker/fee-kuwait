@@ -21,7 +21,7 @@ const CONTACT_INFO = [
     label_en: 'Email',
     label_ar: 'البريد الإلكتروني',
     value: 'info@feekuwait.org',
-    color: '#52B788',
+    color: '#8B9B88',
   },
   {
     icon: Phone,
@@ -44,7 +44,7 @@ const CONTACT_INFO = [
     label_ar: 'ساعات العمل',
     value_en: 'Sun–Thu: 8:00 AM – 4:00 PM',
     value_ar: 'الأحد–الخميس: 8:00 ص – 4:00 م',
-    color: '#40916C',
+    color: '#7B8266',
   },
 ]
 
@@ -63,7 +63,7 @@ export default function ContactPage() {
     <>
       {/* Hero */}
       <section className="section-forest py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(82,183,136,0.15),transparent_55%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(139,155,136,0.15),transparent_55%)] pointer-events-none" />
         <div className="container-fee relative z-10 max-w-2xl">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand/35 text-light text-[11px] font-semibold tracking-widest uppercase mb-7">

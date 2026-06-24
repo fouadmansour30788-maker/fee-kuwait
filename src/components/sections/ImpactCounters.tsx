@@ -7,9 +7,9 @@ import { useLang } from '@/context/LangContext'
 import { t } from '@/i18n'
 
 const STATS = [
-  { key: 'schools',    icon: School,    value: 142,   suffix: '+', color: '#52B788' },
+  { key: 'schools',    icon: School,    value: 142,   suffix: '+', color: '#8B9B88' },
   { key: 'businesses', icon: Building2, value: 68,    suffix: '+', color: '#C8A951' },
-  { key: 'students',   icon: Users,     value: 85000, suffix: '+', color: '#74C69D' },
+  { key: 'students',   icon: Users,     value: 85000, suffix: '+', color: '#A9B6A4' },
   { key: 'countries',  icon: Globe,     value: 18,    suffix: '',  color: '#90E0EF' },
 ]
 
@@ -39,7 +39,7 @@ export default function ImpactCounters() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section className="py-24 bg-white" ref={ref}>
+    <section className="py-24 bg-warmwhite" ref={ref}>
       <div className="container-fee">
 
         {/* Section label */}
@@ -50,10 +50,10 @@ export default function ImpactCounters() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-4"
-            style={{ background: '#D1FAE5', color: '#059669' }}>
+            style={{ background: '#E8ECE1', color: '#7B8266' }}>
             {lang === 'ar' ? 'أثرنا في أرقام' : 'Our Impact in Numbers'}
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ color: '#0F2318' }}>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ color: '#182019' }}>
             {lang === 'ar' ? 'ننمو معاً كل عام' : 'Growing Together, Every Year'}
           </h2>
         </motion.div>
@@ -63,7 +63,7 @@ export default function ImpactCounters() {
           initial={{ opacity: 0, y: 32, scale: 0.97 }}
           animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
           transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[#E8F5EC] rounded-3xl overflow-hidden border border-[#C8E6D0]"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[#E8ECE1] rounded-3xl overflow-hidden border border-[#E7E4D6]"
         >
           {STATS.map((stat, i) => {
             const Icon = stat.icon
@@ -73,7 +73,7 @@ export default function ImpactCounters() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.55, delay: 0.2 + i * 0.1 }}
-                className="bg-white flex flex-col items-center justify-center py-12 px-6 text-center group hover:bg-[#F4FBF7] transition-colors duration-300"
+                className="bg-warmwhite flex flex-col items-center justify-center py-12 px-6 text-center group hover:bg-[#FBF8F0] transition-colors duration-300"
               >
                 {/* Icon */}
                 <div

@@ -13,7 +13,7 @@ const STEPS = [
     title_ar: 'التقديم عبر الإنترنت',
     desc_en: 'Register your school or business through our portal and submit your application with your institution details and environmental practices.',
     desc_ar: 'سجّل مدرستك أو مشروعك عبر بوابتنا وقدّم طلبك مع تفاصيل مؤسستك وممارساتك البيئية.',
-    color: '#40916C',
+    color: '#7B8266',
   },
   {
     num: '02',
@@ -31,7 +31,7 @@ const STEPS = [
     title_ar: 'الحصول على الشهادة',
     desc_en: 'Receive your official FEE International certification and flag, join our global network, and inspire your community toward sustainability.',
     desc_ar: 'احصل على شهادتك وعلمك الرسمي من FEE الدولية وانضم إلى شبكتنا العالمية.',
-    color: '#40916C',
+    color: '#7B8266',
   },
 ]
 
@@ -41,7 +41,7 @@ export default function HowItWorks() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section className="py-28 bg-white" ref={ref}>
+    <section className="py-28 bg-warmwhite" ref={ref}>
       <div className="container-fee">
 
         {/* Header */}
@@ -52,10 +52,10 @@ export default function HowItWorks() {
           className="text-center mb-20"
         >
           <span className="inline-block px-4 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-5"
-            style={{ background: '#D1FAE5', color: '#059669' }}>
+            style={{ background: '#E8ECE1', color: '#7B8266' }}>
             {lang === 'ar' ? 'كيف يعمل' : 'How It Works'}
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: '#0F2318' }}>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: '#182019' }}>
             {lang === 'ar' ? 'ثلاث خطوات نحو الشهادة' : 'Three Steps to Certification'}
           </h2>
           <p className="text-base max-w-xl mx-auto leading-relaxed" style={{ color: '#5A6672' }}>
@@ -70,7 +70,7 @@ export default function HowItWorks() {
 
           {/* Desktop connector line */}
           <div className="absolute top-[4.5rem] left-[calc(16.67%+2.5rem)] right-[calc(16.67%+2.5rem)] h-px hidden lg:block"
-            style={{ background: 'linear-gradient(90deg, #40916C30, #C8A95150, #40916C30)' }} />
+            style={{ background: 'linear-gradient(90deg, #7B826630, #C8A95150, #7B826630)' }} />
 
           {STEPS.map((step, i) => {
             const Icon = step.icon
@@ -93,7 +93,7 @@ export default function HowItWorks() {
                 {/* Icon circle */}
                 <div className="relative z-10 mb-8">
                   <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-[0_4px_24px_rgba(64,145,108,0.14)] transition-transform duration-300 group-hover:scale-105"
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-[0_4px_24px_rgba(123,130,102,0.14)] transition-transform duration-300 group-hover:scale-105"
                     style={{ background: `${step.color}12`, border: `1.5px solid ${step.color}22` }}
                   >
                     <Icon className="w-9 h-9" style={{ color: step.color }} />
@@ -107,7 +107,7 @@ export default function HowItWorks() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold mb-3" style={{ color: '#0F2318' }}>
+                <h3 className="text-xl font-bold mb-3" style={{ color: '#182019' }}>
                   {lang === 'ar' ? step.title_ar : step.title_en}
                 </h3>
                 <p className="text-sm leading-relaxed max-w-xs" style={{ color: '#5A6672' }}>

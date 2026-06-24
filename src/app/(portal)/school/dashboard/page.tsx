@@ -17,13 +17,13 @@ const DEMO_TASKS = [
 ]
 
 const STATS = [
-  { icon: CheckSquare, value: '4/7', label_en: 'Criteria met', label_ar: 'معايير مكتملة', color: '#52B788' },
-  { icon: BookOpen,    value: '3',   label_en: 'Activities logged', label_ar: 'أنشطة مسجّلة', color: '#40916C' },
+  { icon: CheckSquare, value: '4/7', label_en: 'Criteria met', label_ar: 'معايير مكتملة', color: '#8B9B88' },
+  { icon: BookOpen,    value: '3',   label_en: 'Activities logged', label_ar: 'أنشطة مسجّلة', color: '#7B8266' },
   { icon: Users,       value: '240', label_en: 'Students involved', label_ar: 'طالب مشارك', color: '#006994' },
   { icon: TrendingUp,  value: '68%', label_en: 'Progress', label_ar: 'التقدم', color: '#C8A951' },
 ]
 
-const PROGRAMME_COLOR = '#52B788'
+const PROGRAMME_COLOR = '#8B9B88'
 
 function FadeIn({ children, delay = 0, className }: { children: React.ReactNode; delay?: number; className?: string }) {
   return (
@@ -42,7 +42,7 @@ export default function SchoolDashboardPage() {
       <FadeIn>
         <div
           className="rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-5"
-          style={{ background: 'linear-gradient(135deg, #0F2318, #1B4332)', boxShadow: '0 8px 32px rgba(64,145,108,0.2)' }}
+          style={{ background: 'linear-gradient(135deg, #182019, #182019)', boxShadow: '0 8px 32px rgba(123,130,102,0.2)' }}
         >
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
             style={{ background: `${PROGRAMME_COLOR}20`, border: `1px solid ${PROGRAMME_COLOR}30` }}>
@@ -61,8 +61,8 @@ export default function SchoolDashboardPage() {
           </div>
           <div className="flex flex-col items-end gap-1.5">
             <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold"
-              style={{ background: 'rgba(82,183,136,0.15)', border: '1px solid rgba(82,183,136,0.3)', color: '#74C69D' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#74C69D] animate-pulse" />
+              style={{ background: 'rgba(139,155,136,0.15)', border: '1px solid rgba(139,155,136,0.3)', color: '#A9B6A4' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A9B6A4] animate-pulse" />
               {lang === 'ar' ? 'الطلب قيد المراجعة' : 'Application under review'}
             </div>
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
@@ -78,7 +78,7 @@ export default function SchoolDashboardPage() {
           const Icon = s.icon
           return (
             <FadeIn key={i} delay={i * 0.07}>
-              <div className="bg-white rounded-2xl p-5 border border-[#C8E6D0]">
+              <div className="bg-warmwhite rounded-2xl p-5 border border-[#E7E4D6]">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${s.color}12` }}>
                     <Icon className="w-4.5 h-4.5" style={{ color: s.color }} />
@@ -95,19 +95,19 @@ export default function SchoolDashboardPage() {
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Tasks */}
         <FadeIn delay={0.1} className="lg:col-span-3">
-          <div className="bg-white rounded-3xl border border-[#C8E6D0] overflow-hidden h-full">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#C8E6D0]">
+          <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] overflow-hidden h-full">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#E7E4D6]">
               <h2 className="font-bold text-forest">{lang === 'ar' ? 'المهام القادمة' : 'Upcoming Tasks'}</h2>
               <Link href="/school/action-plan" className="text-xs font-semibold text-brand hover:text-emerald flex items-center gap-1">
                 {lang === 'ar' ? 'عرض الكل' : 'View all'} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="divide-y divide-[#F4F9F5]">
+            <div className="divide-y divide-[#FBF8F0]">
               {DEMO_TASKS.map(task => (
                 <div key={task.id} className="flex items-start gap-3.5 px-6 py-4">
                   <div className="mt-0.5 flex-shrink-0">
                     {task.done
-                      ? <CheckCircle2 className="w-5 h-5" style={{ color: '#52B788' }} />
+                      ? <CheckCircle2 className="w-5 h-5" style={{ color: '#8B9B88' }} />
                       : task.priority === 'high'
                       ? <AlertCircle className="w-5 h-5" style={{ color: '#E53E3E' }} />
                       : <Clock className="w-5 h-5" style={{ color: '#C8A951' }} />
@@ -144,7 +144,7 @@ export default function SchoolDashboardPage() {
         <div className="lg:col-span-2 space-y-5">
           {/* Progress card */}
           <FadeIn delay={0.15}>
-            <div className="bg-white rounded-3xl border border-[#C8E6D0] p-6">
+            <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-6">
               <h2 className="font-bold text-forest mb-4">{lang === 'ar' ? 'تقدم البرنامج' : 'Programme Progress'}</h2>
               <div className="space-y-3">
                 {[
@@ -158,10 +158,10 @@ export default function SchoolDashboardPage() {
                       <span className="font-medium text-forest">{lang === 'ar' ? item.label_ar : item.label_en}</span>
                       <span style={{ color: '#7A9080' }}>{item.pct}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full" style={{ background: '#EDF7F1' }}>
+                    <div className="h-1.5 rounded-full" style={{ background: '#E8ECE1' }}>
                       <div
                         className="h-1.5 rounded-full transition-all duration-700"
-                        style={{ width: `${item.pct}%`, background: item.pct === 100 ? '#40916C' : `linear-gradient(90deg, #52B788, #40916C)` }}
+                        style={{ width: `${item.pct}%`, background: item.pct === 100 ? '#7B8266' : `linear-gradient(90deg, #8B9B88, #7B8266)` }}
                       />
                     </div>
                   </div>
@@ -172,7 +172,7 @@ export default function SchoolDashboardPage() {
 
           {/* Quick links */}
           <FadeIn delay={0.2}>
-            <div className="bg-white rounded-3xl border border-[#C8E6D0] p-6">
+            <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-6">
               <h2 className="font-bold text-forest mb-4">{lang === 'ar' ? 'روابط سريعة' : 'Quick Links'}</h2>
               <div className="space-y-2">
                 {[
@@ -183,12 +183,12 @@ export default function SchoolDashboardPage() {
                   <Link
                     key={href}
                     href={href}
-                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-[#F4F9F5] group"
-                    style={{ color: '#3D4A42' }}
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-[#FBF8F0] group"
+                    style={{ color: '#4A544C' }}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" style={{ color: '#40916C' }} />
+                    <Icon className="w-4 h-4 flex-shrink-0" style={{ color: '#7B8266' }} />
                     {lang === 'ar' ? ar : en}
-                    <ArrowRight className="w-3.5 h-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#40916C' }} />
+                    <ArrowRight className="w-3.5 h-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#7B8266' }} />
                   </Link>
                 ))}
               </div>
@@ -199,11 +199,11 @@ export default function SchoolDashboardPage() {
           <FadeIn delay={0.25}>
             <div
               className="rounded-3xl p-5 text-center"
-              style={{ background: 'linear-gradient(135deg, #EDF7F1, #D8F3DC)', border: '1px solid #C8E6D0' }}
+              style={{ background: 'linear-gradient(135deg, #E8ECE1, #E8ECE1)', border: '1px solid #E7E4D6' }}
             >
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                style={{ background: 'rgba(82,183,136,0.15)', border: '2px solid rgba(82,183,136,0.3)' }}>
-                <Leaf className="w-7 h-7" style={{ color: '#40916C' }} />
+                style={{ background: 'rgba(139,155,136,0.15)', border: '2px solid rgba(139,155,136,0.3)' }}>
+                <Leaf className="w-7 h-7" style={{ color: '#7B8266' }} />
               </div>
               <p className="text-xs font-bold text-forest mb-1">
                 {lang === 'ar' ? 'هدفك' : 'Your Goal'}

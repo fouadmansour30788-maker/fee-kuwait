@@ -51,12 +51,12 @@ const YEAR_STATS = [
 ]
 
 const PROGRAMME_IMPACT = [
-  { icon: School, name_en: 'Eco-Schools', name_ar: 'المدارس البيئية', sites: 145, color: '#52B788', unit_en: 'certified schools', unit_ar: 'مدرسة معتمدة' },
+  { icon: School, name_en: 'Eco-Schools', name_ar: 'المدارس البيئية', sites: 145, color: '#8B9B88', unit_en: 'certified schools', unit_ar: 'مدرسة معتمدة' },
   { icon: Waves, name_en: 'Blue Flag', name_ar: 'العلم الأزرق', sites: 12, color: '#006994', unit_en: 'certified beaches & marinas', unit_ar: 'شاطئ ومرسى معتمد' },
   { icon: KeyRound, name_en: 'Green Key', name_ar: 'المفتاح الأخضر', sites: 31, color: '#C8A951', unit_en: 'certified tourism sites', unit_ar: 'موقع سياحي معتمد' },
-  { icon: Leaf, name_en: 'LEAF', name_ar: 'LEAF', sites: 8, color: '#1B4332', unit_en: 'participating schools', unit_ar: 'مدرسة مشاركة' },
-  { icon: Newspaper, name_en: 'YRE', name_ar: 'YRE', sites: 320, color: '#74C69D', unit_en: 'young reporters', unit_ar: 'مراسل شاب' },
-  { icon: GraduationCap, name_en: 'Eco-Campus', name_ar: 'الحرم البيئي', sites: 3, color: '#40916C', unit_en: 'certified universities', unit_ar: 'جامعة معتمدة' },
+  { icon: Leaf, name_en: 'LEAF', name_ar: 'LEAF', sites: 8, color: '#182019', unit_en: 'participating schools', unit_ar: 'مدرسة مشاركة' },
+  { icon: Newspaper, name_en: 'YRE', name_ar: 'YRE', sites: 320, color: '#A9B6A4', unit_en: 'young reporters', unit_ar: 'مراسل شاب' },
+  { icon: GraduationCap, name_en: 'Eco-Campus', name_ar: 'الحرم البيئي', sites: 3, color: '#7B8266', unit_en: 'certified universities', unit_ar: 'جامعة معتمدة' },
 ]
 
 export default function ImpactPage() {
@@ -68,7 +68,7 @@ export default function ImpactPage() {
     <>
       {/* Hero */}
       <section className="section-forest py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(82,183,136,0.15),transparent_55%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(139,155,136,0.15),transparent_55%)] pointer-events-none" />
         <div className="container-fee relative z-10 text-center max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand/35 text-light text-[11px] font-semibold tracking-widest uppercase mb-7">
@@ -94,10 +94,10 @@ export default function ImpactPage() {
         <div className="container-fee">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { target: 145, suffix: '+', label_en: 'Schools Certified', label_ar: 'مدرسة معتمدة', color: '#52B788' },
+              { target: 145, suffix: '+', label_en: 'Schools Certified', label_ar: 'مدرسة معتمدة', color: '#8B9B88' },
               { target: 89, suffix: '+', label_en: 'Businesses Certified', label_ar: 'منشأة معتمدة', color: '#006994' },
               { target: 125000, suffix: '+', label_en: 'Students Reached', label_ar: 'طالب وصلنا إليهم', color: '#C8A951' },
-              { target: 80, suffix: '+', label_en: 'Countries Connected', label_ar: 'دولة متصلة', color: '#40916C' },
+              { target: 80, suffix: '+', label_en: 'Countries Connected', label_ar: 'دولة متصلة', color: '#7B8266' },
             ].map((stat, i) => (
               <FadeIn key={i} delay={i * 0.08}>
                 <div className="text-center">
@@ -186,7 +186,7 @@ export default function ImpactPage() {
                     <p className="text-xs font-bold text-brand">{(y.students / 1000).toFixed(0)}k</p>
                     <motion.div
                       className="w-full rounded-t-lg"
-                      style={{ background: `linear-gradient(to top, #40916C, #52B788)` }}
+                      style={{ background: `linear-gradient(to top, #7B8266, #8B9B88)` }}
                       initial={{ height: 0 }}
                       animate={{ height: `${(y.students / maxStudents) * 100}%` }}
                       transition={{ duration: 0.8, delay: i * 0.1, ease: 'easeOut' }}
@@ -202,7 +202,7 @@ export default function ImpactPage() {
 
       {/* Global context */}
       <section className="section-forest py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(82,183,136,0.10),transparent_65%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,155,136,0.10),transparent_65%)] pointer-events-none" />
         <div className="container-fee relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <FadeIn>
@@ -236,7 +236,7 @@ export default function ImpactPage() {
             <FadeIn delay={0.15}>
               <div className="space-y-4">
                 {[
-                  { icon: Globe, title_en: 'International Recognition', title_ar: 'الاعتراف الدولي', desc_en: 'Every certified site in Kuwait is listed on the global FEE registry, visible to international tourists and partners.', desc_ar: 'كل موقع معتمد في الكويت مدرج في السجل العالمي لـ FEE، ومرئي للسياح والشركاء الدوليين.', color: '#52B788' },
+                  { icon: Globe, title_en: 'International Recognition', title_ar: 'الاعتراف الدولي', desc_en: 'Every certified site in Kuwait is listed on the global FEE registry, visible to international tourists and partners.', desc_ar: 'كل موقع معتمد في الكويت مدرج في السجل العالمي لـ FEE، ومرئي للسياح والشركاء الدوليين.', color: '#8B9B88' },
                   { icon: Users, title_en: 'Community Building', title_ar: 'بناء المجتمع', desc_en: 'Our certified institutions connect to a peer network of schools, hotels, and campuses across 80+ countries.', desc_ar: 'تتصل مؤسساتنا المعتمدة بشبكة نظيرة من المدارس والفنادق والحرم الجامعي في 80+ دولة.', color: '#006994' },
                   { icon: TreePine, title_en: 'Environmental Action', title_ar: 'العمل البيئي', desc_en: 'Beyond certification, our programmes drive measurable environmental action: waste reduction, energy savings, biodiversity.', desc_ar: 'ما وراء الشهادة، تدفع برامجنا إجراءات بيئية قابلة للقياس: تقليل النفايات وتوفير الطاقة والتنوع البيولوجي.', color: '#C8A951' },
                 ].map((item, i) => {

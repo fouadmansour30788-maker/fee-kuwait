@@ -96,7 +96,7 @@ function LoginForm() {
               <Link
                 href="/reset-password"
                 className="text-xs font-medium transition-colors"
-                style={{ color: '#40916C' }}
+                style={{ color: '#7B8266' }}
               >
                 {lang === 'ar' ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
               </Link>
@@ -127,7 +127,7 @@ function LoginForm() {
             type="submit"
             disabled={loading}
             className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold text-white transition-all duration-200 disabled:opacity-70 hover:-translate-y-0.5 mt-2"
-            style={{ background: 'linear-gradient(135deg, #40916C, #52B788)', boxShadow: '0 4px 16px rgba(64,145,108,0.4)' }}
+            style={{ background: 'linear-gradient(135deg, #7B8266, #8B9B88)', boxShadow: '0 4px 16px rgba(123,130,102,0.4)' }}
           >
             {loading ? (
               <>
@@ -148,24 +148,24 @@ function LoginForm() {
 
           {/* Divider */}
           <div className="flex items-center gap-3 py-1">
-            <div className="flex-1 h-px" style={{ background: '#E8F5EC' }} />
+            <div className="flex-1 h-px" style={{ background: '#E8ECE1' }} />
             <span className="text-xs font-medium" style={{ color: '#7A9080' }}>
               {lang === 'ar' ? 'أو' : 'or'}
             </span>
-            <div className="flex-1 h-px" style={{ background: '#E8F5EC' }} />
+            <div className="flex-1 h-px" style={{ background: '#E8ECE1' }} />
           </div>
 
           {/* Quick-access for demo */}
           <div className="grid grid-cols-2 gap-3">
             {[
-              { type: 'school', Icon: School, color: '#52B788', en: 'School Portal', ar: 'بوابة المدرسة', href: '/school/dashboard' },
+              { type: 'school', Icon: School, color: '#8B9B88', en: 'School Portal', ar: 'بوابة المدرسة', href: '/school/dashboard' },
               { type: 'business', Icon: Building2, color: '#C8A951', en: 'Business Portal', ar: 'بوابة المنشأة', href: '/business/dashboard' },
             ].map(({ type, Icon, color, en, ar, href }) => (
               <Link
                 key={type}
                 href={href}
                 className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 group"
-                style={{ background: `${color}0D`, border: `1px solid ${color}25`, color: '#3D4A42' }}
+                style={{ background: `${color}0D`, border: `1px solid ${color}25`, color: '#4A544C' }}
               >
                 <Icon className="w-4 h-4 flex-shrink-0" style={{ color }} />
                 <span className="text-xs">{lang === 'ar' ? ar : en}</span>
@@ -177,7 +177,7 @@ function LoginForm() {
         {/* Register link */}
         <p className="text-center mt-6 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
           {lang === 'ar' ? 'ليس لديك حساب؟ ' : "Don't have an account? "}
-          <Link href="/register" className="font-semibold transition-colors" style={{ color: '#74C69D' }}>
+          <Link href="/register" className="font-semibold transition-colors" style={{ color: '#A9B6A4' }}>
             {lang === 'ar' ? 'سجّل الآن' : 'Register now'}
           </Link>
         </p>

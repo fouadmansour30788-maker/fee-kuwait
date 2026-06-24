@@ -11,7 +11,7 @@ export const DEMO_NEWS = [
     published_at: '2024-03-15',
     category: 'news',
     programme: 'eco-schools',
-    colour: '#52B788',
+    colour: '#8B9B88',
   },
   {
     id: '2',
@@ -39,7 +39,7 @@ export const DEMO_NEWS = [
     published_at: '2024-01-20',
     category: 'news',
     programme: 'yre',
-    colour: '#74C69D',
+    colour: '#A9B6A4',
   },
   {
     id: '4',
@@ -67,7 +67,7 @@ export const DEMO_NEWS = [
     published_at: '2023-09-05',
     category: 'news',
     programme: 'eco-campus',
-    colour: '#40916C',
+    colour: '#7B8266',
   },
   {
     id: '6',
@@ -81,6 +81,6 @@ export const DEMO_NEWS = [
     published_at: '2023-07-18',
     category: 'report',
     programme: null,
-    colour: '#40916C',
+    colour: '#7B8266',
   },
 ]

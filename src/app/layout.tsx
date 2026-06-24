@@ -1,12 +1,20 @@
 import type { Metadata } from 'next'
-import { Plus_Jakarta_Sans, Cairo } from 'next/font/google'
+import { Inter, Playfair_Display, Cairo } from 'next/font/google'
 import './globals.css'
 import Providers from '@/components/ui/Providers'
 
-const jakarta = Plus_Jakarta_Sans({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-jakarta',
+  variable: '--font-inter',
   display: 'swap',
+})
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+  weight: ['500', '600', '700'],
+  style: ['normal', 'italic'],
 })
 
 const cairo = Cairo({
@@ -43,7 +51,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${jakarta.variable} ${cairo.variable}`}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${cairo.variable}`}>
       <body className="antialiased">
         <Providers>
           {children}

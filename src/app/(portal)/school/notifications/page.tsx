@@ -22,7 +22,7 @@ const NOTIFICATIONS = [
     id: 2,
     type: 'info',
     Icon: CheckCircle2,
-    color: '#40916C',
+    color: '#7B8266',
     title_en: 'Application Received',
     title_ar: 'تم استلام الطلب',
     body_en: 'Your registration application has been successfully received. Application ID: KW-2026-00142.',
@@ -46,7 +46,7 @@ const NOTIFICATIONS = [
     id: 4,
     type: 'info',
     Icon: Info,
-    color: '#52B788',
+    color: '#8B9B88',
     title_en: 'New Resource Available',
     title_ar: 'مورد جديد متاح',
     body_en: 'The updated Environmental Review Template (v2) is now available in your Resources library.',
@@ -70,7 +70,7 @@ const NOTIFICATIONS = [
     id: 6,
     type: 'info',
     Icon: CheckCircle2,
-    color: '#40916C',
+    color: '#7B8266',
     title_en: 'Documents Verified',
     title_ar: 'تم التحقق من المستندات',
     body_en: 'Your submitted documents have passed the initial verification check.',
@@ -119,7 +119,7 @@ export default function NotificationsPage() {
           {unread > 0 && (
             <button onClick={markAllRead}
               className="inline-flex items-center gap-2 text-sm font-semibold transition-colors hover:text-forest"
-              style={{ color: '#52B788' }}>
+              style={{ color: '#8B9B88' }}>
               <CheckCheck className="w-4 h-4" />
               {lang === 'ar' ? 'تعيين الكل كمقروء' : 'Mark all read'}
             </button>
@@ -136,11 +136,11 @@ export default function NotificationsPage() {
           ].map(tab => (
             <button key={tab.label_en}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold"
-              style={{ background: '#F4F9F5', color: '#7A9080' }}>
+              style={{ background: '#FBF8F0', color: '#7A9080' }}>
               {lang === 'ar' ? tab.label_ar : tab.label_en}
               {tab.count > 0 && (
                 <span className="w-4 h-4 rounded-full text-[10px] flex items-center justify-center"
-                  style={{ background: '#40916C', color: '#fff' }}>{tab.count}</span>
+                  style={{ background: '#7B8266', color: '#fff' }}>{tab.count}</span>
               )}
             </button>
           ))}
@@ -149,9 +149,9 @@ export default function NotificationsPage() {
 
       {notifications.length === 0 ? (
         <FadeIn delay={0.1}>
-          <div className="bg-white rounded-3xl border border-[#C8E6D0] p-12 flex flex-col items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#EDF7F1' }}>
-              <Bell className="w-7 h-7" style={{ color: '#74C69D' }} />
+          <div className="bg-warmwhite rounded-3xl border border-[#E7E4D6] p-12 flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#E8ECE1' }}>
+              <Bell className="w-7 h-7" style={{ color: '#A9B6A4' }} />
             </div>
             <p className="text-sm font-semibold text-forest">{lang === 'ar' ? 'لا توجد إشعارات' : 'No notifications'}</p>
             <p className="text-xs text-center" style={{ color: '#7A9080' }}>
@@ -167,8 +167,8 @@ export default function NotificationsPage() {
             return (
               <FadeIn key={notif.id} delay={0.06 + i * 0.04}>
                 <div
-                  className="bg-white rounded-2xl border p-4 flex items-start gap-4 transition-all"
-                  style={{ borderColor: !notif.read ? `${notif.color}40` : '#C8E6D0' }}
+                  className="bg-warmwhite rounded-2xl border p-4 flex items-start gap-4 transition-all"
+                  style={{ borderColor: !notif.read ? `${notif.color}40` : '#E7E4D6' }}
                   onClick={() => markRead(notif.id)}>
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
                     style={{ background: `${notif.color}14`, border: `1px solid ${notif.color}28` }}>
@@ -189,13 +189,13 @@ export default function NotificationsPage() {
                         style={{ background: `${notif.color}14`, color: notif.color }}>
                         {lang === 'ar' ? typeLabel.ar : typeLabel.en}
                       </span>
-                      <span className="text-[11px]" style={{ color: '#A8BFB0' }}>{notif.date}</span>
+                      <span className="text-[11px]" style={{ color: '#A9B6A4' }}>{notif.date}</span>
                     </div>
                   </div>
                   <button
                     onClick={e => { e.stopPropagation(); dismiss(notif.id) }}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-[#F4F9F5] transition-colors flex-shrink-0">
-                    <Trash2 className="w-3.5 h-3.5" style={{ color: '#C8E6D0' }} />
+                    className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-[#FBF8F0] transition-colors flex-shrink-0">
+                    <Trash2 className="w-3.5 h-3.5" style={{ color: '#E7E4D6' }} />
                   </button>
                 </div>
               </FadeIn>
