@@ -5,9 +5,10 @@ import Link from 'next/link'
 import {
   CheckCircle2, Clock, AlertCircle, ArrowRight,
   School, FileText, CheckSquare, BookOpen, Leaf,
-  TrendingUp, Star, Users,
+  TrendingUp, Star, Users, ShieldCheck,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
+import { AUDIT_APPLICATIONS } from '@/lib/data/audits'
 
 const DEMO_TASKS = [
   { id: 1, title_en: 'Submit your Eco-Committee list', title_ar: 'أرسل قائمة اللجنة البيئية', due: '2026-06-10', done: false, priority: 'high' },
@@ -35,6 +36,11 @@ function FadeIn({ children, delay = 0, className }: { children: React.ReactNode;
 
 export default function SchoolDashboardPage() {
   const { lang } = useLang()
+
+  // Feedback the FEE auditor has chosen to share with the applicant
+  const sharedFeedback = AUDIT_APPLICATIONS
+    .flatMap(a => a.comments.filter(c => c.visibility === 'shared').map(c => ({ ...c, app: a.entity })))
+    .slice(0, 3)
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -192,6 +198,32 @@ export default function SchoolDashboardPage() {
                   </Link>
                 ))}
               </div>
+            </div>
+          </FadeIn>
+
+          {/* Reviewer feedback (shared by the FEE auditor) */}
+          <FadeIn delay={0.22}>
+            <div className="bg-white rounded-3xl border border-[#C8E6D0] p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <ShieldCheck className="w-4 h-4" style={{ color: '#40916C' }} />
+                <h2 className="font-bold text-forest">{lang === 'ar' ? 'ملاحظات المدقّق' : 'Reviewer Feedback'}</h2>
+              </div>
+              {sharedFeedback.length === 0 ? (
+                <p className="text-xs" style={{ color: '#7A9080' }}>
+                  {lang === 'ar' ? 'لا توجد ملاحظات بعد.' : 'No feedback yet.'}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {sharedFeedback.map(c => (
+                    <div key={c.id} className="rounded-2xl p-3.5" style={{ background: '#EDF7F1', border: '1px solid #C8E6D0' }}>
+                      <p className="text-sm leading-relaxed text-forest">{c.body}</p>
+                      <p className="text-[11px] mt-2" style={{ color: '#7A9080' }}>
+                        {c.author} · {c.at}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </FadeIn>
 

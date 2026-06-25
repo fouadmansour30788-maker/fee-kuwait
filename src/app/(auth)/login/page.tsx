@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, School, Building2 } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, School, Building2, ShieldCheck, Gavel } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 
 function LoginForm() {
@@ -171,6 +171,34 @@ function LoginForm() {
                 <span className="text-xs">{lang === 'ar' ? ar : en}</span>
               </Link>
             ))}
+          </div>
+
+          {/* Staff portals */}
+          <div className="grid grid-cols-3 gap-2.5">
+            <Link
+              href="/auditor/dashboard"
+              className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-center transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: '#1B43320D', border: '1px solid #1B433225', color: '#3D4A42' }}
+            >
+              <ShieldCheck className="w-4 h-4" style={{ color: '#40916C' }} />
+              <span className="text-[11px] font-semibold leading-tight">{lang === 'ar' ? 'المدقّق' : 'Auditor'}</span>
+            </Link>
+            <Link
+              href="/cb/dashboard"
+              className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-center transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: '#C8A9510D', border: '1px solid #C8A95130', color: '#3D4A42' }}
+            >
+              <Gavel className="w-4 h-4" style={{ color: '#C8A951' }} />
+              <span className="text-[11px] font-semibold leading-tight">{lang === 'ar' ? 'جهة الاعتماد' : 'Cert. Body'}</span>
+            </Link>
+            <Link
+              href="/dashboard"
+              className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-center transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: '#0D1B2A0D', border: '1px solid #0D1B2A25', color: '#3D4A42' }}
+            >
+              <Building2 className="w-4 h-4" style={{ color: '#1A2E45' }} />
+              <span className="text-[11px] font-semibold leading-tight">{lang === 'ar' ? 'الإدارة' : 'Admin'}</span>
+            </Link>
           </div>
         </form>
 
