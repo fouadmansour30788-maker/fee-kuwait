@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileText, CheckSquare, BookOpen,
   Bell, FolderOpen, Map, Award, Leaf, Menu, X, LogOut,
-  ChevronRight,
+  ChevronRight, KeyRound,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 
@@ -24,7 +24,8 @@ const SCHOOL_NAV = [
 const BUSINESS_NAV = [
   { href: '/business/dashboard',    icon: LayoutDashboard, en: 'Dashboard',    ar: 'لوحة التحكم' },
   { href: '/business/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
-  { href: '/business/criteria',     icon: CheckSquare,     en: 'Criteria',     ar: 'المعايير' },
+  { href: '/business/criteria',     icon: CheckSquare,     en: 'Blue Flag Criteria', ar: 'معايير العلم الأزرق' },
+  { href: '/business/green-key-criteria', icon: KeyRound,  en: 'Green Key Criteria', ar: 'معايير المفتاح الأخضر' },
   { href: '/business/inspections',  icon: Map,             en: 'Inspections',  ar: 'التفتيش' },
   { href: '/business/certification',icon: Award,           en: 'Certification',ar: 'الشهادة' },
 ]
