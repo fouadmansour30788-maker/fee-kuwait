@@ -1,0 +1,93 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { LayoutDashboard, Gavel, Menu, X, LogOut, ChevronRight, Bell } from 'lucide-react'
+import { CURRENT_CB } from '@/lib/data/audits'
+
+const NAV = [
+  { href: '/cb/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+]
+
+export default function CbLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const initials = CURRENT_CB.name.replace('Dr. ', '').split(' ').map(w => w[0]).slice(0, 2).join('')
+
+  return (
+    <div className="min-h-screen flex" style={{ background: '#F0F4F8' }}>
+      {sidebarOpen && <div className="fixed inset-0 z-20 bg-black/40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 w-60 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ background: 'linear-gradient(180deg, #2A2410 0%, #4A3F1A 100%)' }}
+      >
+        <div className="h-16 flex items-center gap-3 px-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #C8A951, #E8D5A3)' }}>
+            <Gavel className="w-4 h-4" style={{ color: '#2A2410' }} />
+          </div>
+          <div>
+            <p className="text-white font-bold text-sm leading-tight">FEE Kuwait</p>
+            <p className="text-[10px] font-semibold" style={{ color: '#E8D5A3' }}>Certification Body</p>
+          </div>
+          <button className="ml-auto lg:hidden text-white/40 hover:text-white" onClick={() => setSidebarOpen(false)}>
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
+          {NAV.map(({ href, icon: Icon, label }) => {
+            const active = pathname === href || pathname.startsWith(href + '/')
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setSidebarOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+                style={active ? { background: 'rgba(200,169,81,0.18)', color: '#E8D5A3' } : { color: 'rgba(255,255,255,0.48)' }}
+              >
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                {label}
+                {active && <ChevronRight className="w-3.5 h-3.5 ml-auto" />}
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="p-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+          <Link href="/login" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium" style={{ color: 'rgba(255,255,255,0.32)' }}>
+            <LogOut className="w-4 h-4" /> Sign out
+          </Link>
+        </div>
+      </aside>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-16 flex items-center gap-4 px-6 border-b bg-white" style={{ borderColor: '#E2E8F0' }}>
+          <button className="lg:hidden p-2 rounded-lg" style={{ color: '#475569' }} onClick={() => setSidebarOpen(true)}>
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: '#FEF9EC', color: '#854D0E' }}>
+            <Gavel className="w-3.5 h-3.5" /> Certification Decisions
+          </div>
+          <div className="flex-1" />
+          <button className="relative p-2 rounded-xl transition-colors hover:bg-slate-100">
+            <Bell className="w-5 h-5" style={{ color: '#64748B' }} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
+          </button>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'linear-gradient(135deg, #C8A951, #E8D5A3)', color: '#2A2410' }}>
+              {initials}
+            </div>
+            <div className="hidden md:block">
+              <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>{CURRENT_CB.name}</p>
+              <p className="text-xs" style={{ color: '#94A3B8' }}>Certification Body</p>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-auto p-6 md:p-8">{children}</main>
+      </div>
+    </div>
+  )
+}

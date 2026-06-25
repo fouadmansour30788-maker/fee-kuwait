@@ -5,8 +5,9 @@ import { motion } from 'framer-motion'
 import {
   Search, Filter, Clock, CheckCircle2, XCircle, AlertCircle,
   School, Waves, KeyRound, Leaf, Newspaper, GraduationCap,
-  Eye, Download, ChevronDown,
+  Eye, Download, ChevronDown, ShieldCheck,
 } from 'lucide-react'
+import { AUDITORS } from '@/lib/data/audits'
 
 type Status = 'all' | 'pending' | 'review' | 'approved' | 'rejected'
 
@@ -33,6 +34,7 @@ const STATUS_CONFIG = {
 export default function ApplicationsPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<Status>('all')
+  const [assignedAuditor, setAssignedAuditor] = useState<Record<string, string>>({})
 
   const filtered = APPLICATIONS.filter(a => {
     const matchSearch = a.name.toLowerCase().includes(search.toLowerCase()) || a.id.includes(search)
@@ -114,6 +116,7 @@ export default function ApplicationsPage() {
                 <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider hidden lg:table-cell" style={{ color: '#94A3B8' }}>Governorate</th>
                 <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider hidden lg:table-cell" style={{ color: '#94A3B8' }}>Date</th>
                 <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider" style={{ color: '#94A3B8' }}>Status</th>
+                <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider" style={{ color: '#94A3B8' }}>Auditor</th>
                 <th className="px-4 py-3.5" />
               </tr>
             </thead>
@@ -142,6 +145,22 @@ export default function ApplicationsPage() {
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg" style={{ background: cfg.bg }}>
                         <StatusIcon className="w-3 h-3" style={{ color: cfg.color }} />
                         <span className="text-xs font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" style={{ color: assignedAuditor[app.id] ? '#40916C' : '#CBD5E1' }} />
+                        <select
+                          value={assignedAuditor[app.id] ?? ''}
+                          onChange={e => setAssignedAuditor(prev => ({ ...prev, [app.id]: e.target.value }))}
+                          className="text-xs rounded-lg px-2 py-1 outline-none cursor-pointer max-w-[140px]"
+                          style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: assignedAuditor[app.id] ? '#1E293B' : '#94A3B8' }}
+                        >
+                          <option value="">Assign…</option>
+                          {AUDITORS.filter(a => a.active).map(a => (
+                            <option key={a.id} value={a.id}>{a.name}</option>
+                          ))}
+                        </select>
                       </div>
                     </td>
                     <td className="px-4 py-3.5">

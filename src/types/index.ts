@@ -1,7 +1,14 @@
-export type Role = 'school' | 'business' | 'admin' | 'super_admin'
+export type Role = 'school' | 'business' | 'admin' | 'super_admin' | 'auditor' | 'certification_body'
 export type Programme = 'eco-schools' | 'blue-flag' | 'green-key' | 'leaf' | 'yre' | 'eco-campus'
 export type Language = 'en' | 'ar'
-export type ApplicationStatus = 'new' | 'under_review' | 'documents_pending' | 'site_visit_scheduled' | 'approved' | 'rejected'
+// Green Key 7-stage flow + legacy values
+export type ApplicationStatus =
+  | 'new' | 'under_review' | 'documents_pending' | 'site_visit_scheduled' | 'approved' | 'rejected'
+  | 'pre_screening' | 'application_setup' | 'submission' | 'audit'
+  | 'cb_review' | 'certified' | 'certified_rectification' | 'not_certified' | 'surveillance'
+// Auditor records conformity; CB records the certification decision
+export type ConformityJudgement = 'pending' | 'conform' | 'minor_nc' | 'major_nc'
+export type CbDecision = 'pending' | 'certified' | 'certified_rectification' | 'not_certified'
 export type DocumentStatus = 'pending' | 'approved' | 'rejected' | 'requested'
 export type StepStatus = 'not_started' | 'in_progress' | 'submitted' | 'approved' | 'rejected'
 
@@ -60,11 +67,50 @@ export interface Application {
   programme: Programme
   status: ApplicationStatus
   assigned_to?: string
+  auditor_id?: string
+  auditor_assigned_at?: string
+  // Categories & filters
+  main_category?: string
+  sub_categories?: string[]
+  conformity_pct?: number
+  // Auditor outputs
+  conformity_judgement?: ConformityJudgement
+  audit_report_submitted_at?: string
+  // Certification Body
+  cb_id?: string
+  cb_decision?: CbDecision
+  cb_decision_at?: string
   review_notes?: string
   rejection_reason?: string
   submitted_at: string
   updated_at: string
   review_deadline?: string
+}
+
+export interface AuditTrailEntry {
+  id: string
+  application_id?: string
+  entity: string
+  field: string
+  previous_value?: string
+  new_value?: string
+  user_id?: string
+  user_name?: string
+  user_role?: Role
+  created_at: string
+}
+
+export type CommentVisibility = 'internal' | 'shared'
+
+export interface ApplicationComment {
+  id: string
+  application_id: string
+  author_id: string
+  author_name?: string
+  author_role?: Role
+  body: string
+  visibility: CommentVisibility
+  created_at: string
 }
 
 export interface Document {
