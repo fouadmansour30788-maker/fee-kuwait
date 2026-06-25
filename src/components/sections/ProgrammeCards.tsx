@@ -84,11 +84,11 @@ function ProgrammeTiltCard({ prog, index }: { prog: typeof PROGRAMMES[number]; i
         style={{ background: 'linear-gradient(180deg, #173a27 0%, #102a1c 100%)', transform: 'translateZ(16px)' }}>
         {/* Overlapping circular icon badge */}
         <div
-          className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+          className="absolute -top-7 left-1/2 w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
           style={{
             background: `linear-gradient(135deg, ${prog.color}, ${prog.color}CC)`,
             border: '3px solid #102a1c',
-            transform: 'translateZ(50px)',
+            transform: 'translateX(-50%) translateZ(50px)',
           }}
         >
           <Icon className="w-6 h-6 text-white" />
@@ -103,7 +103,7 @@ function ProgrammeTiltCard({ prog, index }: { prog: typeof PROGRAMMES[number]; i
         <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all duration-200 group-hover:gap-2.5"
           style={{ color: prog.color }}>
           {t(lang, 'programmes.learn_more')}
-          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1 rtl-flip" />
+          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
         </span>
       </div>
     </motion.a>
@@ -161,7 +161,7 @@ export default function ProgrammeCards() {
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-sm text-[#0F2318] bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(0,0,0,0.3)]"
           >
             {lang === 'ar' ? 'عرض جميع البرامج' : 'View All Programmes'}
-            <ArrowRight className="w-4 h-4 rtl-flip" />
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </motion.div>
       </div>

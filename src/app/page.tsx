@@ -1,7 +1,6 @@
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ChatWidget from '@/components/chat/ChatWidget'
-import DemoBanner from '@/components/ui/DemoBanner'
 import FallingLeaf from '@/components/ui/FallingLeaf'
 import SmoothScrollProvider from '@/components/ui/SmoothScrollProvider'
 import ScrollProgressBar from '@/components/ui/ScrollProgressBar'
@@ -24,7 +23,6 @@ export default function HomePage() {
   return (
     <SmoothScrollProvider>
       <ScrollProgressBar />
-      {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' && <DemoBanner />}
       <Navbar />
       <FallingLeaf />
       <main>
