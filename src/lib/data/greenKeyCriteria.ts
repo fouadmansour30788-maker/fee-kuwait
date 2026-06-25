@@ -1,11 +1,11 @@
-// ── Green Key Criteria 2026–2031 ────────────────────────────────────
+// ── Green Key Criteria 2026-2031 ────────────────────────────────────
 // Structured index of the official Green Key criteria. Each criterion is
 // marked Imperative (I) or Guideline (G) and lists the establishment
 // categories it applies to. For criteria that are imperative for some
 // categories and guideline for others (I/G), `imperativeFor` lists the
 // categories that must treat it as imperative.
 //
-// Source: "Green Key Criteria and Explanatory Notes, 1 Oct 2026 – 31 Dec 2031".
+// Source: "Green Key Criteria and Explanatory Notes, 1 Oct 2026 - 31 Dec 2031".
 // This is a representative, structured dataset covering all 7 sections at
 // criterion level (number, statement, I/G, categories). Full explanatory
 // notes per criterion can be added to `note` as needed.
@@ -54,12 +54,12 @@ export interface Criterion {
 // Certification-period requirement: 100% of imperative criteria always,
 // plus an increasing % of applicable guideline criteria.
 export const GUIDELINE_CYCLE = [
-  { period: 'First',               years: '1–2',   imperative: 100, guideline: 0 },
-  { period: 'Second',              years: '3–4',   imperative: 100, guideline: 10 },
-  { period: 'Third',               years: '5–6',   imperative: 100, guideline: 20 },
-  { period: 'Fourth',              years: '7–8',   imperative: 100, guideline: 30 },
-  { period: 'Fifth',               years: '9–10',  imperative: 100, guideline: 40 },
-  { period: 'Sixth & thereafter',  years: '11–12+', imperative: 100, guideline: 50 },
+  { period: 'First',               years: '1-2',   imperative: 100, guideline: 0 },
+  { period: 'Second',              years: '3-4',   imperative: 100, guideline: 10 },
+  { period: 'Third',               years: '5-6',   imperative: 100, guideline: 20 },
+  { period: 'Fourth',              years: '7-8',   imperative: 100, guideline: 30 },
+  { period: 'Fifth',               years: '9-10',  imperative: 100, guideline: 40 },
+  { period: 'Sixth & thereafter',  years: '11-12+', imperative: 100, guideline: 50 },
 ]
 
 export const GK_CRITERIA: Criterion[] = [
@@ -74,14 +74,14 @@ export const GK_CRITERIA: Criterion[] = [
   { id: '1.8',  section: 1, subsection: 'Corporate Social Responsibility', title: 'Active cooperation with external stakeholders on environmental/social community initiatives.', type: 'I', categories: ALL, note: 'Min. 1 active two-way cooperation (2 if >50 employees).' },
   { id: '1.9',  section: 1, subsection: 'Corporate Social Responsibility', title: 'Demonstrates respect for Indigenous Peoples in operations and representations.', type: 'I', categories: ALL, note: 'N/A if no Indigenous Peoples within 100 km radius.' },
   { id: '1.10', section: 1, subsection: 'Corporate Social Responsibility', title: 'Procedures for equitable recruitment or equitable development.', type: 'I/G', categories: ALL, imperativeFor: ['HH', 'CHP', 'CC', 'A'], note: 'Imperative for >50 employees; equal-opportunity policy + ≥1 action.' },
-  { id: '1.11', section: 1, subsection: 'Corporate Social Responsibility', title: 'Access for people with additional needs — min. 1 defined accessibility category.', type: 'I/G', categories: ALL, imperativeFor: ['HH', 'CC', 'A'] },
+  { id: '1.11', section: 1, subsection: 'Corporate Social Responsibility', title: 'Access for people with additional needs - min. 1 defined accessibility category.', type: 'I/G', categories: ALL, imperativeFor: ['HH', 'CC', 'A'] },
   { id: '1.12', section: 1, subsection: 'Corporate Social Responsibility', title: 'Plants, animals and historical/archaeological artefacts sold/displayed only per international law.', type: 'I', categories: ALL, note: 'No trade/display of IUCN-threatened species.' },
   { id: '1.13', section: 1, subsection: 'Corporate Social Responsibility', title: 'No entertainment, excursions or activities involving exploitation or suffering of animals.', type: 'I', categories: ALL },
   { id: '1.14', section: 1, subsection: 'Corporate Social Responsibility', title: 'Animal welfare guidelines followed when animals are kept on premises.', type: 'I', categories: ALL, note: 'ABTA Five Domains Model; annual veterinary assessment.' },
   { id: '1.15', section: 1, subsection: 'Corporate Social Responsibility', title: 'Develops and implements a Code of Business Conduct.', type: 'G', categories: ALL },
   { id: '1.16', section: 1, subsection: 'Corporate Social Responsibility', title: 'Actively promotes the physical and mental wellbeing of employees.', type: 'G', categories: ['HH', 'CHP', 'CC', 'R', 'A'] },
   { id: '1.17', section: 1, subsection: 'Corporate Social Responsibility', title: 'Traineeships / flexible employment for long-term unemployed or limited-employability people.', type: 'G', categories: ALL },
-  { id: '1.18', section: 1, subsection: 'Corporate Social Responsibility', title: 'Access for people with additional needs — min. 2 defined accessibility categories.', type: 'G', categories: ALL },
+  { id: '1.18', section: 1, subsection: 'Corporate Social Responsibility', title: 'Access for people with additional needs - min. 2 defined accessibility categories.', type: 'G', categories: ALL },
   { id: '1.19', section: 1, subsection: 'Corporate Social Responsibility', title: 'Local micro/small entrepreneurs can sell sustainable, locally-rooted products.', type: 'G', categories: ALL },
   { id: '1.20', section: 1, subsection: 'Team Engagement', title: 'Management briefs staff at least 2 times per year on sustainability initiatives.', type: 'I', categories: ALL, note: '1x/year for seasonal or ≤5 staff.' },
   { id: '1.21', section: 1, subsection: 'Team Engagement', title: 'Annual sustainability training is provided to staff.', type: 'I', categories: ALL, note: 'Progressive; HH/CHP also provide ≥1 role-specific training/year.' },

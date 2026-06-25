@@ -67,7 +67,7 @@ export default function GreenKeyCriteriaPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-forest">{lang === 'ar' ? 'معايير المفتاح الأخضر' : 'Green Key Criteria'}</h1>
-            <p className="text-sm" style={{ color: '#7A9080' }}>2026–2031 · {lang === 'ar' ? 'مصفّاة حسب فئة المنشأة' : 'filtered by establishment category'}</p>
+            <p className="text-sm" style={{ color: '#7A9080' }}>2026-2031 · {lang === 'ar' ? 'مصفّاة حسب فئة المنشأة' : 'filtered by establishment category'}</p>
           </div>
         </div>
       </motion.div>
