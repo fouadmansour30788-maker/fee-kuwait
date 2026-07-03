@@ -28,6 +28,13 @@ const fadeUp = {
   hidden: { opacity: 0, y: 28, filter: 'blur(6px)' },
   show:   { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as const } },
 }
+// No `filter` here: the headline contains a `-webkit-background-clip:text` gradient
+// span, and a filter on the ancestor makes WebKit paint the gradient as a solid box
+// on repaint (e.g. when the dir flips on language toggle). Keep it opacity+y only.
+const fadeUpText = {
+  hidden: { opacity: 0, y: 28 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as const } },
+}
 const stagger = { show: { transition: { staggerChildren: 0.11 } } }
 
 export default function HeroSection() {
@@ -106,7 +113,7 @@ export default function HeroSection() {
 
             {/* Headline */}
             <motion.h1
-              variants={fadeUp}
+              variants={fadeUpText}
               className="font-bold text-white leading-[1.04] tracking-[-0.03em] mb-6"
               style={{ fontSize: 'clamp(2.8rem, 6.5vw, 5rem)' }}
             >

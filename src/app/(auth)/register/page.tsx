@@ -170,7 +170,7 @@ function RegisterForm() {
         required('schoolType', lang === 'ar' ? 'نوع المدرسة مطلوب' : 'School type is required')
         required('contactName', lang === 'ar' ? 'اسم المدير مطلوب' : 'Principal name is required')
       } else {
-        required('businessType', lang === 'ar' ? 'نوع المنشأة مطلوب' : 'Business type is required')
+        required('businessType', lang === 'ar' ? 'نوع المنشأة مطلوب' : 'Establishment type is required')
         required('contactName', lang === 'ar' ? 'اسم جهة الاتصال مطلوب' : 'Contact name is required')
       }
       required('governorate', lang === 'ar' ? 'المحافظة مطلوبة' : 'Governorate is required')
@@ -227,7 +227,7 @@ function RegisterForm() {
         <div className="grid grid-cols-2 gap-4">
           {[
             { type: 'school' as const, Icon: School, color: '#52B788', en: 'A School', ar: 'مدرسة', subEn: 'Eco-Schools, LEAF, YRE', subAr: 'مدارس بيئية، LEAF، YRE' },
-            { type: 'business' as const, Icon: Building2, color: '#C8A951', en: 'A Business', ar: 'منشأة', subEn: 'Blue Flag, Green Key, Eco-Campus', subAr: 'علم أزرق، مفتاح أخضر، حرم بيئي' },
+            { type: 'business' as const, Icon: Building2, color: '#C8A951', en: 'A Hospitality Establishment', ar: 'منشأة ضيافة', subEn: 'Blue Flag, Green Key, Eco-Campus', subAr: 'علم أزرق، مفتاح أخضر، حرم بيئي' },
           ].map(({ type, Icon, color, en, ar, subEn, subAr }) => (
             <button
               key={type}
@@ -292,7 +292,7 @@ function RegisterForm() {
           style={{ background: institutionType === 'school' ? 'rgba(82,183,136,0.12)' : 'rgba(200,169,81,0.12)', border: `1px solid ${institutionType === 'school' ? 'rgba(82,183,136,0.3)' : 'rgba(200,169,81,0.3)'}`, color: institutionType === 'school' ? '#74C69D' : '#C8A951' }}>
           {institutionType === 'school'
             ? <><School className="w-3 h-3" />{lang === 'ar' ? 'تسجيل مدرسة' : 'School Registration'}</>
-            : <><Building2 className="w-3 h-3" />{lang === 'ar' ? 'تسجيل منشأة' : 'Business Registration'}</>}
+            : <><Building2 className="w-3 h-3" />{lang === 'ar' ? 'تسجيل منشأة ضيافة' : 'Hospitality Establishment Registration'}</>}
         </div>
         <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
           {lang === 'ar' ? 'إنشاء حسابك' : 'Create Your Account'}

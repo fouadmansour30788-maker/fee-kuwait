@@ -405,7 +405,7 @@ export default function AboutPage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link href="/register?type=business" className="btn-secondary">
-                {lang === 'ar' ? 'تسجيل منشأة' : 'Register a Business'}
+                {lang === 'ar' ? 'تسجيل منشأة ضيافة' : 'Register a Hospitality Establishment'}
               </Link>
             </div>
           </FadeInSection>

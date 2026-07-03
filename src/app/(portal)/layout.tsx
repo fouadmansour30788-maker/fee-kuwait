@@ -26,6 +26,7 @@ const BUSINESS_NAV = [
   { href: '/business/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
   { href: '/business/criteria',     icon: CheckSquare,     en: 'Blue Flag Criteria', ar: 'معايير العلم الأزرق' },
   { href: '/business/green-key-criteria', icon: KeyRound,  en: 'Green Key Criteria', ar: 'معايير المفتاح الأخضر' },
+  { href: '/business/documents',    icon: FolderOpen,      en: 'Documents by Year', ar: 'المستندات حسب السنة' },
   { href: '/business/inspections',  icon: Map,             en: 'Inspections',  ar: 'التفتيش' },
   { href: '/business/certification',icon: Award,           en: 'Certification',ar: 'الشهادة' },
 ]
@@ -39,7 +40,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const nav = isSchool ? SCHOOL_NAV : BUSINESS_NAV
   const portalName = isSchool
     ? (lang === 'ar' ? 'بوابة المدرسة' : 'School Portal')
-    : (lang === 'ar' ? 'بوابة المنشأة' : 'Business Portal')
+    : (lang === 'ar' ? 'بوابة منشأة الضيافة' : 'Hospitality Establishment Portal')
   const portalColor = isSchool ? '#52B788' : '#C8A951'
 
   return (

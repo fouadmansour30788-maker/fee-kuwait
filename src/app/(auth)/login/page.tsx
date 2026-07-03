@@ -159,7 +159,7 @@ function LoginForm() {
           <div className="grid grid-cols-2 gap-3">
             {[
               { type: 'school', Icon: School, color: '#52B788', en: 'School Portal', ar: 'بوابة المدرسة', href: '/school/dashboard' },
-              { type: 'business', Icon: Building2, color: '#C8A951', en: 'Business Portal', ar: 'بوابة المنشأة', href: '/business/dashboard' },
+              { type: 'business', Icon: Building2, color: '#C8A951', en: 'Hospitality Establishment Portal', ar: 'بوابة منشأة الضيافة', href: '/business/dashboard' },
             ].map(({ type, Icon, color, en, ar, href }) => (
               <Link
                 key={type}

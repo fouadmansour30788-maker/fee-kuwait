@@ -20,7 +20,7 @@ export const translations = {
       headline: 'Building a Sustainable Future for Kuwait',
       subheadline: 'FEE Kuwait runs 6 international environmental programmes — certifying schools, businesses, and beaches committed to a greener tomorrow.',
       cta_school: 'Join as a School',
-      cta_business: 'Join as a Business',
+      cta_business: 'Join as a Hospitality Establishment',
       cta_learn: 'Explore Programmes',
     },
     stats: {
@@ -98,7 +98,7 @@ export const translations = {
       headline: 'نبني مستقبلاً مستداماً للكويت',
       subheadline: 'تدير FEE الكويت 6 برامج بيئية دولية — تعتمد المدارس والشركات والشواطئ الملتزمة بغدٍ أكثر خضرة.',
       cta_school: 'انضم كمدرسة',
-      cta_business: 'انضم كشركة',
+      cta_business: 'انضم كمنشأة ضيافة',
       cta_learn: 'استكشف البرامج',
     },
     stats: {

@@ -76,7 +76,7 @@ export default function CtaSection() {
               style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)' }}
             >
               <Building2 className="w-5 h-5" />
-              {lang === 'ar' ? 'تسجيل مشروع' : 'Register a Business'}
+              {lang === 'ar' ? 'تسجيل منشأة ضيافة ضيافة' : 'Register a Hospitality Establishment'}
             </Link>
           </div>
         </motion.div>

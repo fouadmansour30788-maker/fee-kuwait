@@ -87,6 +87,23 @@ export interface Application {
   review_deadline?: string
 }
 
+// Multi-year, append-only certification documents (see migration 004).
+// Stored per application + criterion + cycle_year; add-only, locked on submission.
+export interface CriterionDocument {
+  id: string
+  application_id: string
+  programme: Programme
+  criterion_ref: string   // criterion number, e.g. '1.1'
+  cycle_year: number      // 2026, 2027, 2028...
+  name: string
+  file_url: string
+  file_type?: string
+  file_size?: number
+  uploaded_by: string
+  uploaded_at: string
+  checksum?: string
+}
+
 export interface AuditTrailEntry {
   id: string
   application_id?: string
