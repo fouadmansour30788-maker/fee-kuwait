@@ -21,7 +21,7 @@ const CONFORMITY_OPTIONS: { value: Conformity; label: string }[] = [
 export default function AuditorReviewPage({ params }: { params: { id: string } }) {
   const base = useMemo(() => getAuditApplication(params.id), [params.id])
 
-  const [status, setStatus] = useState<AuditStatus>(base?.status ?? 'in_review')
+  const [status, setStatus] = useState<AuditStatus>(base?.status ?? 'audit')
   const [docs, setDocs] = useState<AuditDoc[]>(base?.documents ?? [])
   const [comments, setComments] = useState<AuditComment[]>(base?.comments ?? [])
   const [trail, setTrail] = useState<TrailEntry[]>(base?.trail ?? [])
@@ -40,7 +40,8 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
     )
   }
 
-  const locked = status === 'audit_submitted' || ['cb_review', 'certified', 'certified_rectification', 'not_certified'].includes(status)
+  // The auditor may only record findings while the CB-assigned audit is in progress.
+  const locked = status !== 'audit'
   const now = () => new Date().toISOString().slice(0, 16).replace('T', ' ')
 
   function logTrail(field: string, prev: string, next: string) {
@@ -71,11 +72,11 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
   }
   function submitReport() {
     if (locked || conformity === 'pending') return
-    logTrail('Audit report', 'Draft', 'Submitted')
-    setStatus('audit_submitted')
+    logTrail('Audit report', 'Draft', 'Submitted to CB')
+    setStatus('cb_final')   // returns to the Certification Body for the final assessment
     setComments(prev => [...prev, {
       id: `C${prev.length + 1}-${Date.now()}`, author: CURRENT_AUDITOR.name, role: 'auditor', visibility: 'internal',
-      body: `Audit report submitted with conformity judgement: ${CONFORMITY_META[conformity].label}. Forwarded to the Certification Body.`, at: now(),
+      body: `Audit complete — conformity judgement: ${CONFORMITY_META[conformity].label}. Returned to the Certification Body for the final assessment.`, at: now(),
     }])
   }
 

@@ -5,11 +5,11 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft, FileText, Check, X, Clock, Download, Send, ShieldCheck, History,
-  Info, Gavel, Award, FileDown, Lock,
+  Info, Gavel, Award, FileDown, Lock, UserCheck, RotateCcw, ClipboardList, CheckCircle2,
 } from 'lucide-react'
 import {
-  getAuditApplication, CURRENT_CB, auditorById, DOC_STATUS_META, AUDIT_STATUS_META,
-  CONFORMITY_META, CB_DECISION_META,
+  getAuditApplication, CURRENT_CB, auditorById, AUDITORS, DOC_STATUS_META, AUDIT_STATUS_META,
+  CONFORMITY_META, CB_DECISION_META, CB_PRE_AUDIT, CB_FINAL, DECIDED,
   type AuditComment, type TrailEntry, type AuditStatus, type CbDecision,
 } from '@/lib/data/audits'
 
@@ -24,10 +24,12 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
 
   const [status, setStatus] = useState<AuditStatus>(base?.status ?? 'cb_review')
   const [decision, setDecision] = useState<CbDecision>(base?.cbDecision ?? 'pending')
+  const [auditorId, setAuditorId] = useState<string | null>(base?.auditorId ?? null)
   const [comments, setComments] = useState<AuditComment[]>(base?.comments ?? [])
   const [trail, setTrail] = useState<TrailEntry[]>(base?.trail ?? [])
   const [draft, setDraft] = useState('')
   const [shared, setShared] = useState(true)
+  const [pickAuditor, setPickAuditor] = useState<string>(base?.auditorId ?? '')
 
   if (!base) {
     return (
@@ -38,19 +40,48 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
     )
   }
 
-  const auditor = auditorById(base.auditorId)
-  const decided = ['certified', 'certified_rectification', 'not_certified'].includes(status)
+  const phase: 'review' | 'final' | 'decided' | 'other' =
+    CB_PRE_AUDIT.includes(status) ? 'review'
+      : CB_FINAL.includes(status) ? 'final'
+        : DECIDED.includes(status) ? 'decided' : 'other'
+
+  const auditor = auditorById(auditorId)
   const now = () => new Date().toISOString().slice(0, 16).replace('T', ' ')
 
+  function logTrail(field: string, prev: string, next: string) {
+    setTrail(t => [...t, { id: `T${t.length + 1}-${Date.now()}`, field, prev, next, user: CURRENT_CB.name, role: 'Certification Body', at: now() }])
+  }
+  function pushComment(body: string, visibility: 'shared' | 'internal' = 'shared') {
+    setComments(prev => [...prev, { id: `C${prev.length + 1}-${Date.now()}`, author: CURRENT_CB.name, role: 'cb', visibility, body, at: now() }])
+  }
+
+  // Pre-audit: return to the National Operator for changes
+  function requestChanges() {
+    if (phase !== 'review') return
+    logTrail('Application status', AUDIT_STATUS_META[status].label, AUDIT_STATUS_META['changes_requested'].label)
+    setStatus('changes_requested')
+    pushComment('Returned to the National Operator — please address the comments above and resubmit.')
+  }
+  // Pre-audit: assign an auditor and move to the audit stage
+  function assignAuditor() {
+    if (phase !== 'review' || !pickAuditor) return
+    const a = AUDITORS.find(x => x.id === pickAuditor)
+    setAuditorId(pickAuditor)
+    logTrail('Auditor assigned', auditor?.name ?? '—', a?.name ?? pickAuditor)
+    logTrail('Application status', AUDIT_STATUS_META[status].label, AUDIT_STATUS_META['audit'].label)
+    setStatus('audit')
+    pushComment(`Checklist review cleared. ${a?.name ?? 'An auditor'} has been assigned to conduct the on-site audit.`)
+  }
+  // Final: record the certification decision
   function record(d: CbDecision, s: AuditStatus, label: string) {
-    setTrail(t => [...t, { id: `T${t.length + 1}-${Date.now()}`, field: 'Certification decision', prev: CB_DECISION_META[decision].label, next: label, user: CURRENT_CB.name, role: 'Certification Body', at: now() }])
+    logTrail('Certification decision', CB_DECISION_META[decision].label, label)
     setDecision(d); setStatus(s)
-    setComments(prev => [...prev, { id: `C${prev.length + 1}-${Date.now()}`, author: CURRENT_CB.name, role: 'cb', visibility: 'shared', body: `Certification decision recorded: ${label}.`, at: now() }])
+    pushComment(`Certification decision recorded: ${label}.`)
   }
   function addComment() {
     const body = draft.trim()
     if (!body) return
-    setComments(prev => [...prev, { id: `C${prev.length + 1}-${Date.now()}`, author: CURRENT_CB.name, role: 'cb', visibility: shared ? 'shared' : 'internal', body, at: now() }])
+    pushComment(body, shared ? 'shared' : 'internal')
     setDraft('')
   }
 
@@ -61,7 +92,7 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
         <Link href="/cb/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium mb-4" style={{ color: '#64748B' }}>
-          <ArrowLeft className="w-4 h-4" /> Certification Reviews
+          <ArrowLeft className="w-4 h-4" /> Certification Body
         </Link>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
           className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
@@ -72,11 +103,18 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
                 <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span>
               </div>
               <p className="text-sm mt-1" style={{ color: '#64748B' }}>{base.id} · {base.programme} · {base.mainCategory}{base.subCategories.length ? ` (+ ${base.subCategories.join(', ')})` : ''}</p>
+              {base.submittedToCbAt && (
+                <p className="text-xs mt-1.5 inline-flex items-center gap-1.5" style={{ color: '#94A3B8' }}>
+                  <Lock className="w-3 h-3" /> Submitted by the National Operator on {base.submittedToCbAt} — checklist locked for audit integrity.
+                </p>
+              )}
             </div>
-            <div className="text-right">
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: '#94A3B8' }}>Conformity</p>
-              <p className="text-2xl font-bold" style={{ color: '#854D0E' }}>{base.conformityPct}%</p>
-            </div>
+            {phase !== 'review' && (
+              <div className="text-right">
+                <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: '#94A3B8' }}>Conformity</p>
+                <p className="text-2xl font-bold" style={{ color: '#854D0E' }}>{base.conformityPct}%</p>
+              </div>
+            )}
           </div>
           <p className="text-sm mt-4 leading-relaxed" style={{ color: '#475569' }}>{base.summary}</p>
         </motion.div>
@@ -85,80 +123,152 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
       {/* Role banner */}
       <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
         <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-        <p>You review the auditor&apos;s report and record the certification decision. You <strong>cannot conduct audits or modify auditor findings</strong> — those are shown read-only below.</p>
+        {phase === 'review' ? (
+          <p>Review the National Operator&apos;s submission. Either <strong>request changes</strong> (returns it to the National Operator) or <strong>assign an auditor</strong> to proceed to the on-site audit. You do not conduct the audit yourself.</p>
+        ) : (
+          <p>You review the auditor&apos;s report and record the certification decision. You <strong>cannot conduct audits or modify auditor findings</strong> — those are shown read-only below.</p>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
-          {/* Audit report (read-only) */}
-          <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05 }}
-            className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Audit report</h2>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: cm.bg, color: cm.color }}>{cm.label}</span>
-            </div>
-            <p className="text-sm mb-4" style={{ color: '#64748B' }}>
-              Submitted by <span className="font-semibold" style={{ color: '#1E293B' }}>{auditor?.name ?? 'Auditor'}</span>. Evidence findings (read-only):
-            </p>
-            <div className="space-y-2.5">
-              {base.documents.map(doc => {
-                const dm = DOC_STATUS_META[doc.status]
-                return (
-                  <div key={doc.id} className="flex items-center gap-3 rounded-xl border p-3" style={{ borderColor: '#E2E8F0' }}>
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#F1F5F9' }}>
-                      <FileText className="w-4 h-4" style={{ color: '#64748B' }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: '#1E293B' }}>{doc.name}</p>
-                      {doc.note && <p className="text-xs truncate" style={{ color: '#94A3B8' }}>{doc.note}</p>}
-                    </div>
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: dm.bg, color: dm.color }}>
-                      {doc.status === 'conform' ? <Check className="w-3 h-3" /> : doc.status === 'non_conform' ? <X className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                      {dm.label}
-                    </span>
-                    <button className="p-1.5 rounded-lg hover:bg-slate-100" style={{ color: '#94A3B8' }} aria-label="Download"><Download className="w-4 h-4" /></button>
-                  </div>
-                )
-              })}
-            </div>
-            <p className="flex items-center gap-1.5 text-xs mt-3" style={{ color: '#94A3B8' }}>
-              <Lock className="w-3 h-3" /> Auditor findings are immutable for the Certification Body.
-            </p>
-          </motion.section>
 
-          {/* Decision */}
-          <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}
-            className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-            <div className="flex items-center gap-2 mb-1">
-              <Gavel className="w-4 h-4" style={{ color: '#C8A951' }} />
-              <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Certification decision</h2>
-            </div>
-            <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Record the formal decision. This is communicated to the establishment by the National Operator.</p>
-
-            {decided ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: CB_DECISION_META[decision].bg, color: CB_DECISION_META[decision].color }}>
-                  <Award className="w-4 h-4" /> Decision recorded: {CB_DECISION_META[decision].label}
-                </div>
-                <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold" style={{ background: '#1E293B', color: '#fff' }}>
-                  <FileDown className="w-4 h-4" /> Generate Certification Body report (PDF)
-                </button>
+          {phase === 'review' ? (
+            /* ── Pre-audit: National Operator checklist (read-only) ── */
+            <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05 }}
+              className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <ClipboardList className="w-4 h-4" style={{ color: '#0891B2' }} />
+                <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Criteria checklist</h2>
               </div>
-            ) : (
-              <div className="flex flex-wrap gap-2.5">
-                {DECISIONS.map(d => {
-                  const m = CB_DECISION_META[d.value]
+              <p className="text-sm mb-4" style={{ color: '#64748B' }}>Completed by the National Operator with the establishment. Locked on submission:</p>
+              <div className="space-y-2">
+                {base.checklist.map(item => (
+                  <div key={item.ref} className="flex items-center gap-3 rounded-xl border p-3" style={{ borderColor: '#E2E8F0' }}>
+                    <span className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: item.met ? '#DCFCE7' : '#FEE2E2' }}>
+                      {item.met ? <Check className="w-3.5 h-3.5" style={{ color: '#16A34A' }} /> : <X className="w-3.5 h-3.5" style={{ color: '#DC2626' }} />}
+                    </span>
+                    <span className="text-xs font-mono font-semibold flex-shrink-0" style={{ color: '#94A3B8' }}>{item.ref}</span>
+                    <p className="text-sm flex-1 min-w-0" style={{ color: '#1E293B' }}>{item.title}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="flex items-center gap-1.5 text-xs mt-3" style={{ color: '#94A3B8' }}>
+                <Lock className="w-3 h-3" /> Read-only — the checklist locked when the National Operator submitted it.
+              </p>
+            </motion.section>
+          ) : (
+            /* ── Post-audit: auditor report (read-only) ── */
+            <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05 }}
+              className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Audit report</h2>
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: cm.bg, color: cm.color }}>{cm.label}</span>
+              </div>
+              <p className="text-sm mb-4" style={{ color: '#64748B' }}>
+                Submitted by <span className="font-semibold" style={{ color: '#1E293B' }}>{auditor?.name ?? 'Auditor'}</span>. Evidence findings (read-only):
+              </p>
+              <div className="space-y-2.5">
+                {base.documents.map(doc => {
+                  const dm = DOC_STATUS_META[doc.status]
                   return (
-                    <button key={d.value} onClick={() => record(d.value, d.status, d.label)}
-                      className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-                      style={{ background: m.bg, color: m.color, border: `1px solid ${m.color}33` }}>
-                      {d.label}
-                    </button>
+                    <div key={doc.id} className="flex items-center gap-3 rounded-xl border p-3" style={{ borderColor: '#E2E8F0' }}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#F1F5F9' }}>
+                        <FileText className="w-4 h-4" style={{ color: '#64748B' }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate" style={{ color: '#1E293B' }}>{doc.name}</p>
+                        {doc.note && <p className="text-xs truncate" style={{ color: '#94A3B8' }}>{doc.note}</p>}
+                      </div>
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: dm.bg, color: dm.color }}>
+                        {doc.status === 'conform' ? <Check className="w-3 h-3" /> : doc.status === 'non_conform' ? <X className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                        {dm.label}
+                      </span>
+                      <button className="p-1.5 rounded-lg hover:bg-slate-100" style={{ color: '#94A3B8' }} aria-label="Download"><Download className="w-4 h-4" /></button>
+                    </div>
                   )
                 })}
               </div>
-            )}
-          </motion.section>
+              <p className="flex items-center gap-1.5 text-xs mt-3" style={{ color: '#94A3B8' }}>
+                <Lock className="w-3 h-3" /> Auditor findings are immutable for the Certification Body.
+              </p>
+            </motion.section>
+          )}
+
+          {/* ── Action panel ── */}
+          {phase === 'review' && (
+            <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}
+              className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+              <div className="flex items-center gap-2 mb-1">
+                <UserCheck className="w-4 h-4" style={{ color: '#0891B2' }} />
+                <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Review outcome</h2>
+              </div>
+              <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Return to the National Operator for changes, or assign an auditor to proceed.</p>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                {/* Assign auditor */}
+                <div className="rounded-xl border p-4" style={{ borderColor: '#E2E8F0' }}>
+                  <p className="text-sm font-semibold mb-2" style={{ color: '#0F172A' }}>Assign an auditor</p>
+                  <select value={pickAuditor} onChange={e => setPickAuditor(e.target.value)}
+                    className="w-full text-sm px-3 py-2 rounded-lg outline-none mb-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#1E293B' }}>
+                    <option value="">Select an auditor…</option>
+                    {AUDITORS.filter(a => a.active).map(a => (
+                      <option key={a.id} value={a.id}>{a.name} — {a.specialties.join(', ')}</option>
+                    ))}
+                  </select>
+                  <button onClick={assignAuditor} disabled={!pickAuditor}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50" style={{ background: '#0891B2' }}>
+                    <UserCheck className="w-4 h-4" /> Assign & start audit
+                  </button>
+                </div>
+                {/* Request changes */}
+                <div className="rounded-xl border p-4" style={{ borderColor: '#E2E8F0' }}>
+                  <p className="text-sm font-semibold mb-2" style={{ color: '#0F172A' }}>Request changes</p>
+                  <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>Send it back to the National Operator with your comments. Add notes in the panel on the right first.</p>
+                  <button onClick={requestChanges}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold" style={{ background: '#FEF2F2', color: '#B91C1C', border: '1px solid #FECACA' }}>
+                    <RotateCcw className="w-4 h-4" /> Return for changes
+                  </button>
+                </div>
+              </div>
+            </motion.section>
+          )}
+
+          {(phase === 'final' || phase === 'decided') && (
+            <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}
+              className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+              <div className="flex items-center gap-2 mb-1">
+                <Gavel className="w-4 h-4" style={{ color: '#C8A951' }} />
+                <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Certification decision</h2>
+              </div>
+              <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Record the formal decision. This is communicated to the establishment by the National Operator.</p>
+
+              {phase === 'decided' ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: CB_DECISION_META[decision].bg, color: CB_DECISION_META[decision].color }}>
+                    <Award className="w-4 h-4" /> Decision recorded: {CB_DECISION_META[decision].label}
+                  </div>
+                  <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold" style={{ background: '#1E293B', color: '#fff' }}>
+                    <FileDown className="w-4 h-4" /> Generate Certification Body report (PDF)
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2.5">
+                  {DECISIONS.map(d => {
+                    const m = CB_DECISION_META[d.value]
+                    return (
+                      <button key={d.value} onClick={() => record(d.value, d.status, d.label)}
+                        className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                        style={{ background: m.bg, color: m.color, border: `1px solid ${m.color}33` }}>
+                        {d.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </motion.section>
+          )}
 
           {/* Traceability */}
           <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.14 }}
@@ -179,6 +289,11 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
                   </div>
                 </li>
               ))}
+              {trail.length === 0 && (
+                <li className="flex items-center gap-2 text-sm" style={{ color: '#94A3B8' }}>
+                  <CheckCircle2 className="w-4 h-4" /> No changes recorded yet.
+                </li>
+              )}
             </ol>
           </motion.section>
         </div>

@@ -197,7 +197,7 @@ function LoginForm() {
               style={{ background: '#0D1B2A0D', border: '1px solid #0D1B2A25', color: '#3D4A42' }}
             >
               <Building2 className="w-4 h-4" style={{ color: '#1A2E45' }} />
-              <span className="text-[11px] font-semibold leading-tight">{lang === 'ar' ? 'الإدارة' : 'Admin'}</span>
+              <span className="text-[11px] font-semibold leading-tight">{lang === 'ar' ? 'المشغّل الوطني' : 'National Operator'}</span>
             </Link>
           </div>
         </form>

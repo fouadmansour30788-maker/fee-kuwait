@@ -6,13 +6,13 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileCheck, Award, Newspaper,
   Users, BarChart3, UserCog, Leaf, Menu, X,
-  LogOut, ChevronRight, Bell, Search, LineChart, ShieldCheck,
+  LogOut, ChevronRight, Bell, Search, LineChart, ClipboardCheck,
 } from 'lucide-react'
 
 const ADMIN_NAV = [
   { href: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/applications', icon: FileCheck,       label: 'Applications' },
-  { href: '/auditors',     icon: ShieldCheck,     label: 'Auditors' },
+  { href: '/auditors',     icon: ClipboardCheck,  label: 'Certification Reviews' },
   { href: '/certificates', icon: Award,           label: 'Certificates' },
   { href: '/members',      icon: Users,           label: 'Members' },
   { href: '/analytics',    icon: LineChart,       label: 'Analytics' },
@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div>
             <p className="text-white font-bold text-sm leading-tight">FEE Kuwait</p>
-            <p className="text-[10px] font-semibold" style={{ color: '#64B5F6' }}>Admin Panel</p>
+            <p className="text-[10px] font-semibold" style={{ color: '#64B5F6' }}>National Operator</p>
           </div>
           <button className="ml-auto lg:hidden text-white/40 hover:text-white" onClick={() => setSidebarOpen(false)}>
             <X className="w-5 h-5" />
@@ -106,11 +106,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
-              A
+              M
             </div>
             <div className="hidden md:block">
-              <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Admin User</p>
-              <p className="text-xs" style={{ color: '#94A3B8' }}>FEE Kuwait Staff</p>
+              <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Mostafa Kanjo</p>
+              <p className="text-xs" style={{ color: '#94A3B8' }}>National Operator</p>
             </div>
           </div>
         </header>
