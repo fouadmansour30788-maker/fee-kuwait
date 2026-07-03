@@ -40,7 +40,29 @@ export interface TrailEntry {
   user: string; role: 'National Operator' | 'Auditor' | 'Certification Body' | 'Applicant'
   at: string
 }
-export interface ChecklistItem { ref: string; title: string; met: boolean }
+// Per-criterion audit verdict (set by the auditor, revealed once results are published)
+export type CriterionResult = 'pending' | 'pass' | 'no_pass'
+
+// A message in a criterion's comment thread. Auditor messages stay hidden from the
+// establishment until the audit results are published (see visibleCriterionThread).
+export interface CriterionMessage {
+  id: string
+  author: string
+  role: 'establishment' | 'no' | 'auditor'
+  body: string
+  at: string
+}
+export interface CriterionAttachment { id: string; name: string; at: string }
+
+export interface ChecklistItem {
+  ref: string
+  title: string
+  met: boolean                    // establishment self-declaration (stage 1)
+  result: CriterionResult         // auditor verdict (revealed at stage 3)
+  thread: CriterionMessage[]      // per-criterion chat
+  attachments: CriterionAttachment[]
+}
+export type Criterion = ChecklistItem
 
 export interface AuditApplication {
   id: string
@@ -98,11 +120,50 @@ const CHECKLIST_GK = [
   { ref: '4.1', title: 'Energy use by source recorded monthly' },
   { ref: '5.1', title: 'Waste separated into 3+ recyclable categories' },
 ]
+// Bare checklist — met flags only, empty threads/attachments, results pending.
 const checklist = (metRefs: string[]): ChecklistItem[] =>
-  CHECKLIST_GK.map(c => ({ ...c, met: metRefs.includes(c.ref) }))
+  CHECKLIST_GK.map(c => ({ ...c, met: metRefs.includes(c.ref), result: 'pending', thread: [], attachments: [] }))
 const allRefs = CHECKLIST_GK.map(c => c.ref)
 
+// Enrich specific criteria with per-criterion threads / attachments / results.
+type CritPatch = Partial<Pick<ChecklistItem, 'met' | 'result' | 'thread' | 'attachments'>>
+const enriched = (metRefs: string[], patches: Record<string, CritPatch>): ChecklistItem[] =>
+  checklist(metRefs).map(c => (patches[c.ref] ? { ...c, ...patches[c.ref] } : c))
+const allPass: Record<string, CritPatch> = Object.fromEntries(allRefs.map(r => [r, { result: 'pass' as const }]))
+
 export const AUDIT_APPLICATIONS: AuditApplication[] = [
+  {
+    id: 'KW-2026-00202', entity: 'Marina Bay Hotel', type: 'Business', programme: 'Green Key',
+    mainCategory: 'Hotel', subCategories: ['Restaurant', 'Spa'], governorate: 'Ahmadi',
+    contact: 'Ms. Lina Haddad · gm@marinabay.kw', submitted: '2026-05-30', deadline: '2026-07-05',
+    status: 'no_review', auditorId: null, cbId: null, submittedToCbAt: null, checklistLocked: false,
+    conformity: 'pending', conformityPct: 40, cbDecision: 'pending',
+    summary: 'New Green Key application. The hotel and the National Operator are completing the criteria checklist together.',
+    checklist: enriched(['1.1', '3.1'], {
+      '3.1': {
+        attachments: [{ id: 'A1', name: 'Water Meter Log — May.pdf', at: '2026-06-02 09:02' }],
+        thread: [
+          { id: 'M1', author: 'Lina Haddad', role: 'establishment', body: 'Uploaded the May water meter log. April is being digitised and will follow this week.', at: '2026-06-02 09:02' },
+          { id: 'M2', author: 'Mostafa Kanjo', role: 'no', body: 'Thanks. Please also add the pool backwash readings so the monthly total is complete.', at: '2026-06-02 11:20' },
+        ],
+      },
+      '4.1': {
+        thread: [
+          { id: 'M1', author: 'Mostafa Kanjo', role: 'no', body: 'We need energy use split by source (grid vs. on-site generator) for the last 3 months.', at: '2026-06-01 15:10' },
+          { id: 'M2', author: 'Lina Haddad', role: 'establishment', body: 'Generator logs are with engineering — I will attach them here by Thursday.', at: '2026-06-02 09:15' },
+        ],
+      },
+    }),
+    documents: [
+      { id: 'D1', name: 'Green Key Self-Assessment (draft).pdf', type: 'PDF', size: '2.9 MB', status: 'pending' },
+    ],
+    comments: [
+      { id: 'C1', author: 'Mostafa Kanjo', role: 'no', visibility: 'shared', body: 'Two criteria still need evidence (4.1 energy, 5.1 waste). See the per-criterion notes.', at: '2026-06-02 11:25' },
+    ],
+    trail: [
+      { id: 'T1', field: 'Application opened', prev: '—', next: 'Under NO review', user: 'Mostafa Kanjo', role: 'National Operator', at: '2026-05-30 10:00' },
+    ],
+  },
   {
     id: 'KW-2026-00201', entity: 'Al-Noor Primary School', type: 'School', programme: 'Eco-Schools',
     mainCategory: 'Primary School', subCategories: [], governorate: 'Hawalli',
@@ -167,7 +228,20 @@ export const AUDIT_APPLICATIONS: AuditApplication[] = [
     status: 'audit', auditorId: 'AUD-01', cbId: 'CB-01', submittedToCbAt: '2026-05-20 08:00', checklistLocked: true,
     conformity: 'pending', conformityPct: 80, cbDecision: 'pending',
     summary: 'Certification Body assigned an auditor. On-site audit of the 280-room resort in progress.',
-    checklist: checklist(allRefs),
+    checklist: enriched(allRefs, {
+      '4.1': {
+        result: 'no_pass',
+        thread: [
+          { id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'On-site: energy sub-metering covers only 2 of 4 zones. Recording gap for the conference wing — provisional non-conformity.', at: '2026-06-03 12:30' },
+        ],
+      },
+      '5.1': {
+        result: 'pass',
+        thread: [
+          { id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Waste separation verified on-site — 5 streams, back-of-house signage in place.', at: '2026-06-03 13:10' },
+        ],
+      },
+    }),
     documents: [
       { id: 'D1', name: 'Green Key Self-Assessment.pdf', type: 'PDF',  size: '3.8 MB', status: 'pending' },
       { id: 'D2', name: 'Energy & Water Metrics.xlsx',   type: 'XLSX', size: '320 KB', status: 'pending' },
@@ -188,7 +262,13 @@ export const AUDIT_APPLICATIONS: AuditApplication[] = [
     status: 'cb_final', auditorId: 'AUD-01', cbId: 'CB-01', submittedToCbAt: '2026-05-08 09:00', checklistLocked: true,
     conformity: 'conform', conformityPct: 92, cbDecision: 'pending',
     summary: 'On-site audit complete (conform, 92%). Awaiting the Certification Body final judgement.',
-    checklist: checklist(allRefs),
+    checklist: enriched(allRefs, {
+      '1.1': { result: 'pass' },
+      '1.2': { result: 'pass' },
+      '3.1': { result: 'pass', thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Monthly water totals verified against utility bills. Conform.', at: '2026-05-30 11:00' }] },
+      '4.1': { result: 'no_pass', thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Energy records missing for February. Minor non-conformity — provide the month and re-submit.', at: '2026-05-30 11:20' }] },
+      '5.1': { result: 'pass' },
+    }),
     documents: [
       { id: 'D1', name: 'Audit Report — Seasons Hotel.pdf', type: 'PDF', size: '3.4 MB', status: 'conform' },
       { id: 'D2', name: 'Energy & Water Metrics.xlsx',      type: 'XLSX', size: '300 KB', status: 'conform' },
@@ -208,7 +288,7 @@ export const AUDIT_APPLICATIONS: AuditApplication[] = [
     status: 'certified', auditorId: 'AUD-01', cbId: 'CB-01', submittedToCbAt: '2026-05-05 09:00', checklistLocked: true,
     conformity: 'conform', conformityPct: 96, cbDecision: 'certified',
     summary: 'Eco-Schools renewal — Green Flag award, third cycle. Certified by the Certification Body.',
-    checklist: checklist(allRefs),
+    checklist: enriched(allRefs, allPass),
     documents: [
       { id: 'D1', name: 'Renewal Dossier.pdf', type: 'PDF', size: '4.0 MB', status: 'conform' },
       { id: 'D2', name: 'Audit Report.pdf',    type: 'PDF', size: '2.2 MB', status: 'conform' },
@@ -256,3 +336,101 @@ export const CB_DECISION_META: Record<CbDecision, { label: string; color: string
   certified_rectification: { label: 'Certified · rectification',color: '#65A30D', bg: '#ECFCCB' },
   not_certified:           { label: 'Not certified',            color: '#DC2626', bg: '#FEE2E2' },
 }
+
+export const CRITERION_RESULT_META: Record<CriterionResult, { label: string; color: string; bg: string }> = {
+  pending:  { label: 'Pending',  color: '#64748B', bg: '#F1F5F9' },
+  pass:     { label: 'Pass',     color: '#059669', bg: '#D1FAE5' },
+  no_pass:  { label: 'No Pass',  color: '#DC2626', bg: '#FEE2E2' },
+}
+
+export const CRITERION_ROLE_META: Record<CriterionMessage['role'], { label: string; color: string; bg: string }> = {
+  establishment: { label: 'Establishment',     color: '#1D4ED8', bg: '#DBEAFE' },
+  no:            { label: 'National Operator',  color: '#166534', bg: '#DCFCE7' },
+  auditor:       { label: 'Auditor',            color: '#0E7490', bg: '#CFFAFE' },
+}
+
+// ── Stage & visibility rules for per-criterion threads / results ──────────────
+// Stage 1 (application): establishment <-> National Operator collaborate openly.
+// Stage 2 (submitted, locked; audit): only the assigned auditor comments, and the
+//   establishment CANNOT see auditor comments or results.
+// Stage 3 (results published): results become visible to everyone, read-only, and
+//   the auditor's comments are revealed to the establishment.
+export function resultsPublished(status: AuditStatus): boolean {
+  return CB_FINAL.includes(status) || DECIDED.includes(status)
+}
+export function criterionStage(status: AuditStatus): 1 | 2 | 3 {
+  if (NO_OPEN.includes(status)) return 1
+  if (resultsPublished(status)) return 3
+  return 2 // cb_review, audit
+}
+
+// Thread messages a given viewer may see at the application's current status.
+export function visibleCriterionThread(
+  thread: CriterionMessage[],
+  viewerRole: CriterionMessage['role'] | 'cb',
+  status: AuditStatus,
+): CriterionMessage[] {
+  const published = resultsPublished(status)
+  return thread.filter(m => {
+    // Auditor observations stay hidden from the establishment until results are published.
+    if (m.role === 'auditor' && viewerRole === 'establishment' && !published) return false
+    return true
+  })
+}
+
+// Who may add a comment to a criterion thread at the current status.
+export function canPostCriterion(viewerRole: CriterionMessage['role'], status: AuditStatus): boolean {
+  const stage = criterionStage(status)
+  if (stage === 1) return viewerRole === 'establishment' || viewerRole === 'no'
+  if (stage === 2) return viewerRole === 'auditor' && status === 'audit'
+  return false // stage 3 is read-only
+}
+
+// The auditor records per-criterion Pass / No Pass only during the on-site audit.
+export function canSetCriterionResults(status: AuditStatus): boolean {
+  return status === 'audit'
+}
+
+// ── Non-conformity handling (stage 4) ─────────────────────────────────────────
+// 1–5 non-conformities: 15 days to adjust; NO may re-open those criteria.
+// 6+ non-conformities: 3 months to revise.
+export interface NonConformityPlan {
+  count: number
+  window: string          // human window, e.g. "15 days"
+  windowDays: number
+  canReopen: boolean      // NO may re-open the non-conforming criteria for revision
+  note: string
+}
+export function nonConformityPlan(items: ChecklistItem[]): NonConformityPlan | null {
+  const count = items.filter(c => c.result === 'no_pass').length
+  if (count === 0) return null
+  if (count <= 5) {
+    return { count, window: '15 days', windowDays: 15, canReopen: true,
+      note: `${count} non-conformity(ies). The establishment has 15 days to adjust; the National Operator may re-open these criteria for revision.` }
+  }
+  return { count, window: '3 months', windowDays: 90, canReopen: true,
+    note: `${count} non-conformities. The establishment has 3 months to revise the affected criteria.` }
+}
+
+// ── Notifications (National Operator) ─────────────────────────────────────────
+// In a live build these are emitted when the establishment comments or uploads on a
+// criterion during stage 1. Seeded here for the demo.
+export type NotificationKind = 'criterion_comment' | 'criterion_upload' | 'submitted' | 'changes_requested'
+export interface AppNotification {
+  id: string
+  appId: string
+  entity: string
+  kind: NotificationKind
+  criterionRef?: string
+  body: string
+  at: string
+  read: boolean
+}
+export const NO_NOTIFICATIONS: AppNotification[] = [
+  { id: 'N1', appId: 'KW-2026-00202', entity: 'Marina Bay Hotel', kind: 'criterion_comment', criterionRef: '4.1',
+    body: 'Marina Bay Hotel replied on criterion 4.1 (Energy use recorded monthly).', at: '2026-06-02 09:15', read: false },
+  { id: 'N2', appId: 'KW-2026-00202', entity: 'Marina Bay Hotel', kind: 'criterion_upload', criterionRef: '3.1',
+    body: 'Marina Bay Hotel attached “Water Meter Log — May.pdf” to criterion 3.1.', at: '2026-06-02 09:02', read: false },
+  { id: 'N3', appId: 'KW-2026-00201', entity: 'Al-Noor Primary School', kind: 'criterion_comment', criterionRef: '5.1',
+    body: 'Al-Noor Primary School replied on criterion 5.1 (Waste separation).', at: '2026-06-01 16:40', read: true },
+]

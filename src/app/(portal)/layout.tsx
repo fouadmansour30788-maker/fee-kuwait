@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileText, CheckSquare, BookOpen,
   Bell, FolderOpen, Map, Award, Leaf, Menu, X, LogOut,
-  ChevronRight, KeyRound,
+  ChevronRight, KeyRound, ClipboardCheck,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 
@@ -26,6 +26,7 @@ const BUSINESS_NAV = [
   { href: '/business/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
   { href: '/business/criteria',     icon: CheckSquare,     en: 'Blue Flag Criteria', ar: 'معايير العلم الأزرق' },
   { href: '/business/green-key-criteria', icon: KeyRound,  en: 'Green Key Criteria', ar: 'معايير المفتاح الأخضر' },
+  { href: '/business/audit',        icon: ClipboardCheck,  en: 'Criteria & Audit', ar: 'المعايير والتدقيق' },
   { href: '/business/documents',    icon: FolderOpen,      en: 'Documents by Year', ar: 'المستندات حسب السنة' },
   { href: '/business/inspections',  icon: Map,             en: 'Inspections',  ar: 'التفتيش' },
   { href: '/business/certification',icon: Award,           en: 'Certification',ar: 'الشهادة' },

@@ -5,11 +5,13 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft, ClipboardList, Check, X, Send, Lock, Info, History, ShieldCheck,
-  CheckCircle2, MessageSquare,
+  CheckCircle2, MessageSquare, ChevronDown, ShieldAlert, RotateCcw,
 } from 'lucide-react'
 import {
   getAuditApplication, CURRENT_NO, cbById, AUDIT_STATUS_META, NO_OPEN,
-  type AuditComment, type TrailEntry, type AuditStatus, type ChecklistItem,
+  CRITERION_RESULT_META, CRITERION_ROLE_META, resultsPublished, nonConformityPlan,
+  visibleCriterionThread, canPostCriterion,
+  type AuditComment, type TrailEntry, type AuditStatus, type ChecklistItem, type CriterionMessage,
 } from '@/lib/data/audits'
 
 export default function NoReviewPage({ params }: { params: { id: string } }) {
@@ -22,6 +24,11 @@ export default function NoReviewPage({ params }: { params: { id: string } }) {
   const [comments, setComments] = useState<AuditComment[]>(base?.comments ?? [])
   const [trail, setTrail] = useState<TrailEntry[]>(base?.trail ?? [])
   const [draft, setDraft] = useState('')
+  const [threads, setThreads] = useState<Record<string, CriterionMessage[]>>(
+    () => Object.fromEntries((base?.checklist ?? []).map(c => [c.ref, c.thread]))
+  )
+  const [openRef, setOpenRef] = useState<string | null>(null)
+  const [cdraft, setCdraft] = useState<Record<string, string>>({})
 
   if (!base) {
     return (
@@ -33,10 +40,13 @@ export default function NoReviewPage({ params }: { params: { id: string } }) {
   }
 
   const editable = NO_OPEN.includes(status) && !locked
+  const published = resultsPublished(status)
+  const canPostCrit = canPostCriterion('no', status)
   const cb = cbById(base.cbId)
   const now = () => new Date().toISOString().slice(0, 16).replace('T', ' ')
   const met = checklist.filter(c => c.met).length
   const pct = checklist.length ? Math.round((met / checklist.length) * 100) : 0
+  const nc = nonConformityPlan(checklist)
 
   function logTrail(field: string, prev: string, next: string) {
     setTrail(t => [...t, { id: `T${t.length + 1}-${Date.now()}`, field, prev, next, user: CURRENT_NO.name, role: 'National Operator', at: now() }])
@@ -44,6 +54,23 @@ export default function NoReviewPage({ params }: { params: { id: string } }) {
   function toggle(ref: string) {
     if (!editable) return
     setChecklist(prev => prev.map(c => c.ref === ref ? { ...c, met: !c.met } : c))
+  }
+  function postCriterion(ref: string) {
+    const body = (cdraft[ref] ?? '').trim()
+    if (!body || !canPostCrit) return
+    const msg: CriterionMessage = { id: `M${Date.now()}`, author: CURRENT_NO.name, role: 'no', body, at: now() }
+    setThreads(prev => ({ ...prev, [ref]: [...(prev[ref] ?? []), msg] }))
+    setCdraft(d => ({ ...d, [ref]: '' }))
+  }
+  function reopenForRevision() {
+    if (!published || !nc?.canReopen) return
+    logTrail('Re-opened for revision', AUDIT_STATUS_META[status].label, AUDIT_STATUS_META['changes_requested'].label)
+    setStatus('changes_requested')
+    setLocked(false)
+    setComments(prev => [...prev, {
+      id: `C${prev.length + 1}-${Date.now()}`, author: CURRENT_NO.name, role: 'no', visibility: 'shared',
+      body: `Application re-opened for revision of ${nc.count} non-conforming criterion(ia). The establishment has ${nc.window} to adjust.`, at: now(),
+    }])
   }
   function submitToCb() {
     if (!editable) return
@@ -122,19 +149,84 @@ export default function NoReviewPage({ params }: { params: { id: string } }) {
               {locked && <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#F1F5F9', color: '#64748B' }}><Lock className="w-3 h-3" /> Locked</span>}
             </div>
             <div className="space-y-2">
-              {checklist.map(item => (
-                <button key={item.ref} onClick={() => toggle(item.ref)} disabled={!editable}
-                  className="w-full flex items-center gap-3 rounded-xl border p-3 text-left transition-colors"
-                  style={{ borderColor: '#E2E8F0', cursor: editable ? 'pointer' : 'default', background: editable ? '#fff' : '#FCFCFD' }}>
-                  <span className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: item.met ? '#DCFCE7' : '#FEE2E2' }}>
-                    {item.met ? <Check className="w-3.5 h-3.5" style={{ color: '#16A34A' }} /> : <X className="w-3.5 h-3.5" style={{ color: '#DC2626' }} />}
-                  </span>
-                  <span className="text-xs font-mono font-semibold flex-shrink-0" style={{ color: '#94A3B8' }}>{item.ref}</span>
-                  <p className="text-sm flex-1 min-w-0" style={{ color: '#1E293B' }}>{item.title}</p>
-                  <span className="text-[11px] font-semibold" style={{ color: item.met ? '#16A34A' : '#94A3B8' }}>{item.met ? 'Met' : 'Not met'}</span>
-                </button>
-              ))}
+              {checklist.map(item => {
+                const rm = CRITERION_RESULT_META[item.result]
+                const isOpen = openRef === item.ref
+                const msgs = visibleCriterionThread(threads[item.ref] ?? [], 'no', status)
+                return (
+                  <div key={item.ref} className="rounded-xl border overflow-hidden" style={{ borderColor: item.result === 'no_pass' && published ? '#FECACA' : '#E2E8F0' }}>
+                    <div className="flex items-center gap-3 p-3">
+                      <button onClick={() => toggle(item.ref)} disabled={!editable} aria-label="Toggle met"
+                        className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: item.met ? '#DCFCE7' : '#FEE2E2', cursor: editable ? 'pointer' : 'default' }}>
+                        {item.met ? <Check className="w-3.5 h-3.5" style={{ color: '#16A34A' }} /> : <X className="w-3.5 h-3.5" style={{ color: '#DC2626' }} />}
+                      </button>
+                      <span className="text-xs font-mono font-semibold flex-shrink-0" style={{ color: '#94A3B8' }}>{item.ref}</span>
+                      <button onClick={() => setOpenRef(isOpen ? null : item.ref)} className="text-sm flex-1 min-w-0 text-left" style={{ color: '#1E293B' }}>{item.title}</button>
+                      {published && (
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: rm.bg, color: rm.color }}>
+                          {item.result === 'pass' ? <Check className="w-3 h-3" /> : item.result === 'no_pass' ? <X className="w-3 h-3" /> : null}{rm.label}
+                        </span>
+                      )}
+                      <button onClick={() => setOpenRef(isOpen ? null : item.ref)} className="inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: msgs.length ? '#40916C' : '#94A3B8' }}>
+                        <MessageSquare className="w-3.5 h-3.5" /> {msgs.length}
+                        <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }} />
+                      </button>
+                    </div>
+                    {isOpen && (
+                      <div className="border-t px-3 py-3 space-y-2.5" style={{ borderColor: '#F1F5F9', background: '#FCFDFE' }}>
+                        {msgs.length === 0 && <p className="text-xs text-center py-2" style={{ color: '#94A3B8' }}>No comments on this criterion yet.</p>}
+                        {msgs.map(m => {
+                          const role = CRITERION_ROLE_META[m.role]
+                          return (
+                            <div key={m.id} className="rounded-lg p-2.5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-[11px] font-bold" style={{ color: '#1E293B' }}>{m.author}</span>
+                                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: role.bg, color: role.color }}>{role.label}</span>
+                              </div>
+                              <p className="text-sm" style={{ color: '#334155' }}>{m.body}</p>
+                              <p className="text-[10px] mt-0.5" style={{ color: '#94A3B8' }}>{m.at}</p>
+                            </div>
+                          )
+                        })}
+                        {canPostCrit ? (
+                          <div className="flex items-center gap-2">
+                            <input value={cdraft[item.ref] ?? ''} onChange={e => setCdraft(d => ({ ...d, [item.ref]: e.target.value }))}
+                              onKeyDown={e => { if (e.key === 'Enter') postCriterion(item.ref) }}
+                              placeholder="Comment to the establishment…"
+                              className="flex-1 text-sm px-3 py-2 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+                            <button onClick={() => postCriterion(item.ref)} disabled={!(cdraft[item.ref] ?? '').trim()}
+                              className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#40916C' }}>
+                              <Send className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="flex items-center gap-1.5 text-[11px]" style={{ color: '#94A3B8' }}><Lock className="w-3 h-3" /> Comments are closed at this stage.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
+
+            {/* Stage 4 — non-conformity handling */}
+            {published && nc && (
+              <div className="mt-4 rounded-xl p-4" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
+                <div className="flex items-start gap-2.5">
+                  <ShieldAlert className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#B91C1C' }} />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold" style={{ color: '#991B1B' }}>{nc.count} non-conformity{nc.count === 1 ? '' : 'ies'} — {nc.window} to adjust</p>
+                    <p className="text-xs mt-0.5" style={{ color: '#B91C1C' }}>{nc.note}</p>
+                    {nc.canReopen && (
+                      <button onClick={reopenForRevision}
+                        className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold" style={{ background: '#fff', color: '#B91C1C', border: '1px solid #FECACA' }}>
+                        <RotateCcw className="w-4 h-4" /> Re-open affected criteria for revision
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {editable ? (
               <div className="mt-5 pt-5 border-t flex items-center justify-between gap-3 flex-wrap" style={{ borderColor: '#F1F5F9' }}>

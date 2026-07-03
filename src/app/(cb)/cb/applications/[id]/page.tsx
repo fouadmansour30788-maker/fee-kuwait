@@ -9,7 +9,8 @@ import {
 } from 'lucide-react'
 import {
   getAuditApplication, CURRENT_CB, auditorById, AUDITORS, DOC_STATUS_META, AUDIT_STATUS_META,
-  CONFORMITY_META, CB_DECISION_META, CB_PRE_AUDIT, CB_FINAL, DECIDED,
+  CONFORMITY_META, CB_DECISION_META, CRITERION_RESULT_META, CB_PRE_AUDIT, CB_FINAL, DECIDED,
+  nonConformityPlan,
   type AuditComment, type TrailEntry, type AuditStatus, type CbDecision,
 } from '@/lib/data/audits'
 
@@ -189,6 +190,29 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
                     </div>
                   )
                 })}
+              </div>
+              {/* Per-criterion results */}
+              <div className="mt-5 pt-5 border-t" style={{ borderColor: '#F1F5F9' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold" style={{ color: '#0F172A' }}>Per-criterion results</h3>
+                  {(() => { const nc = nonConformityPlan(base.checklist); return nc
+                    ? <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#FEE2E2', color: '#B91C1C' }}>{nc.count} non-conformity · {nc.window}</span>
+                    : <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#D1FAE5', color: '#047857' }}>All criteria pass</span> })()}
+                </div>
+                <div className="space-y-1.5">
+                  {base.checklist.map(c => {
+                    const rm = CRITERION_RESULT_META[c.result]
+                    return (
+                      <div key={c.ref} className="flex items-center gap-2.5 rounded-lg border p-2.5" style={{ borderColor: '#E2E8F0' }}>
+                        <span className="text-xs font-mono font-semibold flex-shrink-0 w-8" style={{ color: '#94A3B8' }}>{c.ref}</span>
+                        <p className="text-sm flex-1 min-w-0" style={{ color: '#1E293B' }}>{c.title}</p>
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: rm.bg, color: rm.color }}>
+                          {c.result === 'pass' ? <Check className="w-3 h-3" /> : c.result === 'no_pass' ? <X className="w-3 h-3" /> : null}{rm.label}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
               <p className="flex items-center gap-1.5 text-xs mt-3" style={{ color: '#94A3B8' }}>
                 <Lock className="w-3 h-3" /> Auditor findings are immutable for the Certification Body.
