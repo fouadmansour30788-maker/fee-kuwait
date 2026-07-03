@@ -14,6 +14,7 @@ import {
   type CriterionMessage, type CriterionResult,
 } from '@/lib/data/audits'
 import CriteriaTable from '@/components/audit/CriteriaTable'
+import CriteriaScorecard from '@/components/audit/CriteriaScorecard'
 
 export default function NoReviewPage({ params }: { params: { id: string } }) {
   const base = useMemo(() => getAuditApplication(params.id), [params.id])
@@ -149,6 +150,7 @@ export default function NoReviewPage({ params }: { params: { id: string } }) {
               {locked && <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#F1F5F9', color: '#64748B' }}><Lock className="w-3 h-3" /> Locked</span>}
             </div>
             <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>Record your internal Pass / Not Pass on each indicator and discuss it with the establishment. The external result is filled by the assigned auditor after the on-site audit.</p>
+            {published && <div className="mb-4"><CriteriaScorecard items={checklist} /></div>}
             <CriteriaTable
               items={checklist}
               status={status}

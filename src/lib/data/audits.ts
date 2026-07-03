@@ -54,13 +54,22 @@ export interface CriterionMessage {
 }
 export interface CriterionAttachment { id: string; name: string; at: string }
 
+// Green Key criteria are classified imperative (mandatory) or guideline (optional).
+export type CriterionKind = 'imperative' | 'guideline'
+// Severity an auditor assigns to a No-Pass finding.
+export type NcSeverity = 'none' | 'minor' | 'major'
+
 export interface ChecklistItem {
   ref: string
   criteria: string                // criterion area, e.g. "Energy" (table column 1)
   title: string                   // the specific indicator (table column 2)
+  kind: CriterionKind             // imperative vs guideline
+  points: number                  // weight toward the overall score
   met: boolean                    // establishment self-declaration (stage 1)
   internalResult: CriterionResult // National Operator internal check (Pass / Not Pass)
   result: CriterionResult         // external (assigned) auditor verdict — the official result
+  severity: NcSeverity            // set by the auditor on a No-Pass
+  dueDate: string | null          // per-criterion revision deadline (No-Pass, once published)
   externalNarrative: string       // external auditor's written feedback
   thread: CriterionMessage[]      // per-criterion chat
   attachments: CriterionAttachment[]
@@ -116,23 +125,24 @@ export const CB_PRE_AUDIT: AuditStatus[] = ['cb_review']
 export const CB_FINAL: AuditStatus[] = ['cb_final']
 export const DECIDED: AuditStatus[] = ['certified', 'certified_rectification', 'not_certified']
 
-const CHECKLIST_GK = [
-  { ref: '1.1', criteria: 'Environmental Management', title: 'Green Key Establishment Representative appointed' },
-  { ref: '1.2', criteria: 'Environmental Management', title: 'Strategic sustainability targets formulated' },
-  { ref: '3.1', criteria: 'Water',                     title: 'Total water consumption recorded monthly' },
-  { ref: '4.1', criteria: 'Energy',                    title: 'Energy use by source recorded monthly' },
-  { ref: '5.1', criteria: 'Waste',                     title: 'Waste separated into 3+ recyclable categories' },
+const CHECKLIST_GK: { ref: string; criteria: string; title: string; kind: CriterionKind; points: number }[] = [
+  { ref: '1.1', criteria: 'Environmental Management', title: 'Green Key Establishment Representative appointed', kind: 'imperative', points: 10 },
+  { ref: '1.2', criteria: 'Environmental Management', title: 'Strategic sustainability targets formulated',       kind: 'guideline',  points: 5 },
+  { ref: '3.1', criteria: 'Water',                     title: 'Total water consumption recorded monthly',          kind: 'imperative', points: 10 },
+  { ref: '4.1', criteria: 'Energy',                    title: 'Energy use by source recorded monthly',             kind: 'imperative', points: 10 },
+  { ref: '5.1', criteria: 'Waste',                     title: 'Waste separated into 3+ recyclable categories',     kind: 'guideline',  points: 8 },
 ]
 // Bare checklist — met flags only, empty threads/attachments, results pending.
 const checklist = (metRefs: string[]): ChecklistItem[] =>
   CHECKLIST_GK.map(c => ({
     ...c, met: metRefs.includes(c.ref),
-    internalResult: 'pending', result: 'pending', externalNarrative: '', thread: [], attachments: [],
+    internalResult: 'pending', result: 'pending', severity: 'none', dueDate: null,
+    externalNarrative: '', thread: [], attachments: [],
   }))
 const allRefs = CHECKLIST_GK.map(c => c.ref)
 
 // Enrich specific criteria with per-criterion threads / attachments / results.
-type CritPatch = Partial<Pick<ChecklistItem, 'met' | 'internalResult' | 'result' | 'externalNarrative' | 'thread' | 'attachments'>>
+type CritPatch = Partial<Pick<ChecklistItem, 'met' | 'internalResult' | 'result' | 'severity' | 'dueDate' | 'externalNarrative' | 'thread' | 'attachments'>>
 const enriched = (metRefs: string[], patches: Record<string, CritPatch>): ChecklistItem[] =>
   checklist(metRefs).map(c => (patches[c.ref] ? { ...c, ...patches[c.ref] } : c))
 const allPass: Record<string, CritPatch> = Object.fromEntries(
@@ -241,8 +251,8 @@ export const AUDIT_APPLICATIONS: AuditApplication[] = [
       '1.2': { internalResult: 'pass' },
       '3.1': { internalResult: 'pass' },
       '4.1': {
-        internalResult: 'pass', result: 'no_pass',
-        externalNarrative: 'Energy sub-metering covers only 2 of 4 zones; the conference wing is unmetered — provisional non-conformity.',
+        internalResult: 'pass', result: 'no_pass', severity: 'major',
+        externalNarrative: 'Energy sub-metering covers only 2 of 4 zones; the conference wing is unmetered — imperative non-conformity.',
         thread: [
           { id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'On-site: energy sub-metering covers only 2 of 4 zones. Recording gap for the conference wing — provisional non-conformity.', at: '2026-06-03 12:30' },
         ],
@@ -280,8 +290,9 @@ export const AUDIT_APPLICATIONS: AuditApplication[] = [
       '1.2': { internalResult: 'pass', result: 'pass', externalNarrative: 'Sustainability targets formalised for 2026.' },
       '3.1': { internalResult: 'pass', result: 'pass', externalNarrative: 'Monthly water totals verified against utility bills. Conform.',
         thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Monthly water totals verified against utility bills. Conform.', at: '2026-05-30 11:00' }] },
-      '4.1': { internalResult: 'pass', result: 'no_pass', externalNarrative: 'Energy records missing for February — minor non-conformity. Provide the month and re-submit.',
-        thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Energy records missing for February. Minor non-conformity — provide the month and re-submit.', at: '2026-05-30 11:20' }] },
+      '4.1': { internalResult: 'pass', result: 'no_pass', severity: 'major', dueDate: '2026-06-14',
+        externalNarrative: 'Energy records missing for February on an imperative criterion. Provide the month and re-submit.',
+        thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Energy records missing for February. Imperative non-conformity — provide the month and re-submit.', at: '2026-05-30 11:20' }] },
       '5.1': { internalResult: 'pass', result: 'pass', externalNarrative: 'Waste streams separated and labelled.' },
     }),
     documents: [
@@ -362,6 +373,72 @@ export const CRITERION_ROLE_META: Record<CriterionMessage['role'], { label: stri
   establishment: { label: 'Establishment',     color: '#1D4ED8', bg: '#DBEAFE' },
   no:            { label: 'National Operator',  color: '#166534', bg: '#DCFCE7' },
   auditor:       { label: 'Auditor',            color: '#0E7490', bg: '#CFFAFE' },
+}
+
+export const CRITERION_KIND_META: Record<CriterionKind, { label: string; short: string; color: string; bg: string }> = {
+  imperative: { label: 'Imperative', short: 'I', color: '#B45309', bg: '#FEF3C7' },
+  guideline:  { label: 'Guideline',  short: 'G', color: '#475569', bg: '#F1F5F9' },
+}
+
+export const NC_SEVERITY_META: Record<NcSeverity, { label: string; color: string; bg: string }> = {
+  none:  { label: '—',     color: '#94A3B8', bg: '#F1F5F9' },
+  minor: { label: 'Minor', color: '#B45309', bg: '#FEF3C7' },
+  major: { label: 'Major', color: '#B91C1C', bg: '#FEE2E2' },
+}
+
+// ── Scoring & conformity derived from per-criterion (external) results ─────────
+export interface Scorecard {
+  total: number
+  passed: number
+  noPass: number
+  pending: number
+  passRatePct: number          // graded pass rate
+  points: number               // total available points
+  pointsEarned: number         // points from passed criteria
+  scorePct: number             // pointsEarned / points
+  impTotal: number
+  impPassed: number
+  impFailed: number
+  allImperativePass: boolean   // no imperative is No-Pass
+  ncCount: number
+  ncMinor: number
+  ncMajor: number
+}
+export function scorecard(items: ChecklistItem[]): Scorecard {
+  const total = items.length
+  const passed = items.filter(c => c.result === 'pass').length
+  const noPass = items.filter(c => c.result === 'no_pass').length
+  const pending = items.filter(c => c.result === 'pending').length
+  const graded = passed + noPass
+  const points = items.reduce((s, c) => s + c.points, 0)
+  const pointsEarned = items.filter(c => c.result === 'pass').reduce((s, c) => s + c.points, 0)
+  const imp = items.filter(c => c.kind === 'imperative')
+  const impPassed = imp.filter(c => c.result === 'pass').length
+  const impFailed = imp.filter(c => c.result === 'no_pass').length
+  return {
+    total, passed, noPass, pending,
+    passRatePct: graded ? Math.round((passed / graded) * 100) : 0,
+    points, pointsEarned,
+    scorePct: points ? Math.round((pointsEarned / points) * 100) : 0,
+    impTotal: imp.length, impPassed, impFailed,
+    allImperativePass: impFailed === 0,
+    ncCount: noPass,
+    ncMinor: items.filter(c => c.result === 'no_pass' && c.severity === 'minor').length,
+    ncMajor: items.filter(c => c.result === 'no_pass' && c.severity === 'major').length,
+  }
+}
+// Overall conformity implied by the results (auto-derived, no manual entry).
+export function deriveConformity(items: ChecklistItem[]): Conformity {
+  if (items.some(c => c.result === 'pending')) return 'pending'
+  const noPass = items.filter(c => c.result === 'no_pass')
+  if (noPass.length === 0) return 'conform'
+  if (noPass.some(c => c.kind === 'imperative' || c.severity === 'major')) return 'major_nc'
+  return 'minor_nc'
+}
+// The CB may only award full certification when every imperative criterion passes
+// and nothing is still ungraded.
+export function canCertify(items: ChecklistItem[]): boolean {
+  return items.length > 0 && !items.some(c => c.result === 'pending') && !items.some(c => c.kind === 'imperative' && c.result === 'no_pass')
 }
 
 // ── Stage & visibility rules for per-criterion threads / results ──────────────

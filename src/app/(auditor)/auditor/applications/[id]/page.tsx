@@ -10,17 +10,12 @@ import {
 } from 'lucide-react'
 import {
   getAuditApplication, CURRENT_AUDITOR, DOC_STATUS_META, AUDIT_STATUS_META, CONFORMITY_META,
-  CRITERION_RESULT_META, canSetCriterionResults, canPostCriterion,
+  CRITERION_RESULT_META, canSetCriterionResults, canPostCriterion, deriveConformity,
   type AuditDoc, type AuditComment, type TrailEntry, type AuditStatus, type Conformity,
-  type ChecklistItem, type CriterionMessage, type CriterionResult,
+  type ChecklistItem, type CriterionMessage, type CriterionResult, type NcSeverity,
 } from '@/lib/data/audits'
 import CriteriaTable from '@/components/audit/CriteriaTable'
-
-const CONFORMITY_OPTIONS: { value: Conformity; label: string }[] = [
-  { value: 'conform',  label: 'Conform' },
-  { value: 'minor_nc', label: 'Minor non-conformity' },
-  { value: 'major_nc', label: 'Major non-conformity' },
-]
+import CriteriaScorecard from '@/components/audit/CriteriaScorecard'
 
 export default function AuditorReviewPage({ params }: { params: { id: string } }) {
   const base = useMemo(() => getAuditApplication(params.id), [params.id])
@@ -29,7 +24,6 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
   const [docs, setDocs] = useState<AuditDoc[]>(base?.documents ?? [])
   const [comments, setComments] = useState<AuditComment[]>(base?.comments ?? [])
   const [trail, setTrail] = useState<TrailEntry[]>(base?.trail ?? [])
-  const [conformity, setConformity] = useState<Conformity>(base?.conformity ?? 'pending')
   const [criteria, setCriteria] = useState<ChecklistItem[]>(base?.checklist ?? [])
   const [cthreads, setCthreads] = useState<Record<string, CriterionMessage[]>>(
     () => Object.fromEntries((base?.checklist ?? []).map(c => [c.ref, c.thread]))
@@ -55,6 +49,7 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
   const canPostCrit = canPostCriterion('auditor', status)
   const now = () => new Date().toISOString().slice(0, 16).replace('T', ' ')
   const graded = criteria.filter(c => c.result !== 'pending').length
+  const conformity: Conformity = deriveConformity(criteria)  // auto-derived from per-criterion results
 
   function logTrail(field: string, prev: string, next: string) {
     setTrail(t => [...t, { id: `T${t.length + 1}-${Date.now()}`, field, prev, next, user: CURRENT_AUDITOR.name, role: 'Auditor', at: now() }])
@@ -70,6 +65,14 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
   function setNarrative(ref: string, externalNarrative: string) {
     if (!canSetResults) return
     setCriteria(prev => prev.map(c => c.ref === ref ? { ...c, externalNarrative } : c))
+  }
+  function setSeverity(ref: string, severity: NcSeverity) {
+    if (!canSetResults) return
+    setCriteria(prev => prev.map(c => c.ref === ref ? { ...c, severity } : c))
+  }
+  function setDue(ref: string, dueDate: string) {
+    if (!canSetResults) return
+    setCriteria(prev => prev.map(c => c.ref === ref ? { ...c, dueDate: dueDate || null } : c))
   }
   function postCriterion(ref: string) {
     const body = (cdraft[ref] ?? '').trim()
@@ -95,11 +98,6 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
       visibility: shared ? 'shared' : 'internal', body, at: now(),
     }])
     setDraft('')
-  }
-  function judge(next: Conformity) {
-    if (locked) return
-    logTrail('Conformity judgement', CONFORMITY_META[conformity].label, CONFORMITY_META[next].label)
-    setConformity(next)
   }
   const allGraded = criteria.length > 0 && graded === criteria.length
   function submitReport() {
@@ -234,12 +232,15 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
             <p className="text-xs mb-4 flex items-center gap-1.5" style={{ color: '#94A3B8' }}>
               <EyeOff className="w-3.5 h-3.5" /> Your results and notes stay hidden from the establishment until you submit the report.
             </p>
+            <div className="mb-4"><CriteriaScorecard items={criteria} /></div>
             <CriteriaTable
               items={criteria}
               status={status}
               viewerRole="auditor"
               externalAuditorName={CURRENT_AUDITOR.name}
               onSetExternal={setResult}
+              onSetSeverity={setSeverity}
+              onSetDue={setDue}
               onSetNarrative={setNarrative}
               threads={cthreads}
               draft={cdraft}
@@ -252,7 +253,12 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
           <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}
             className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
             <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Conformity judgement & audit report</h2>
-            <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Record your overall conformity judgement, then submit the audit report to the Certification Body.</p>
+            <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The overall conformity is derived automatically from your per-criterion results, then submit the audit report to the Certification Body.</p>
+
+            <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm mb-4" style={{ background: CONFORMITY_META[conformity].bg, color: CONFORMITY_META[conformity].color }}>
+              <FileCheck2 className="w-4 h-4" />
+              <span>Derived conformity: <strong>{CONFORMITY_META[conformity].label}</strong>{conformity === 'major_nc' && <span> — an imperative or major non-conformity is present.</span>}</span>
+            </div>
 
             {locked ? (
               <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#ECFDF3', border: '1px solid #A7F3D0', color: '#047857' }}>
@@ -261,27 +267,14 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
               </div>
             ) : (
               <>
-                <div className="flex flex-wrap gap-2.5 mb-4">
-                  {CONFORMITY_OPTIONS.map(opt => {
-                    const active = conformity === opt.value
-                    const m = CONFORMITY_META[opt.value]
-                    return (
-                      <button key={opt.value} onClick={() => judge(opt.value)}
-                        className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-                        style={active ? { background: m.color, color: '#fff' } : { background: m.bg, color: m.color }}>
-                        {opt.label}
-                      </button>
-                    )
-                  })}
-                </div>
                 <button onClick={submitReport} disabled={conformity === 'pending' || !allGraded}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
                   style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
                   <Send className="w-4 h-4" /> Submit audit report &amp; publish results
                 </button>
-                {(conformity === 'pending' || !allGraded) && (
+                {!allGraded && (
                   <p className="text-xs mt-2" style={{ color: '#94A3B8' }}>
-                    {!allGraded ? `Grade all ${criteria.length} criteria (Pass / No Pass)` : 'Record a conformity judgement'} to enable submission. Submitting publishes results to all parties.
+                    Grade all {criteria.length} criteria (Pass / No Pass) to enable submission. Submitting publishes results to all parties.
                   </p>
                 )}
               </>

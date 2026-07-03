@@ -9,6 +9,7 @@ import {
   type CriterionMessage,
 } from '@/lib/data/audits'
 import CriteriaTable from '@/components/audit/CriteriaTable'
+import CriteriaScorecard from '@/components/audit/CriteriaScorecard'
 
 const BUSINESS_APPS = AUDIT_APPLICATIONS.filter(a => a.type === 'Business')
 
@@ -119,6 +120,7 @@ export default function BusinessAuditPage() {
       )}
 
       {/* Criteria list */}
+      {published && <CriteriaScorecard items={app.checklist} />}
       <CriteriaTable
         items={app.checklist}
         status={app.status}

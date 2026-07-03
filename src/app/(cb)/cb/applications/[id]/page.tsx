@@ -10,10 +10,11 @@ import {
 import {
   getAuditApplication, CURRENT_CB, auditorById, AUDITORS, DOC_STATUS_META, AUDIT_STATUS_META,
   CONFORMITY_META, CB_DECISION_META, CB_PRE_AUDIT, CB_FINAL, DECIDED,
-  nonConformityPlan,
+  nonConformityPlan, canCertify,
   type AuditComment, type TrailEntry, type AuditStatus, type CbDecision,
 } from '@/lib/data/audits'
 import CriteriaTable from '@/components/audit/CriteriaTable'
+import CriteriaScorecard from '@/components/audit/CriteriaScorecard'
 
 const DECISIONS: { value: CbDecision; status: AuditStatus; label: string }[] = [
   { value: 'certified',               status: 'certified',               label: 'Certified' },
@@ -48,6 +49,7 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
         : DECIDED.includes(status) ? 'decided' : 'other'
 
   const auditor = auditorById(auditorId)
+  const certifiable = canCertify(base.checklist)  // full certification requires every imperative to pass
   const now = () => new Date().toISOString().slice(0, 16).replace('T', ' ')
 
   function logTrail(field: string, prev: string, next: string) {
@@ -200,6 +202,7 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
                     ? <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#FEE2E2', color: '#B91C1C' }}>{nc.count} non-conformity · {nc.window}</span>
                     : <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#D1FAE5', color: '#047857' }}>All criteria pass</span> })()}
                 </div>
+                <div className="mb-4"><CriteriaScorecard items={base.checklist} /></div>
                 <CriteriaTable items={base.checklist} status={status} viewerRole="cb" externalAuditorName={auditor?.name} />
               </div>
               <p className="flex items-center gap-1.5 text-xs mt-3" style={{ color: '#94A3B8' }}>
@@ -266,18 +269,28 @@ export default function CbReviewPage({ params }: { params: { id: string } }) {
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2.5">
-                  {DECISIONS.map(d => {
-                    const m = CB_DECISION_META[d.value]
-                    return (
-                      <button key={d.value} onClick={() => record(d.value, d.status, d.label)}
-                        className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-                        style={{ background: m.bg, color: m.color, border: `1px solid ${m.color}33` }}>
-                        {d.label}
-                      </button>
-                    )
-                  })}
-                </div>
+                <>
+                  {!certifiable && (
+                    <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm mb-3" style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B' }}>
+                      <Lock className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <p>Full certification is blocked — an imperative criterion did not pass. You may still certify subject to rectification, or decline certification.</p>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2.5">
+                    {DECISIONS.map(d => {
+                      const m = CB_DECISION_META[d.value]
+                      const blocked = d.value === 'certified' && !certifiable
+                      return (
+                        <button key={d.value} onClick={() => record(d.value, d.status, d.label)} disabled={blocked}
+                          title={blocked ? 'An imperative criterion failed — full certification is not available.' : undefined}
+                          className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          style={{ background: m.bg, color: m.color, border: `1px solid ${m.color}33` }}>
+                          {d.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </>
               )}
             </motion.section>
           )}
