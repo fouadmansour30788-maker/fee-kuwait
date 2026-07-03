@@ -56,9 +56,12 @@ export interface CriterionAttachment { id: string; name: string; at: string }
 
 export interface ChecklistItem {
   ref: string
-  title: string
+  criteria: string                // criterion area, e.g. "Energy" (table column 1)
+  title: string                   // the specific indicator (table column 2)
   met: boolean                    // establishment self-declaration (stage 1)
-  result: CriterionResult         // auditor verdict (revealed at stage 3)
+  internalResult: CriterionResult // National Operator internal check (Pass / Not Pass)
+  result: CriterionResult         // external (assigned) auditor verdict — the official result
+  externalNarrative: string       // external auditor's written feedback
   thread: CriterionMessage[]      // per-criterion chat
   attachments: CriterionAttachment[]
 }
@@ -114,22 +117,27 @@ export const CB_FINAL: AuditStatus[] = ['cb_final']
 export const DECIDED: AuditStatus[] = ['certified', 'certified_rectification', 'not_certified']
 
 const CHECKLIST_GK = [
-  { ref: '1.1', title: 'Green Key Establishment Representative appointed' },
-  { ref: '1.2', title: 'Strategic sustainability targets formulated' },
-  { ref: '3.1', title: 'Total water consumption recorded monthly' },
-  { ref: '4.1', title: 'Energy use by source recorded monthly' },
-  { ref: '5.1', title: 'Waste separated into 3+ recyclable categories' },
+  { ref: '1.1', criteria: 'Environmental Management', title: 'Green Key Establishment Representative appointed' },
+  { ref: '1.2', criteria: 'Environmental Management', title: 'Strategic sustainability targets formulated' },
+  { ref: '3.1', criteria: 'Water',                     title: 'Total water consumption recorded monthly' },
+  { ref: '4.1', criteria: 'Energy',                    title: 'Energy use by source recorded monthly' },
+  { ref: '5.1', criteria: 'Waste',                     title: 'Waste separated into 3+ recyclable categories' },
 ]
 // Bare checklist — met flags only, empty threads/attachments, results pending.
 const checklist = (metRefs: string[]): ChecklistItem[] =>
-  CHECKLIST_GK.map(c => ({ ...c, met: metRefs.includes(c.ref), result: 'pending', thread: [], attachments: [] }))
+  CHECKLIST_GK.map(c => ({
+    ...c, met: metRefs.includes(c.ref),
+    internalResult: 'pending', result: 'pending', externalNarrative: '', thread: [], attachments: [],
+  }))
 const allRefs = CHECKLIST_GK.map(c => c.ref)
 
 // Enrich specific criteria with per-criterion threads / attachments / results.
-type CritPatch = Partial<Pick<ChecklistItem, 'met' | 'result' | 'thread' | 'attachments'>>
+type CritPatch = Partial<Pick<ChecklistItem, 'met' | 'internalResult' | 'result' | 'externalNarrative' | 'thread' | 'attachments'>>
 const enriched = (metRefs: string[], patches: Record<string, CritPatch>): ChecklistItem[] =>
   checklist(metRefs).map(c => (patches[c.ref] ? { ...c, ...patches[c.ref] } : c))
-const allPass: Record<string, CritPatch> = Object.fromEntries(allRefs.map(r => [r, { result: 'pass' as const }]))
+const allPass: Record<string, CritPatch> = Object.fromEntries(
+  allRefs.map(r => [r, { internalResult: 'pass' as const, result: 'pass' as const, externalNarrative: 'Verified on-site; conforms to the Green Key requirement.' }])
+)
 
 export const AUDIT_APPLICATIONS: AuditApplication[] = [
   {
@@ -229,14 +237,19 @@ export const AUDIT_APPLICATIONS: AuditApplication[] = [
     conformity: 'pending', conformityPct: 80, cbDecision: 'pending',
     summary: 'Certification Body assigned an auditor. On-site audit of the 280-room resort in progress.',
     checklist: enriched(allRefs, {
+      '1.1': { internalResult: 'pass' },
+      '1.2': { internalResult: 'pass' },
+      '3.1': { internalResult: 'pass' },
       '4.1': {
-        result: 'no_pass',
+        internalResult: 'pass', result: 'no_pass',
+        externalNarrative: 'Energy sub-metering covers only 2 of 4 zones; the conference wing is unmetered — provisional non-conformity.',
         thread: [
           { id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'On-site: energy sub-metering covers only 2 of 4 zones. Recording gap for the conference wing — provisional non-conformity.', at: '2026-06-03 12:30' },
         ],
       },
       '5.1': {
-        result: 'pass',
+        internalResult: 'pass', result: 'pass',
+        externalNarrative: 'Waste separation verified — 5 streams with back-of-house signage.',
         thread: [
           { id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Waste separation verified on-site — 5 streams, back-of-house signage in place.', at: '2026-06-03 13:10' },
         ],
@@ -263,11 +276,13 @@ export const AUDIT_APPLICATIONS: AuditApplication[] = [
     conformity: 'conform', conformityPct: 92, cbDecision: 'pending',
     summary: 'On-site audit complete (conform, 92%). Awaiting the Certification Body final judgement.',
     checklist: enriched(allRefs, {
-      '1.1': { result: 'pass' },
-      '1.2': { result: 'pass' },
-      '3.1': { result: 'pass', thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Monthly water totals verified against utility bills. Conform.', at: '2026-05-30 11:00' }] },
-      '4.1': { result: 'no_pass', thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Energy records missing for February. Minor non-conformity — provide the month and re-submit.', at: '2026-05-30 11:20' }] },
-      '5.1': { result: 'pass' },
+      '1.1': { internalResult: 'pass', result: 'pass', externalNarrative: 'Representative appointed and documented.' },
+      '1.2': { internalResult: 'pass', result: 'pass', externalNarrative: 'Sustainability targets formalised for 2026.' },
+      '3.1': { internalResult: 'pass', result: 'pass', externalNarrative: 'Monthly water totals verified against utility bills. Conform.',
+        thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Monthly water totals verified against utility bills. Conform.', at: '2026-05-30 11:00' }] },
+      '4.1': { internalResult: 'pass', result: 'no_pass', externalNarrative: 'Energy records missing for February — minor non-conformity. Provide the month and re-submit.',
+        thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Energy records missing for February. Minor non-conformity — provide the month and re-submit.', at: '2026-05-30 11:20' }] },
+      '5.1': { internalResult: 'pass', result: 'pass', externalNarrative: 'Waste streams separated and labelled.' },
     }),
     documents: [
       { id: 'D1', name: 'Audit Report — Seasons Hotel.pdf', type: 'PDF', size: '3.4 MB', status: 'conform' },

@@ -6,14 +6,15 @@ import { motion } from 'framer-motion'
 import {
   ArrowLeft, FileText, Check, X, Clock, Download,
   Lock, Send, Building2, CalendarClock, ShieldCheck, Mail, History, Info, FileCheck2,
-  ClipboardCheck, ChevronDown, EyeOff, MessageSquare,
+  ClipboardCheck, EyeOff,
 } from 'lucide-react'
 import {
   getAuditApplication, CURRENT_AUDITOR, DOC_STATUS_META, AUDIT_STATUS_META, CONFORMITY_META,
-  CRITERION_RESULT_META, CRITERION_ROLE_META, canSetCriterionResults, canPostCriterion,
+  CRITERION_RESULT_META, canSetCriterionResults, canPostCriterion,
   type AuditDoc, type AuditComment, type TrailEntry, type AuditStatus, type Conformity,
   type ChecklistItem, type CriterionMessage, type CriterionResult,
 } from '@/lib/data/audits'
+import CriteriaTable from '@/components/audit/CriteriaTable'
 
 const CONFORMITY_OPTIONS: { value: Conformity; label: string }[] = [
   { value: 'conform',  label: 'Conform' },
@@ -33,7 +34,6 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
   const [cthreads, setCthreads] = useState<Record<string, CriterionMessage[]>>(
     () => Object.fromEntries((base?.checklist ?? []).map(c => [c.ref, c.thread]))
   )
-  const [openRef, setOpenRef] = useState<string | null>(null)
   const [cdraft, setCdraft] = useState<Record<string, string>>({})
   const [draft, setDraft] = useState('')
   const [shared, setShared] = useState(false)
@@ -66,6 +66,10 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
       if (c.result !== result) logTrail(`Criterion ${ref}`, CRITERION_RESULT_META[c.result].label, CRITERION_RESULT_META[result].label)
       return { ...c, result }
     }))
+  }
+  function setNarrative(ref: string, externalNarrative: string) {
+    if (!canSetResults) return
+    setCriteria(prev => prev.map(c => c.ref === ref ? { ...c, externalNarrative } : c))
   }
   function postCriterion(ref: string) {
     const body = (cdraft[ref] ?? '').trim()
@@ -230,73 +234,18 @@ export default function AuditorReviewPage({ params }: { params: { id: string } }
             <p className="text-xs mb-4 flex items-center gap-1.5" style={{ color: '#94A3B8' }}>
               <EyeOff className="w-3.5 h-3.5" /> Your results and notes stay hidden from the establishment until you submit the report.
             </p>
-            <div className="space-y-2">
-              {criteria.map(c => {
-                const rm = CRITERION_RESULT_META[c.result]
-                const isOpen = openRef === c.ref
-                const msgs = cthreads[c.ref] ?? []
-                return (
-                  <div key={c.ref} className="rounded-xl border overflow-hidden" style={{ borderColor: c.result === 'no_pass' ? '#FECACA' : c.result === 'pass' ? '#A7F3D0' : '#E2E8F0' }}>
-                    <div className="flex items-center gap-2.5 p-3">
-                      <span className="text-xs font-mono font-semibold flex-shrink-0 w-8" style={{ color: '#94A3B8' }}>{c.ref}</span>
-                      <button onClick={() => setOpenRef(isOpen ? null : c.ref)} className="text-sm flex-1 min-w-0 text-left" style={{ color: '#1E293B' }}>{c.title}</button>
-                      {canSetResults ? (
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <button onClick={() => setResult(c.ref, 'pass')}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
-                            style={c.result === 'pass' ? { background: '#059669', color: '#fff' } : { background: '#F1F5F9', color: '#059669' }}>
-                            <Check className="w-3.5 h-3.5" /> Pass
-                          </button>
-                          <button onClick={() => setResult(c.ref, 'no_pass')}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
-                            style={c.result === 'no_pass' ? { background: '#DC2626', color: '#fff' } : { background: '#F1F5F9', color: '#DC2626' }}>
-                            <X className="w-3.5 h-3.5" /> No Pass
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: rm.bg, color: rm.color }}>{rm.label}</span>
-                      )}
-                      <button onClick={() => setOpenRef(isOpen ? null : c.ref)} className="inline-flex items-center gap-1 text-[11px] font-semibold flex-shrink-0" style={{ color: msgs.length ? '#0E7490' : '#94A3B8' }}>
-                        <MessageSquare className="w-3.5 h-3.5" /> {msgs.length}
-                        <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }} />
-                      </button>
-                    </div>
-                    {isOpen && (
-                      <div className="border-t px-3 py-3 space-y-2.5" style={{ borderColor: '#F1F5F9', background: '#FCFDFE' }}>
-                        {msgs.length === 0 && <p className="text-xs text-center py-2" style={{ color: '#94A3B8' }}>No observations recorded for this criterion.</p>}
-                        {msgs.map(m => {
-                          const role = CRITERION_ROLE_META[m.role]
-                          return (
-                            <div key={m.id} className="rounded-lg p-2.5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-[11px] font-bold" style={{ color: '#1E293B' }}>{m.author}</span>
-                                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: role.bg, color: role.color }}>{role.label}</span>
-                              </div>
-                              <p className="text-sm" style={{ color: '#334155' }}>{m.body}</p>
-                              <p className="text-[10px] mt-0.5" style={{ color: '#94A3B8' }}>{m.at}</p>
-                            </div>
-                          )
-                        })}
-                        {canPostCrit ? (
-                          <div className="flex items-center gap-2">
-                            <input value={cdraft[c.ref] ?? ''} onChange={e => setCdraft(d => ({ ...d, [c.ref]: e.target.value }))}
-                              onKeyDown={e => { if (e.key === 'Enter') postCriterion(c.ref) }}
-                              placeholder="Record an on-site observation (hidden from the establishment)…"
-                              className="flex-1 text-sm px-3 py-2 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
-                            <button onClick={() => postCriterion(c.ref)} disabled={!(cdraft[c.ref] ?? '').trim()}
-                              className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#0E7490' }}>
-                              <Send className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ) : (
-                          <p className="flex items-center gap-1.5 text-[11px]" style={{ color: '#94A3B8' }}><Lock className="w-3 h-3" /> Assessment submitted — observations are read-only.</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+            <CriteriaTable
+              items={criteria}
+              status={status}
+              viewerRole="auditor"
+              externalAuditorName={CURRENT_AUDITOR.name}
+              onSetExternal={setResult}
+              onSetNarrative={setNarrative}
+              threads={cthreads}
+              draft={cdraft}
+              onDraft={(ref, text) => setCdraft(d => ({ ...d, [ref]: text }))}
+              onPost={postCriterion}
+            />
           </motion.section>
 
           {/* Conformity judgement + submit audit report */}
