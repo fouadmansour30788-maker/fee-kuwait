@@ -10,7 +10,6 @@ import {
 import { useLang } from '@/context/LangContext'
 import { t } from '@/i18n'
 import { useRef } from 'react'
-import Hero3DCards from './Hero3DCards'
 
 const programmes = [
   { label: 'Eco-Schools', href: '/programmes/eco-schools', color: '#52B788', Icon: School },
@@ -231,13 +230,6 @@ export default function HeroSection() {
           </motion.div>
         </div>
       </motion.div>
-
-      {/* 3D floating cards — desktop right half */}
-      <div className="hidden lg:block absolute inset-y-0 right-0 w-[48%] z-10 pointer-events-none">
-        <div className="relative w-full h-full pointer-events-auto">
-          <Hero3DCards />
-        </div>
-      </div>
 
       {/* Scroll indicator */}
       <motion.div
