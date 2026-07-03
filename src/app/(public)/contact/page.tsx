@@ -2,7 +2,7 @@
 
 import { motion, useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
-import { Mail, Phone, MapPin, Clock, Send, CheckCircle2 } from 'lucide-react'
+import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, User } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -20,30 +20,37 @@ const CONTACT_INFO = [
     icon: Mail,
     label_en: 'Email',
     label_ar: 'البريد الإلكتروني',
-    value: 'info@feekuwait.org',
+    value: 'info@feebureaukw.org',
     color: '#52B788',
   },
   {
     icon: Phone,
     label_en: 'Phone',
     label_ar: 'الهاتف',
-    value: '+965 2XXX XXXX',
+    value: '+965 64449334',
     color: '#006994',
+  },
+  {
+    icon: User,
+    label_en: 'Contact Person',
+    label_ar: 'الشخص المسؤول',
+    value: 'Mostafa Kanjo',
+    color: '#40916C',
   },
   {
     icon: MapPin,
     label_en: 'Address',
     label_ar: 'العنوان',
-    value_en: 'Kuwait City, State of Kuwait',
-    value_ar: 'مدينة الكويت، دولة الكويت',
+    value_en: 'First Mall, 3rd Floor, Office 11, Salem Al Mubarak Street, Salmiya, Kuwait',
+    value_ar: 'المجمع الأول، الطابق الثالث، مكتب 11، شارع سالم المبارك، السالمية، الكويت',
     color: '#C8A951',
   },
   {
     icon: Clock,
     label_en: 'Office Hours',
     label_ar: 'ساعات العمل',
-    value_en: 'Sun–Thu: 8:00 AM – 4:00 PM',
-    value_ar: 'الأحد–الخميس: 8:00 ص – 4:00 م',
+    value_en: 'Sun to Thu: 8:00 AM to 4:00 PM',
+    value_ar: 'الأحد إلى الخميس: 8:00 ص إلى 4:00 م',
     color: '#40916C',
   },
 ]

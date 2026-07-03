@@ -117,9 +117,9 @@ export default function Footer() {
             </h4>
             <div className="space-y-3 mb-6">
               {[
-                { icon: MapPin, text_en: 'Kuwait City, Kuwait', text_ar: 'مدينة الكويت، الكويت' },
-                { icon: Mail,   text_en: 'info@feekuwait.org',  text_ar: 'info@feekuwait.org' },
-                { icon: Phone,  text_en: '+965 XXXX XXXX',      text_ar: '+965 XXXX XXXX' },
+                { icon: MapPin, text_en: 'First Mall, 3rd Floor, Office 11, Salem Al Mubarak St, Salmiya', text_ar: 'المجمع الأول، الطابق الثالث، مكتب 11، شارع سالم المبارك، السالمية' },
+                { icon: Mail,   text_en: 'info@feebureaukw.org',  text_ar: 'info@feebureaukw.org' },
+                { icon: Phone,  text_en: '+965 64449334',      text_ar: '+965 64449334' },
               ].map(({ icon: Icon, text_en, text_ar }, i) => (
                 <div key={i} className="flex items-start gap-2.5">
                   <Icon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: 'rgba(116,198,157,0.55)' }} />
@@ -130,7 +130,7 @@ export default function Footer() {
               ))}
             </div>
             <a
-              href="https://wa.me/96500000000"
+              href="https://wa.me/96564449334"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2.5 text-white text-sm font-semibold rounded-xl transition-all duration-200 hover:-translate-y-0.5"
