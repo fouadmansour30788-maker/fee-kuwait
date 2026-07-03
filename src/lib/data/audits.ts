@@ -8,6 +8,8 @@
 //   -> CB issues the final judgement (certified / rectification / not certified)
 // Client-side demo data; real persistence uses the Supabase tables + RLS.
 
+import { GK_CRITERIA, GK_SECTIONS, isImperativeFor } from './greenKeyCriteria'
+
 export type AuditStatus =
   | 'no_review'          // with National Operator (checklist review, editable)
   | 'changes_requested'  // returned by CB to the National Operator
@@ -125,13 +127,21 @@ export const CB_PRE_AUDIT: AuditStatus[] = ['cb_review']
 export const CB_FINAL: AuditStatus[] = ['cb_final']
 export const DECIDED: AuditStatus[] = ['certified', 'certified_rectification', 'not_certified']
 
-const CHECKLIST_GK: { ref: string; criteria: string; title: string; kind: CriterionKind; points: number }[] = [
-  { ref: '1.1', criteria: 'Environmental Management', title: 'Green Key Establishment Representative appointed', kind: 'imperative', points: 10 },
-  { ref: '1.2', criteria: 'Environmental Management', title: 'Strategic sustainability targets formulated',       kind: 'guideline',  points: 5 },
-  { ref: '3.1', criteria: 'Water',                     title: 'Total water consumption recorded monthly',          kind: 'imperative', points: 10 },
-  { ref: '4.1', criteria: 'Energy',                    title: 'Energy use by source recorded monthly',             kind: 'imperative', points: 10 },
-  { ref: '5.1', criteria: 'Waste',                     title: 'Waste separated into 3+ recyclable categories',     kind: 'guideline',  points: 8 },
-]
+// The assessment checklist is the full official Green Key criteria set (all 7
+// sections). Demo establishments are hotels, so I/G criteria are resolved for
+// the Hotels & Hostels (HH) category. Imperatives are weighted 2 pts, guidelines 1.
+const sectionTitle = (n: number) => GK_SECTIONS.find(s => s.n === n)?.title ?? `Section ${n}`
+const CHECKLIST_GK: { ref: string; criteria: string; title: string; kind: CriterionKind; points: number }[] =
+  GK_CRITERIA.map(c => {
+    const imperative = isImperativeFor(c, 'HH')
+    return {
+      ref: c.id,
+      criteria: sectionTitle(c.section),
+      title: c.title,
+      kind: imperative ? 'imperative' : 'guideline',
+      points: imperative ? 2 : 1,
+    }
+  })
 // Bare checklist — met flags only, empty threads/attachments, results pending.
 const checklist = (metRefs: string[]): ChecklistItem[] =>
   CHECKLIST_GK.map(c => ({
@@ -247,9 +257,7 @@ export const AUDIT_APPLICATIONS: AuditApplication[] = [
     conformity: 'pending', conformityPct: 80, cbDecision: 'pending',
     summary: 'Certification Body assigned an auditor. On-site audit of the 280-room resort in progress.',
     checklist: enriched(allRefs, {
-      '1.1': { internalResult: 'pass' },
-      '1.2': { internalResult: 'pass' },
-      '3.1': { internalResult: 'pass' },
+      ...allPass,
       '4.1': {
         internalResult: 'pass', result: 'no_pass', severity: 'major',
         externalNarrative: 'Energy sub-metering covers only 2 of 4 zones; the conference wing is unmetered — imperative non-conformity.',
@@ -286,14 +294,12 @@ export const AUDIT_APPLICATIONS: AuditApplication[] = [
     conformity: 'conform', conformityPct: 92, cbDecision: 'pending',
     summary: 'On-site audit complete (conform, 92%). Awaiting the Certification Body final judgement.',
     checklist: enriched(allRefs, {
-      '1.1': { internalResult: 'pass', result: 'pass', externalNarrative: 'Representative appointed and documented.' },
-      '1.2': { internalResult: 'pass', result: 'pass', externalNarrative: 'Sustainability targets formalised for 2026.' },
+      ...allPass,
       '3.1': { internalResult: 'pass', result: 'pass', externalNarrative: 'Monthly water totals verified against utility bills. Conform.',
         thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Monthly water totals verified against utility bills. Conform.', at: '2026-05-30 11:00' }] },
       '4.1': { internalResult: 'pass', result: 'no_pass', severity: 'major', dueDate: '2026-06-14',
         externalNarrative: 'Energy records missing for February on an imperative criterion. Provide the month and re-submit.',
         thread: [{ id: 'M1', author: 'Layla Al-Sabah', role: 'auditor', body: 'Energy records missing for February. Imperative non-conformity — provide the month and re-submit.', at: '2026-05-30 11:20' }] },
-      '5.1': { internalResult: 'pass', result: 'pass', externalNarrative: 'Waste streams separated and labelled.' },
     }),
     documents: [
       { id: 'D1', name: 'Audit Report — Seasons Hotel.pdf', type: 'PDF', size: '3.4 MB', status: 'conform' },
