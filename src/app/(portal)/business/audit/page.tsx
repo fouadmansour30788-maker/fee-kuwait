@@ -11,20 +11,24 @@ import {
 import CriteriaTable from '@/components/audit/CriteriaTable'
 import CriteriaScorecard from '@/components/audit/CriteriaScorecard'
 
-const BUSINESS_APPS = AUDIT_APPLICATIONS.filter(a => a.type === 'Business')
+// This portal belongs to a single establishment — it shows only its own
+// current application, not other establishments'.
+const ESTABLISHMENT_APP_ID = 'KW-2026-00202' // Marina Bay Hotel
+const CURRENT_APP =
+  AUDIT_APPLICATIONS.find(a => a.id === ESTABLISHMENT_APP_ID) ??
+  AUDIT_APPLICATIONS.find(a => a.type === 'Business')!
 
 export default function BusinessAuditPage() {
-  const [appId, setAppId] = useState(BUSINESS_APPS[0].id)
-  const app = BUSINESS_APPS.find(a => a.id === appId)!
+  const app = CURRENT_APP
 
   const establishment = app.contact.split(' · ')[0]
   const stage = criterionStage(app.status)
   const published = resultsPublished(app.status)
   const canPost = canPostCriterion('establishment', app.status)
 
-  // Local thread state per app+criterion so the establishment can post in stage 1.
-  const [threads, setThreads] = useState<Record<string, Record<string, CriterionMessage[]>>>(() =>
-    Object.fromEntries(BUSINESS_APPS.map(a => [a.id, Object.fromEntries(a.checklist.map(c => [c.ref, c.thread]))]))
+  // Local per-criterion thread state so the establishment can post in stage 1.
+  const [threads, setThreads] = useState<Record<string, CriterionMessage[]>>(
+    () => Object.fromEntries(app.checklist.map(c => [c.ref, c.thread]))
   )
   const [draft, setDraft] = useState<Record<string, string>>({})
 
@@ -35,13 +39,13 @@ export default function BusinessAuditPage() {
     const body = (draft[ref] ?? '').trim()
     if (!body || !canPost) return
     const msg: CriterionMessage = { id: `M${Date.now()}`, author: establishment, role: 'establishment', body, at: now() }
-    setThreads(prev => ({ ...prev, [appId]: { ...prev[appId], [ref]: [...prev[appId][ref], msg] } }))
+    setThreads(prev => ({ ...prev, [ref]: [...(prev[ref] ?? []), msg] }))
     setDraft(d => ({ ...d, [ref]: '' }))
   }
   function attach(ref: string) {
     if (!canPost) return
     const msg: CriterionMessage = { id: `M${Date.now()}`, author: establishment, role: 'establishment', body: '📎 Attached a document (demo).', at: now() }
-    setThreads(prev => ({ ...prev, [appId]: { ...prev[appId], [ref]: [...prev[appId][ref], msg] } }))
+    setThreads(prev => ({ ...prev, [ref]: [...(prev[ref] ?? []), msg] }))
   }
 
   const meta = AUDIT_STATUS_META[app.status]
@@ -54,24 +58,6 @@ export default function BusinessAuditPage() {
           Discuss each criterion with the National Operator and attach evidence. Audit results appear here once the audit is complete.
         </p>
       </motion.div>
-
-      {/* Application selector */}
-      <div className="flex gap-2 flex-wrap">
-        {BUSINESS_APPS.map(a => {
-          const active = a.id === appId
-          const s = criterionStage(a.status)
-          return (
-            <button key={a.id} onClick={() => setAppId(a.id)}
-              className="px-3.5 py-2 rounded-xl text-sm font-semibold transition-all text-left"
-              style={active ? { background: '#1B4332', color: '#fff' } : { background: '#fff', color: '#5B7568', border: '1px solid #D4E7DA' }}>
-              {a.entity}
-              <span className="block text-[10px] font-medium mt-0.5" style={{ color: active ? 'rgba(255,255,255,0.7)' : '#94A3B8' }}>
-                {a.id} · Stage {s}
-              </span>
-            </button>
-          )
-        })}
-      </div>
 
       {/* App header */}
       <div className="bg-white rounded-2xl border p-5" style={{ borderColor: '#D4E7DA' }}>
@@ -126,7 +112,7 @@ export default function BusinessAuditPage() {
         status={app.status}
         viewerRole="establishment"
         externalAuditorName={auditorById(app.auditorId)?.name}
-        threads={threads[appId]}
+        threads={threads}
         draft={draft}
         onDraft={(ref, text) => setDraft(d => ({ ...d, [ref]: text }))}
         onPost={post}
