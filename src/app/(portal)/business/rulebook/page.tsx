@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Search, KeyRound, Waves, BookOpen } from 'lucide-react'
+import { Search, KeyRound, Waves, BookOpen, ListChecks, ShieldCheck, Info } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import {
-  GK_SECTIONS, GK_CRITERIA, ESTABLISHMENT_CATEGORIES, isImperativeFor,
+  GK_SECTIONS, GK_CRITERIA, ESTABLISHMENT_CATEGORIES, GUIDELINE_CYCLE, isImperativeFor,
   type EstablishmentCategory,
 } from '@/lib/data/greenKeyCriteria'
 import {
@@ -71,7 +71,9 @@ export default function RulebookPage() {
     return true
   }), [items, filter, search])
 
+  const total = items.length
   const impCount = items.filter((i) => i.imp).length
+  const guideCount = total - impCount
 
   // Group by section, then (Green Key) by subsection.
   const grouped = useMemo(() => sections.map((s) => {
@@ -161,6 +163,63 @@ export default function RulebookPage() {
           {filtered.length} {lang === 'ar' ? 'بند' : 'indicators'} · {impCount} {lang === 'ar' ? 'إلزامي' : 'imperative'}
         </p>
       </div>
+
+      {/* Counts for the selected programme + category */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: lang === 'ar' ? 'إجمالي المعايير' : 'Applicable', value: total, c: '#40916C', Icon: ListChecks },
+          { label: lang === 'ar' ? 'إلزامية' : 'Imperative', value: impCount, c: '#1B4332', Icon: ShieldCheck },
+          { label: lang === 'ar' ? 'إرشادية' : 'Guideline', value: guideCount, c: color, Icon: BookOpen },
+        ].map((s) => (
+          <div key={s.label} className="rounded-2xl p-3.5 text-center bg-white" style={{ border: '1px solid #E8F0EA' }}>
+            <s.Icon className="w-4 h-4 mx-auto mb-1.5" style={{ color: s.c }} />
+            <p className="text-2xl font-bold" style={{ color: s.c }}>{s.value}</p>
+            <p className="text-[11px]" style={{ color: '#7A9080' }}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Green Key guideline compliance cycle */}
+      {programme === 'green' && (
+        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E8F0EA' }}>
+          <div className="px-5 py-3.5 border-b flex items-start gap-2.5" style={{ borderColor: '#F4F9F5' }}>
+            <Info className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#40916C' }} />
+            <p className="text-xs" style={{ color: '#5A6672' }}>
+              {lang === 'ar'
+                ? 'يجب استيفاء 100% من المعايير الإلزامية، بالإضافة إلى نسبة متزايدة من المعايير الإرشادية حسب عدد سنوات حمل الشهادة.'
+                : 'You must meet 100% of imperative criteria, plus an increasing share of applicable guideline criteria based on how long the certificate has been held.'}
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm" style={{ minWidth: 460 }}>
+              <thead>
+                <tr style={{ background: '#F4F9F5' }}>
+                  {[
+                    lang === 'ar' ? 'الفترة' : 'Period', lang === 'ar' ? 'السنوات' : 'Years',
+                    lang === 'ar' ? 'إلزامية' : 'Imperative', lang === 'ar' ? 'إرشادية' : 'Guideline',
+                    lang === 'ar' ? 'مطلوب الآن' : 'Req. now',
+                  ].map((h) => (
+                    <th key={h} className="text-left px-4 py-2.5 text-[11px] font-bold uppercase" style={{ color: '#7A9080' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F4F9F5]">
+                {GUIDELINE_CYCLE.map((row) => (
+                  <tr key={row.period}>
+                    <td className="px-4 py-2.5 font-medium text-forest whitespace-nowrap">{row.period}</td>
+                    <td className="px-4 py-2.5" style={{ color: '#5A6672' }}>{row.years}</td>
+                    <td className="px-4 py-2.5" style={{ color: '#1B4332' }}>{row.imperative}%</td>
+                    <td className="px-4 py-2.5" style={{ color: '#8a6d1f' }}>{row.guideline}%</td>
+                    <td className="px-4 py-2.5 font-semibold whitespace-nowrap" style={{ color: '#40916C' }}>
+                      {impCount} + {Math.ceil((guideCount * row.guideline) / 100)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Grouped criteria */}
       <div className="space-y-6">
