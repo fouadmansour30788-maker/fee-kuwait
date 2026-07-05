@@ -11,9 +11,20 @@ import {
   Newspaper, GraduationCap, AlertCircle,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
+import { createClient } from '@/lib/supabase/client'
 
 // ── Types ──────────────────────────────────────────
 type InstitutionType = 'school' | 'business'
+
+// Register governorate labels (en/ar) → schools.governorate check-constraint values.
+const GOV_MAP: Record<string, string> = {
+  'Kuwait City': 'Capital', 'مدينة الكويت': 'Capital',
+  'Hawalli': 'Hawalli', 'حولي': 'Hawalli',
+  'Farwaniyah': 'Farwaniya', 'الفروانية': 'Farwaniya',
+  'Ahmadi': 'Ahmadi', 'الأحمدي': 'Ahmadi',
+  'Jahra': 'Jahra', 'الجهراء': 'Jahra',
+  'Mubarak Al-Kabeer': 'Mubarak Al-Kabeer', 'مبارك الكبير': 'Mubarak Al-Kabeer',
+}
 
 interface FormData {
   // Step 1 — Account
@@ -200,12 +211,51 @@ function RegisterForm() {
   async function handleSubmit() {
     if (!validateStep(3)) return
     setSubmitting(true)
-    await new Promise(r => setTimeout(r, 1800)) // demo delay
+    setErrors(e => ({ ...e, general: '' }))
+
+    const supabase = createClient()
+    const { data: signUp, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          role: institutionType,                 // 'school' | 'business'
+          name_en: data.institutionName || data.name,
+          name_ar: data.institutionNameAr || null,
+          preferred_language: lang,
+        },
+      },
+    })
+    if (error || !signUp.user) {
+      setSubmitting(false)
+      setErrors(e => ({ ...e, general: error?.message ?? (lang === 'ar' ? 'تعذّر إنشاء الحساب.' : 'Could not create the account.') }))
+      return
+    }
+
+    // With a session (email confirmation off), create the institution record now.
+    // Best-effort — details can also be completed later in onboarding.
+    if (signUp.session) {
+      const uid = signUp.user.id
+      if (institutionType === 'school') {
+        await supabase.from('schools').insert({
+          user_id: uid, name_en: data.institutionName, name_ar: data.institutionNameAr || null,
+          type: data.schoolType || null, governorate: GOV_MAP[data.governorate] ?? null,
+          address: data.address || null, students_count: data.studentsCount ? Number(data.studentsCount) : null,
+          principal_name: data.contactName || null, principal_phone: data.contactPhone || null,
+        })
+      } else {
+        await supabase.from('businesses').insert({
+          user_id: uid, name_en: data.institutionName, name_ar: data.institutionNameAr || null,
+          type: data.businessType || null, governorate: data.governorate || null, address: data.address || null,
+        })
+      }
+    }
+
     setSubmitting(false)
     setSubmitted(true)
-    setTimeout(() => {
-      router.push(institutionType === 'school' ? '/school/dashboard' : '/business/dashboard')
-    }, 3000)
+    // Signed-in → workspace; else (email confirmation required) → login after verifying.
+    const dest = signUp.session ? (institutionType === 'school' ? '/school/dashboard' : '/business/dashboard') : '/login'
+    setTimeout(() => { router.push(dest); router.refresh() }, 2500)
   }
 
   // ── Eligible programmes for this institution type ──
@@ -707,6 +757,13 @@ function RegisterForm() {
         </AnimatePresence>
 
         {/* Navigation footer */}
+        {errors.general && (
+          <div className="px-8 md:px-10 pb-2">
+            <div className="flex items-center gap-2 p-3 rounded-xl text-sm" style={{ background: '#FFF5F5', border: '1px solid #FED7D7', color: '#E53E3E' }}>
+              <AlertCircle className="w-4 h-4 flex-shrink-0" /> {errors.general}
+            </div>
+          </div>
+        )}
         <div className="px-8 md:px-10 pb-8 flex items-center justify-between gap-4 border-t" style={{ borderColor: '#E8F5EC' }}>
           <button onClick={back} disabled={step === 0}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-30"
