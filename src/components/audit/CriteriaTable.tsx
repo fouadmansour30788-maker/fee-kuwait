@@ -81,8 +81,20 @@ export default function CriteriaTable({
     return matchQ && matchArea && matchResult
   })
 
-  const cols = 2 + (showInternal ? 1 : 0) + (showExternal ? 3 : 0) + (hasThreads ? 1 : 0)
+  // Area (indicator) + internal + external(3) + thread. The area is a group header now.
+  const cols = 1 + (showInternal ? 1 : 0) + (showExternal ? 3 : 0) + (hasThreads ? 1 : 0)
   const canPostRow = hasThreads && viewerRole !== 'cb' && !!onPost && canPostCriterion(viewerRole, status)
+
+  // Group the visible rows by area, preserving section order (first-seen).
+  const groups = useMemo(() => {
+    const order: string[] = []
+    const map = new Map<string, ChecklistItem[]>()
+    for (const c of filtered) {
+      if (!map.has(c.criteria)) { map.set(c.criteria, []); order.push(c.criteria) }
+      map.get(c.criteria)!.push(c)
+    }
+    return order.map(area => ({ area, rows: map.get(area)! }))
+  }, [filtered])
 
   function exportCsv() {
     const head = ['Criteria', 'Ref', 'Indicator', 'Kind', 'Points', 'Internal', 'External auditor', 'External', 'Severity', 'Due', 'Narrative']
@@ -141,7 +153,6 @@ export default function CriteriaTable({
           <table className="w-full text-sm" style={{ minWidth: cols > 4 ? 860 : 620 }}>
             <thead>
               <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                <th className={th} style={{ color: '#94A3B8' }}>Criteria</th>
                 <th className={th} style={{ color: '#94A3B8' }}>Indicator</th>
                 {showInternal && <th className={th} style={{ color: '#94A3B8' }}>Internal (NO)</th>}
                 {showExternal && <th className={th} style={{ color: '#94A3B8' }}>External auditor</th>}
@@ -151,7 +162,15 @@ export default function CriteriaTable({
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: '#F1F5F9' }}>
-              {filtered.map(c => {
+              {groups.map(g => (
+                <Fragment key={g.area}>
+                  <tr>
+                    <td colSpan={cols} className="px-3 py-2" style={{ background: '#ECFDF3', borderTop: '1px solid #D1FAE5' }}>
+                      <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: '#1B4332' }}>{g.area}</span>
+                      <span className="text-[11px] font-semibold ml-2" style={{ color: '#6B9080' }}>· {g.rows.length}</span>
+                    </td>
+                  </tr>
+                  {g.rows.map(c => {
                 const isOpen = open === c.ref
                 const km = CRITERION_KIND_META[c.kind]
                 const msgs = hasThreads ? visibleCriterionThread(threads![c.ref] ?? [], viewerRole, status) : []
@@ -159,9 +178,6 @@ export default function CriteriaTable({
                   <Fragment key={c.ref}>
                     <tr className="align-top hover:bg-slate-50/60 transition-colors"
                       style={c.result === 'no_pass' && published ? { background: '#FEF6F6' } : undefined}>
-                      <td className="px-3 py-3">
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#ECFDF3', color: '#1B4332' }}>{c.criteria}</span>
-                      </td>
                       <td className="px-3 py-3">
                         <div className="flex items-start gap-1.5">
                           <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>
@@ -302,6 +318,8 @@ export default function CriteriaTable({
                   </Fragment>
                 )
               })}
+                </Fragment>
+              ))}
               {filtered.length === 0 && (
                 <tr><td colSpan={cols} className="px-4 py-8 text-center text-sm" style={{ color: '#94A3B8' }}>No indicators match the filters.</td></tr>
               )}
