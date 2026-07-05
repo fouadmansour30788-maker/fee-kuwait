@@ -9,6 +9,7 @@ import {
   ChevronRight, ClipboardCheck,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
+import SignOutButton from '@/components/auth/SignOutButton'
 
 const SCHOOL_NAV = [
   { href: '/school/dashboard',    icon: LayoutDashboard, en: 'Dashboard',    ar: 'لوحة التحكم' },
@@ -97,14 +98,13 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
         {/* Bottom: sign out */}
         <div className="p-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-          <Link
-            href="/login"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+          <SignOutButton
+            className="w-full text-start flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
             style={{ color: 'rgba(255,255,255,0.4)' }}
           >
             <LogOut className="w-4 h-4" />
             {lang === 'ar' ? 'تسجيل الخروج' : 'Sign out'}
-          </Link>
+          </SignOutButton>
         </div>
       </aside>
 

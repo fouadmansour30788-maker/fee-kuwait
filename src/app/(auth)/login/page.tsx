@@ -6,6 +6,8 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, School, Building2, ShieldCheck, Gavel } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
+import { createClient } from '@/lib/supabase/client'
+import { roleHome } from '@/lib/auth'
 
 function LoginForm() {
   const { lang } = useLang()
@@ -29,11 +31,17 @@ function LoginForm() {
     }
 
     setLoading(true)
-    await new Promise(r => setTimeout(r, 1400)) // demo delay
-
-    // Demo: route based on email prefix
-    const dest = redirectTo || (email.includes('school') ? '/school/dashboard' : '/business/dashboard')
-    router.push(dest)
+    const supabase = createClient()
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    if (signInError || !data.user) {
+      setError(lang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : (signInError?.message ?? 'Invalid email or password.'))
+      setLoading(false)
+      return
+    }
+    // Route to the workspace matching the account's role.
+    const { data: profile } = await supabase.from('users').select('role').eq('id', data.user.id).single()
+    router.push(redirectTo || roleHome(profile?.role))
+    router.refresh()
   }
 
   return (

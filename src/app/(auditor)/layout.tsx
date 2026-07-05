@@ -8,6 +8,7 @@ import {
   Menu, X, LogOut, ChevronRight, Bell,
 } from 'lucide-react'
 import { CURRENT_AUDITOR } from '@/lib/data/audits'
+import SignOutButton from '@/components/auth/SignOutButton'
 
 const NAV = [
   { href: '/auditor/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
@@ -67,14 +68,13 @@ export default function AuditorLayout({ children }: { children: React.ReactNode 
         </nav>
 
         <div className="p-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-          <Link
-            href="/login"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+          <SignOutButton
+            className="w-full text-start flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
             style={{ color: 'rgba(255,255,255,0.32)' }}
           >
             <LogOut className="w-4 h-4" />
             Sign out
-          </Link>
+          </SignOutButton>
         </div>
       </aside>
 
