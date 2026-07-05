@@ -120,7 +120,9 @@ export default function HeroSection() {
                 <>
                   نبني مستقبلاً{' '}
                   <span style={{
+                    display: 'inline-block',
                     background: 'linear-gradient(90deg, #52B788, #74C69D, #40916C)',
+                    backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                   }}>مستداماً</span>
@@ -130,7 +132,9 @@ export default function HeroSection() {
                 <>
                   Building a{' '}
                   <span style={{
+                    display: 'inline-block',
                     background: 'linear-gradient(90deg, #52B788, #74C69D, #B7E4C7)',
+                    backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                   }}>
