@@ -4,10 +4,11 @@ import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, Save, FileText, Dow
 import { getApplication, PROGRAMME_LABEL, statusMeta, OPERATOR_STATUSES, CB_DECISION_LABEL } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listAuditors, applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
-import { listAssessments } from '@/lib/db/assessments'
+import { listCriterionAssessments } from '@/lib/db/assessments'
 import { criteriaForProgramme } from '@/lib/criteria'
 import AssignAuditor from '@/components/audit/AssignAuditor'
 import AssignCb from '@/components/audit/AssignCb'
+import CriteriaGrid from '@/components/audit/CriteriaGrid'
 import { updateApplication } from './actions'
 
 export default async function ApplicationDetail({
@@ -21,13 +22,10 @@ export default async function ApplicationDetail({
   const app = await getApplication(id)
   if (!app) notFound()
   const [docs, auditors, currentAuditor, assessments, bodies, currentCb] = await Promise.all([
-    listApplicationDocuments(id), listAuditors(), applicationAuditor(id), listAssessments(id),
+    listApplicationDocuments(id), listAuditors(), applicationAuditor(id), listCriterionAssessments(id),
     listCertificationBodies(), applicationCb(id),
   ])
   const criteria = criteriaForProgramme(app.programme)
-  const graded = criteria.filter((c) => (assessments[c.ref] ?? 'pending') !== 'pending').length
-  const passed = criteria.filter((c) => assessments[c.ref] === 'pass').length
-  const noPassList = criteria.filter((c) => assessments[c.ref] === 'no_pass')
 
   const s = statusMeta(app.status)
 
@@ -131,26 +129,13 @@ export default async function ApplicationDetail({
         )}
       </div>
 
-      {/* Audit results (read-only, from the auditor) */}
-      {criteria.length > 0 && graded > 0 && (
+      {/* Criteria assessment — internal (NO) + external auditor */}
+      {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Audit results</h2>
-            <span className="text-xs font-semibold" style={{ color: '#64748B' }}>{passed}/{criteria.length} passed · {graded} graded</span>
-          </div>
-          {noPassList.length > 0 ? (
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold" style={{ color: '#B91C1C' }}>{noPassList.length} non-conformity(ies):</p>
-              {noPassList.map((c) => (
-                <div key={c.ref} className="flex items-center gap-2.5 rounded-lg border p-2.5" style={{ borderColor: '#FECACA', background: '#FEF6F6' }}>
-                  <span className="text-xs font-mono font-semibold flex-shrink-0" style={{ color: '#B91C1C' }}>{c.ref}</span>
-                  <p className="text-sm" style={{ color: '#334155' }}>{c.title}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm" style={{ color: '#059669' }}>All graded criteria passed.</p>
-          )}
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria assessment</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Record the internal (National Operator) result per indicator. The assigned auditor&apos;s result and feedback appear here once they assess. Saved automatically.</p>
+          <CriteriaGrid role="admin" applicationId={id} criteria={criteria} initial={assessments}
+            externalAuditorName={currentAuditor?.name_en || currentAuditor?.email || null} />
         </div>
       )}
 

@@ -3,14 +3,14 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox, Mail, Building2, Calendar } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
-import { listAssessments } from '@/lib/db/assessments'
+import { listCriterionAssessments } from '@/lib/db/assessments'
 import { criteriaForProgramme } from '@/lib/criteria'
-import CriteriaAssessment from '@/components/audit/CriteriaAssessment'
+import CriteriaGrid from '@/components/audit/CriteriaGrid'
 
 export default async function AuditorApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments] = await Promise.all([listApplicationDocuments(params.id), listAssessments(params.id)])
+  const [docs, assessments] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id)])
   const criteria = criteriaForProgramme(app.programme)
   const s = statusMeta(app.status)
 
@@ -45,9 +45,9 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
       {/* Criteria assessment */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
         <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria assessment</h2>
-        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Record Pass / No Pass for each criterion. Saved automatically.</p>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Record Pass / Not pass and written feedback for each indicator. The internal (National Operator) result is shown for reference. Saved automatically.</p>
         {criteria.length > 0
-          ? <CriteriaAssessment applicationId={params.id} criteria={criteria} initial={assessments} />
+          ? <CriteriaGrid role="auditor" applicationId={params.id} criteria={criteria} initial={assessments} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
       </div>
 
