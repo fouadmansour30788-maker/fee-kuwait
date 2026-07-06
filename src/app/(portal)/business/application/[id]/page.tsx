@@ -6,7 +6,7 @@ import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { criteriaForProgramme } from '@/lib/criteria'
 import DocumentUpload from '@/components/documents/DocumentUpload'
-import CriteriaChecklist from '@/components/audit/CriteriaChecklist'
+import CriteriaBoard from '@/components/audit/CriteriaBoard'
 
 export default async function BusinessApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
@@ -41,9 +41,9 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
 
       {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
-          <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Criteria &amp; evidence</h2>
-          <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Attach supporting evidence for each indicator and see your reviewer&apos;s feedback.</p>
-          <CriteriaChecklist applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} showExternal={showExternal} />
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Criteria board</h2>
+          <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Attach evidence and add a comment for each indicator, and see your reviewer&apos;s feedback.</p>
+          <CriteriaBoard role="establishment" applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} showExternal={showExternal} />
         </div>
       )}
 

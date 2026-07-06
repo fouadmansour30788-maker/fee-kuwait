@@ -7,6 +7,7 @@ export interface CriterionAssessment {
   internalNote: string | null
   external: CriterionResult
   note: string | null
+  applicantNote: string | null
 }
 
 // Map of criterion_ref -> external result for an application (RLS decides visibility).
@@ -27,7 +28,7 @@ export async function listCriterionAssessments(applicationId: string): Promise<R
   const supabase = createClient()
   const { data, error } = await supabase
     .from('criterion_assessments')
-    .select('criterion_ref, result, internal_result, note, internal_note')
+    .select('criterion_ref, result, internal_result, note, internal_note, applicant_note')
     .eq('application_id', applicationId)
   if (error) { console.error('listCriterionAssessments:', error.message); return {} }
   const map: Record<string, CriterionAssessment> = {}
@@ -37,6 +38,7 @@ export async function listCriterionAssessments(applicationId: string): Promise<R
       internalNote: r.internal_note ?? null,
       external: (r.result ?? 'pending') as CriterionResult,
       note: r.note ?? null,
+      applicantNote: r.applicant_note ?? null,
     }
   }
   return map

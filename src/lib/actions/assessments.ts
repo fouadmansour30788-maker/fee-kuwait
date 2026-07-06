@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 const RESULTS = ['pending', 'pass', 'no_pass']
@@ -69,6 +70,32 @@ export async function setInternalResult(applicationId: string, criterionRef: str
 
   revalidatePath(`/applications/${applicationId}`)
   revalidatePath(`/auditor/applications/${applicationId}`)
+  return { ok: true }
+}
+
+// The establishment leaves a comment on a criterion. Ownership is verified here
+// and the note is written with the service role, so applicants keep read-only RLS
+// on criterion_assessments (they can never write result columns).
+export async function setApplicantNote(applicationId: string, criterionRef: string, note: string): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const { data: own } = await supabase.from('applications').select('id').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
+  if (!own) return { error: 'Not allowed' }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('criterion_assessments').upsert({
+    application_id: applicationId,
+    criterion_ref: criterionRef,
+    applicant_note: note.trim().slice(0, 2000) || null,
+    updated_by: user.id,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'application_id,criterion_ref' })
+  if (error) return { error: error.message }
+
+  revalidatePath(`/business/application/${applicationId}`)
+  revalidatePath(`/school/application/${applicationId}`)
+  revalidatePath(`/applications/${applicationId}`)
   return { ok: true }
 }
 

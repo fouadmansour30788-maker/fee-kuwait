@@ -8,7 +8,7 @@ import { listCriterionAssessments } from '@/lib/db/assessments'
 import { criteriaForProgramme } from '@/lib/criteria'
 import AssignAuditor from '@/components/audit/AssignAuditor'
 import AssignCb from '@/components/audit/AssignCb'
-import CriteriaGrid from '@/components/audit/CriteriaGrid'
+import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import ReviewForm from './ReviewForm'
 
 export default async function ApplicationDetail({
@@ -132,13 +132,12 @@ export default async function ApplicationDetail({
         )}
       </div>
 
-      {/* Criteria assessment — internal (NO) + external auditor */}
+      {/* Shared criteria board — establishment evidence/comments + operator feedback */}
       {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria assessment</h2>
-          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Record the internal (National Operator) result per indicator. The assigned auditor&apos;s result and feedback appear here once they assess. Saved automatically.</p>
-          <CriteriaGrid role="admin" applicationId={id} criteria={criteria} initial={assessments}
-            externalAuditorName={currentAuditor?.name_en || currentAuditor?.email || null} />
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The establishment&apos;s evidence and comments alongside your feedback per indicator. The auditor&apos;s result is shown once assessed. Saved automatically.</p>
+          <CriteriaBoard role="admin" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} showExternal />
         </div>
       )}
 
