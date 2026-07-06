@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox } from 'lucide-react'
-import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL } from '@/lib/db/applications'
+import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { criteriaForProgramme } from '@/lib/criteria'
@@ -14,6 +14,7 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
   const [docs, assessments] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id)])
   const criteria = criteriaForProgramme(app.programme)
   const hasResults = Object.values(assessments).some((a) => a.external !== 'pending')
+  const showResults = AUDIT_PUBLISHED_STATUSES.includes(app.status) && hasResults && criteria.length > 0
   const s = statusMeta(app.status)
 
   return (
@@ -38,7 +39,7 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
         </div>
       </div>
 
-      {hasResults && criteria.length > 0 && (
+      {showResults && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Audit results</h2>
           <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Your assigned auditor&apos;s result and feedback for each criterion.</p>

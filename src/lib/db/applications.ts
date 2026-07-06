@@ -66,6 +66,11 @@ export function statusMeta(status: string) {
 // Statuses an operator can set from the review screen.
 export const OPERATOR_STATUSES = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'approved', 'rejected']
 
+// Statuses at which the auditor's per-criterion results are finalised (audit handed
+// off to the CB, or a decision recorded) and may be shown to the establishment.
+// During 'audit' the grading is still a draft, so it stays hidden from the applicant.
+export const AUDIT_PUBLISHED_STATUSES = ['cb_review', 'approved', 'certified', 'certified_rectification', 'not_certified', 'rejected']
+
 export interface AppDetail {
   id: string
   programme: string
