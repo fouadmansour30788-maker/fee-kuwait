@@ -1,4 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
+// Pure, client-safe helpers only — no server imports here, so this module can be
+// imported from client components (e.g. the login page). The server-only
+// getCurrentUser() lives in ./auth-server.
 
 export type Role = 'school' | 'business' | 'admin' | 'super_admin' | 'auditor' | 'certification_body'
 
@@ -39,22 +41,3 @@ export function roleCanAccess(role: string | null | undefined, path: string): bo
 }
 
 export interface CurrentUser { id: string; email: string | null; role: Role; nameEn: string | null; nameAr: string | null }
-
-/** Server-side: the signed-in user + their profile role, or null. */
-export async function getCurrentUser(): Promise<CurrentUser | null> {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role, name_en, name_ar')
-    .eq('id', user.id)
-    .single()
-  return {
-    id: user.id,
-    email: user.email ?? null,
-    role: (profile?.role ?? 'school') as Role,
-    nameEn: profile?.name_en ?? null,
-    nameAr: profile?.name_ar ?? null,
-  }
-}
