@@ -7,6 +7,7 @@ import { operatorStats, PROGRAMME_LABEL, statusMeta, STATUS_META } from '@/lib/d
 import { listCertificates } from '@/lib/db/certificates'
 import { listMembers } from '@/lib/db/members'
 import { LineChart, Funnel, Radar, Donut } from '@/components/dashboard/charts'
+import GovernorateMap, { type GovDatum } from '@/components/dashboard/GovernorateMap'
 
 const PROGRAMME_COLOR: Record<string, string> = {
   'eco-schools': '#2563EB', 'blue-flag': '#0891B2', 'green-key': '#C8A951',
@@ -106,13 +107,37 @@ export default async function AdminDashboard() {
     .filter((r) => r.count > 0)
   const statusMax = Math.max(1, ...byStatus.map((r) => r.count))
 
-  // Governorate distribution (members)
-  const govMap = new Map<string, number>()
-  for (const m of memberRows) { const g = m.governorate || 'Unspecified'; govMap.set(g, (govMap.get(g) ?? 0) + 1) }
-  const byGov = Array.from(govMap.entries()).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 7)
-  const govMax = Math.max(1, ...byGov.map((g) => g.count))
-  const schools = memberRows.filter((m) => m.kind === 'School').length
-  const establishments = memberRows.length - schools
+  // Governorate map data — canonicalise members to Kuwait's six governorates.
+  const GOV_DEFS = [
+    { key: 'capital', label: 'Al Asimah' },
+    { key: 'hawalli', label: 'Hawalli' },
+    { key: 'farwaniyah', label: 'Al Farwaniyah' },
+    { key: 'mubarak', label: 'Mubarak Al-Kabeer' },
+    { key: 'ahmadi', label: 'Al Ahmadi' },
+    { key: 'jahra', label: 'Al Jahra' },
+  ]
+  const canonGov = (raw: string | null) => {
+    const n = (raw ?? '').toLowerCase().replace(/[^a-z]/g, '')
+    if (n.includes('asimah') || n.includes('capital') || n.includes('kuwaitcity') || n === 'alkuwait' || n === 'kuwait') return 'capital'
+    if (n.includes('hawalli')) return 'hawalli'
+    if (n.includes('farwani')) return 'farwaniyah'
+    if (n.includes('mubarak')) return 'mubarak'
+    if (n.includes('ahmadi')) return 'ahmadi'
+    if (n.includes('jahra')) return 'jahra'
+    return 'other'
+  }
+  const blankGov = () => ({ total: 0, schools: 0, establishments: 0, active: 0 })
+  const govAgg: Record<string, ReturnType<typeof blankGov>> = { other: blankGov() }
+  for (const def of GOV_DEFS) govAgg[def.key] = blankGov()
+  for (const m of memberRows) {
+    const a = govAgg[canonGov(m.governorate)]
+    a.total++
+    if (m.kind === 'School') a.schools++
+    else a.establishments++
+    if (m.status === 'active') a.active++
+  }
+  const govData: GovDatum[] = GOV_DEFS.map((def) => ({ key: def.key, label: def.label, ...govAgg[def.key] }))
+  const govOther: GovDatum = { key: 'other', label: 'Other / unspecified', ...govAgg.other }
 
   // ── Auto insights & recommendations ──
   const expiringSoon = certs.filter((c) => {
@@ -291,35 +316,20 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* Governorate + recent applications */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-          <div className="flex items-center gap-2 mb-5">
-            <MapPin className="w-4 h-4" style={{ color: '#0891B2' }} />
-            <h2 className="font-bold text-sm" style={{ color: '#0F172A' }}>Members by governorate</h2>
-          </div>
-          {byGov.length > 0 ? (
-            <div className="space-y-3">
-              {byGov.map((g) => (
-                <div key={g.name}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-medium" style={{ color: '#334155' }}>{g.name}</span>
-                    <span className="text-xs font-bold" style={{ color: '#0F172A' }}>{g.count}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${Math.round((g.count / govMax) * 100)}%`, background: '#0891B2' }} />
-                  </div>
-                </div>
-              ))}
-              <div className="mt-4 pt-3 border-t grid grid-cols-2 gap-3" style={{ borderColor: '#F1F5F9' }}>
-                <div><p className="text-lg font-bold" style={{ color: '#0F172A' }}>{schools}</p><p className="text-[11px]" style={{ color: '#94A3B8' }}>Schools</p></div>
-                <div><p className="text-lg font-bold" style={{ color: '#0F172A' }}>{establishments}</p><p className="text-[11px]" style={{ color: '#94A3B8' }}>Establishments</p></div>
-              </div>
-            </div>
-          ) : <p className="text-sm" style={{ color: '#94A3B8' }}>No members yet.</p>}
+      {/* Interactive governorate map */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <div className="flex items-center gap-2 mb-4">
+          <MapPin className="w-4 h-4" style={{ color: '#0891B2' }} />
+          <h2 className="font-bold text-sm" style={{ color: '#0F172A' }}>Members by governorate</h2>
+          <span className="text-[11px]" style={{ color: '#94A3B8' }}>— click a region to filter the figures</span>
         </div>
+        {memberRows.length > 0
+          ? <GovernorateMap data={govData} other={govOther} />
+          : <p className="text-sm py-8 text-center" style={{ color: '#94A3B8' }}>No members yet — governorate figures will appear as schools and establishments register.</p>}
+      </div>
 
-        <div className="lg:col-span-2 bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
+      {/* Recent applications */}
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
           <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: '#F1F5F9' }}>
             <h2 className="font-bold text-sm" style={{ color: '#0F172A' }}>Recent applications</h2>
             <Link href="/applications" className="text-xs font-semibold" style={{ color: '#2563EB' }}>View all →</Link>
@@ -347,7 +357,6 @@ export default async function AdminDashboard() {
               </div>
             )}
           </div>
-        </div>
       </div>
     </div>
   )
