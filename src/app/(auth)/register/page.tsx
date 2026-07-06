@@ -8,7 +8,7 @@ import {
   User, Mail, Lock, Eye, EyeOff, Building2, School,
   MapPin, Phone, Users, ChevronRight, ChevronLeft,
   CheckCircle2, ArrowRight, Waves, KeyRound, Leaf,
-  Newspaper, GraduationCap, AlertCircle,
+  Newspaper, GraduationCap, AlertCircle, Check,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import { createClient } from '@/lib/supabase/client'
@@ -42,8 +42,8 @@ interface FormData {
   studentsCount: string
   contactName: string
   contactPhone: string
-  // Step 3 — Programme
-  programme: string
+  // Step 3 — Programme(s)
+  programmes: string[]
 }
 
 // ── Constants ───────────────────────────────────────
@@ -114,7 +114,7 @@ const EMPTY: FormData = {
   institutionName: '', institutionNameAr: '',
   schoolType: '', businessType: '', governorate: '',
   address: '', studentsCount: '', contactName: '', contactPhone: '',
-  programme: '',
+  programmes: [],
 }
 
 // ── Helpers ─────────────────────────────────────────
@@ -142,7 +142,7 @@ function RegisterForm() {
   const [institutionType, setInstitutionType] = useState<InstitutionType>(typeParam === 'business' ? 'business' : 'school')
   const [step, setStep] = useState(0)
   const [direction, setDirection] = useState(1) // 1 = forward, -1 = backward
-  const [data, setData] = useState<FormData>({ ...EMPTY, programme: progParam })
+  const [data, setData] = useState<FormData>({ ...EMPTY, programmes: progParam ? [progParam] : [] })
   const [errors, setErrors] = useState<Partial<Record<keyof FormData | 'general', string>>>({})
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -155,6 +155,11 @@ function RegisterForm() {
   function set(key: keyof FormData, val: string) {
     setData(d => ({ ...d, [key]: val }))
     setErrors(e => ({ ...e, [key]: '' }))
+  }
+
+  function toggleProgramme(id: string) {
+    setData(d => ({ ...d, programmes: d.programmes.includes(id) ? d.programmes.filter(p => p !== id) : [...d.programmes, id] }))
+    setErrors(e => ({ ...e, programmes: '' }))
   }
 
   // ── Validation ──────────────────────────────────
@@ -189,8 +194,8 @@ function RegisterForm() {
     }
 
     if (s === 2) {
-      if (!data.programme)
-        e.programme = lang === 'ar' ? 'يرجى اختيار برنامج' : 'Please select a programme'
+      if (data.programmes.length === 0)
+        e.programmes = lang === 'ar' ? 'يرجى اختيار برنامج واحد على الأقل' : 'Please select at least one programme'
     }
 
     setErrors(e)
@@ -232,22 +237,33 @@ function RegisterForm() {
       return
     }
 
-    // With a session (email confirmation off), create the institution record now.
-    // Best-effort — details can also be completed later in onboarding.
+    // With a session (email confirmation off), create the institution record now
+    // and one application per selected programme.
     if (signUp.session) {
       const uid = signUp.user.id
+      let entityId: string | null = null
       if (institutionType === 'school') {
-        await supabase.from('schools').insert({
+        const { data: row } = await supabase.from('schools').insert({
           user_id: uid, name_en: data.institutionName, name_ar: data.institutionNameAr || null,
           type: data.schoolType || null, governorate: GOV_MAP[data.governorate] ?? null,
           address: data.address || null, students_count: data.studentsCount ? Number(data.studentsCount) : null,
           principal_name: data.contactName || null, principal_phone: data.contactPhone || null,
-        })
+        }).select('id').single()
+        entityId = row?.id ?? null
       } else {
-        await supabase.from('businesses').insert({
+        const { data: row } = await supabase.from('businesses').insert({
           user_id: uid, name_en: data.institutionName, name_ar: data.institutionNameAr || null,
           type: data.businessType || null, governorate: data.governorate || null, address: data.address || null,
-        })
+        }).select('id').single()
+        entityId = row?.id ?? null
+      }
+      // One application per chosen programme (e.g. Green Key + Blue Flag).
+      if (data.programmes.length > 0) {
+        await supabase.from('applications').insert(
+          data.programmes.map((programme) => ({
+            applicant_id: uid, entity_type: institutionType, entity_id: entityId, programme, status: 'new',
+          }))
+        )
       }
     }
 
@@ -601,14 +617,14 @@ function RegisterForm() {
                 </h2>
                 <p className="text-sm mb-7" style={{ color: '#5A6672' }}>
                   {lang === 'ar'
-                    ? 'اختر البرنامج الذي تريد التقدم له. يمكنك التقدم لبرامج إضافية لاحقاً.'
-                    : 'Select the programme you want to apply for. You can apply for additional programmes later.'}
+                    ? 'اختر برنامجاً واحداً أو أكثر تريد التقدم له — يمكنك اختيار أكثر من برنامج.'
+                    : 'Select one or more programmes to apply for — you can choose several (e.g. Green Key and Blue Flag).'}
                 </p>
 
-                {errors.programme && (
+                {errors.programmes && (
                   <div className="mb-5 p-3 rounded-xl flex items-center gap-2 text-sm" style={{ background: '#FFF5F5', border: '1px solid #FED7D7', color: '#E53E3E' }}>
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    {errors.programme}
+                    {errors.programmes}
                   </div>
                 )}
 
@@ -619,9 +635,9 @@ function RegisterForm() {
                 <div className="space-y-3 mb-6">
                   {eligibleProgs.map(prog => {
                     const Icon = prog.Icon
-                    const selected = data.programme === prog.id
+                    const selected = data.programmes.includes(prog.id)
                     return (
-                      <button key={prog.id} type="button" onClick={() => set('programme', prog.id)}
+                      <button key={prog.id} type="button" onClick={() => toggleProgramme(prog.id)}
                         className="w-full flex items-start gap-4 p-4 rounded-2xl text-left transition-all duration-200"
                         style={selected
                           ? { background: `${prog.color}10`, border: `2px solid ${prog.color}` }
@@ -634,9 +650,9 @@ function RegisterForm() {
                           <p className="font-bold text-sm text-forest">{lang === 'ar' ? prog.ar : prog.en}</p>
                           <p className="text-xs mt-0.5" style={{ color: '#5A6672' }}>{lang === 'ar' ? prog.desc_ar : prog.desc_en}</p>
                         </div>
-                        <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
+                        <div className="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
                           style={selected ? { background: prog.color, borderColor: prog.color } : { borderColor: '#C8E6D0' }}>
-                          {selected && <div className="w-2 h-2 rounded-full bg-white" />}
+                          {selected && <Check className="w-3 h-3 text-white" />}
                         </div>
                       </button>
                     )
@@ -727,17 +743,19 @@ function RegisterForm() {
                         {lang === 'ar' ? 'تعديل' : 'Edit'}
                       </button>
                     </div>
-                    {(() => {
-                      const prog = PROGRAMMES.find(p => p.id === data.programme)
-                      return prog ? (
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${prog.color}15` }}>
+                    <div className="flex flex-wrap gap-2">
+                      {data.programmes.map((id) => {
+                        const prog = PROGRAMMES.find(p => p.id === id)
+                        if (!prog) return null
+                        return (
+                          <div key={id} className="flex items-center gap-2 px-3 py-1.5 rounded-xl" style={{ background: `${prog.color}12`, border: `1px solid ${prog.color}30` }}>
                             <prog.Icon className="w-4 h-4" style={{ color: prog.color }} />
+                            <span className="font-semibold text-sm text-forest">{lang === 'ar' ? prog.ar : prog.en}</span>
                           </div>
-                          <span className="font-semibold text-sm text-forest">{lang === 'ar' ? prog.ar : prog.en}</span>
-                        </div>
-                      ) : null
-                    })()}
+                        )
+                      })}
+                      {data.programmes.length === 0 && <span className="text-sm" style={{ color: '#94A3B8' }}>—</span>}
+                    </div>
                   </div>
 
                   {/* Terms */}
