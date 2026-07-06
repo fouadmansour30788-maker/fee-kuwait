@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Gavel, Menu, X, LogOut, ChevronRight, Bell } from 'lucide-react'
-import { CURRENT_CB } from '@/lib/data/audits'
 import SignOutButton from '@/components/auth/SignOutButton'
 
 const NAV = [
@@ -14,7 +13,7 @@ const NAV = [
 export default function CbLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const initials = CURRENT_CB.name.replace('Dr. ', '').split(' ').map(w => w[0]).slice(0, 2).join('')
+  const initials = 'CB'
 
   return (
     <div className="min-h-screen flex" style={{ background: '#F0F4F8' }}>
@@ -81,7 +80,7 @@ export default function CbLayout({ children }: { children: React.ReactNode }) {
               {initials}
             </div>
             <div className="hidden md:block">
-              <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>{CURRENT_CB.name}</p>
+              <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Certification Body</p>
               <p className="text-xs" style={{ color: '#94A3B8' }}>Certification Body</p>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox } from 'lucide-react'
-import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
+import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listAssessments } from '@/lib/db/assessments'
 import DocumentUpload from '@/components/documents/DocumentUpload'
@@ -36,6 +36,16 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
       </div>
 
       <AuditResults programme={app.programme} assessments={assessments} />
+
+      {app.cb_decision && app.cb_decision !== 'pending' && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
+          <h2 className="text-base font-bold mb-2" style={{ color: '#0F2318' }}>Certification decision</h2>
+          <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: s.bg, color: s.color }}>
+            {CB_DECISION_LABEL[app.cb_decision] ?? app.cb_decision}
+          </div>
+          {app.cb_note && <p className="text-sm mt-2.5" style={{ color: '#5B7568' }}>{app.cb_note}</p>}
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">

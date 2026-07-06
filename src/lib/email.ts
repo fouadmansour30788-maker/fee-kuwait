@@ -94,8 +94,34 @@ export function applicationStatusEmail(opts: {
       ),
     }
   }
-  if (status === 'under_review' || status === 'audit') {
-    const label = status === 'audit' ? 'is now under audit' : 'is being reviewed'
+  if (status === 'certified' || status === 'certified_rectification') {
+    const rectified = status === 'certified_rectification'
+    return {
+      subject: `Certification decision: your ${programme} application`,
+      html: shell(
+        `${programme} — ${rectified ? 'Certified (subject to rectification)' : 'Certified'} 🎉`,
+        `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">The Certification Body has <strong>certified</strong> your <strong>${programme}</strong> application${rectified ? ', subject to rectifying the points noted below' : ''}.</p>
+         ${rejectionReason ? `<div style="margin:0 0 12px;padding:12px 14px;background:#FEF9EC;border:1px solid #FDE68A;border-radius:10px;font-size:14px;color:#854D0E;"><strong>Note from the Certification Body:</strong> ${rejectionReason}</div>` : ''}
+         ${certificateNumber ? `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">Your certificate <strong>${certificateNumber}</strong> is now available in your portal.</p>` : ''}
+         ${cta}`,
+      ),
+    }
+  }
+  if (status === 'not_certified') {
+    return {
+      subject: `Certification decision: your ${programme} application`,
+      html: shell(
+        `${programme} — Not certified`,
+        `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">After review, the Certification Body did <strong>not</strong> certify your <strong>${programme}</strong> application at this time.</p>
+         ${rejectionReason ? `<div style="margin:0 0 12px;padding:12px 14px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;font-size:14px;color:#991B1B;"><strong>Reason:</strong> ${rejectionReason}</div>` : ''}
+         <p style="margin:0;font-size:14px;color:#334155;line-height:1.6;">You're welcome to address the points raised and re-apply.</p>
+         ${cta}`,
+      ),
+    }
+  }
+  if (status === 'under_review' || status === 'audit' || status === 'cb_review') {
+    const label = status === 'audit' ? 'is now under audit'
+      : status === 'cb_review' ? 'is now with the Certification Body' : 'is being reviewed'
     return {
       subject: `Your ${programme} application ${label}`,
       html: shell(

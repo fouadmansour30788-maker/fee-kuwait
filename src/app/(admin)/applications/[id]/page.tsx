@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, Save, FileText, Download, Inbox } from 'lucide-react'
-import { getApplication, PROGRAMME_LABEL, statusMeta, OPERATOR_STATUSES } from '@/lib/db/applications'
+import { getApplication, PROGRAMME_LABEL, statusMeta, OPERATOR_STATUSES, CB_DECISION_LABEL } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
-import { listAuditors, applicationAuditor } from '@/lib/db/audit'
+import { listAuditors, applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
 import { listAssessments } from '@/lib/db/assessments'
 import { criteriaForProgramme } from '@/lib/criteria'
 import AssignAuditor from '@/components/audit/AssignAuditor'
+import AssignCb from '@/components/audit/AssignCb'
 import { updateApplication } from './actions'
 
 export default async function ApplicationDetail({
@@ -19,8 +20,9 @@ export default async function ApplicationDetail({
   const sp = searchParams
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, auditors, currentAuditor, assessments] = await Promise.all([
+  const [docs, auditors, currentAuditor, assessments, bodies, currentCb] = await Promise.all([
     listApplicationDocuments(id), listAuditors(), applicationAuditor(id), listAssessments(id),
+    listCertificationBodies(), applicationCb(id),
   ])
   const criteria = criteriaForProgramme(app.programme)
   const graded = criteria.filter((c) => (assessments[c.ref] ?? 'pending') !== 'pending').length
@@ -77,6 +79,26 @@ export default async function ApplicationDetail({
         {auditors.length > 0
           ? <AssignAuditor applicationId={id} auditors={auditors} currentId={currentAuditor?.id ?? null} />
           : <p className="text-xs" style={{ color: '#94A3B8' }}>No auditor accounts yet — create one and set its role under Team.</p>}
+      </div>
+
+      {/* Certification Body assignment + decision */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Certification Body</h2>
+        <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>
+          {currentCb ? `Assigned to ${currentCb.name_en || currentCb.email}.` : 'Once the audit is complete, assign a Certification Body to make the certification decision.'} Assigning moves the application to “CB Review”.
+        </p>
+        {bodies.length > 0
+          ? <AssignCb applicationId={id} bodies={bodies} currentId={currentCb?.id ?? null} />
+          : <p className="text-xs" style={{ color: '#94A3B8' }}>No certification-body accounts yet — create one and set its role under Team.</p>}
+
+        {app.cb_decision && app.cb_decision !== 'pending' && (
+          <div className="mt-4 pt-4 border-t" style={{ borderColor: '#F1F5F9' }}>
+            <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: s.bg, color: s.color }}>
+              {CB_DECISION_LABEL[app.cb_decision] ?? app.cb_decision}
+            </div>
+            {app.cb_note && <p className="text-sm mt-2.5" style={{ color: '#475569' }}>{app.cb_note}</p>}
+          </div>
+        )}
       </div>
 
       {/* Submitted documents */}

@@ -51,9 +51,11 @@ export const STATUS_META: Record<string, { label: string; color: string; bg: str
   documents_pending:      { label: 'Documents Pending',   color: '#D97706', bg: '#FEF3C7' },
   site_visit_scheduled:   { label: 'Site Visit Scheduled',color: '#0891B2', bg: '#CFFAFE' },
   audit:                  { label: 'Under Audit',         color: '#0891B2', bg: '#CFFAFE' },
+  cb_review:              { label: 'CB Review',           color: '#B45309', bg: '#FEF3C7' },
   approved:               { label: 'Approved',            color: '#059669', bg: '#D1FAE5' },
   rejected:               { label: 'Rejected',            color: '#DC2626', bg: '#FEE2E2' },
   certified:              { label: 'Certified',           color: '#059669', bg: '#D1FAE5' },
+  certified_rectification:{ label: 'Certified · rectification', color: '#B45309', bg: '#FEF3C7' },
   not_certified:          { label: 'Not Certified',       color: '#DC2626', bg: '#FEE2E2' },
 }
 
@@ -73,6 +75,8 @@ export interface AppDetail {
   review_deadline: string | null
   review_notes: string | null
   rejection_reason: string | null
+  cb_decision: string | null
+  cb_note: string | null
   applicant: { email: string | null; name_en: string | null; name_ar: string | null } | null
 }
 
@@ -80,9 +84,16 @@ export async function getApplication(id: string): Promise<AppDetail | null> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('applications')
-    .select('id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, applicant:users!applicant_id(email, name_en, name_ar)')
+    .select('id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, cb_decision, cb_note, applicant:users!applicant_id(email, name_en, name_ar)')
     .eq('id', id)
     .single()
   if (error) { console.error('getApplication:', error.message); return null }
   return data as unknown as AppDetail
+}
+
+// Human labels for the CB decision.
+export const CB_DECISION_LABEL: Record<string, string> = {
+  certified: 'Certified',
+  certified_rectification: 'Certified — subject to rectification',
+  not_certified: 'Not certified',
 }
