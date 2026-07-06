@@ -3,12 +3,14 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
+import { listAssessments } from '@/lib/db/assessments'
 import DocumentUpload from '@/components/documents/DocumentUpload'
+import AuditResults from '@/components/audit/AuditResults'
 
 export default async function BusinessApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const docs = await listApplicationDocuments(params.id)
+  const [docs, assessments] = await Promise.all([listApplicationDocuments(params.id), listAssessments(params.id)])
   const s = statusMeta(app.status)
 
   return (
@@ -32,6 +34,8 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
           )}
         </div>
       </div>
+
+      <AuditResults programme={app.programme} assessments={assessments} />
 
       {/* Documents */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
