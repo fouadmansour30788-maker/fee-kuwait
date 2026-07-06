@@ -45,7 +45,7 @@ language sql
 security definer
 set search_path = public
 as $$
-  select exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'));
+  select public.is_staff();
 $$;
 
 create policy "Users can view own profile" on public.users for select using (auth.uid() = id);
@@ -813,4 +813,24 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+
+-- ============================================================
+-- 007_application_insert.sql
+-- ============================================================
+-- FEE Kuwait — let applicants create their own applications
+--
+-- 001 gave applicants only a SELECT policy on applications ("view own") and a
+-- catch-all for admins. Schools/establishments also need to INSERT their own
+-- application (applicant_id must be themselves). This is additive — no reset.
+
+create policy "Applicants can create own applications" on public.applications
+  for insert with check (applicant_id = auth.uid());
+
+-- Allow applicants to update their own application while it is still new/draft
+-- (e.g. before an operator picks it up). Operators keep full control via the
+-- existing "Admins can manage all applications" policy.
+create policy "Applicants can update own new applications" on public.applications
+  for update using (applicant_id = auth.uid() and status in ('new', 'documents_pending'))
+  with check (applicant_id = auth.uid());
 

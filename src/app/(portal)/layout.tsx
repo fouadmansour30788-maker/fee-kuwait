@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileText, CheckSquare, BookOpen,
-  Bell, FolderOpen, Map, Award, Leaf, Menu, X, LogOut,
-  ChevronRight, ClipboardCheck,
+  Bell, FolderOpen, Map, Leaf, Menu, X, LogOut,
+  ChevronRight,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import SignOutButton from '@/components/auth/SignOutButton'
@@ -22,14 +22,12 @@ const SCHOOL_NAV = [
   { href: '/school/notifications',icon: Bell,            en: 'Notifications',ar: 'الإشعارات' },
 ]
 
+// Only real (DB-backed) screens. The mock ones (Criteria & Audit, Documents,
+// Inspections, Certification) are hidden until they're wired to the database.
 const BUSINESS_NAV = [
   { href: '/business/dashboard',    icon: LayoutDashboard, en: 'Dashboard',    ar: 'لوحة التحكم' },
   { href: '/business/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
   { href: '/business/rulebook',     icon: BookOpen,        en: 'Rulebook', ar: 'دليل المعايير' },
-  { href: '/business/audit',        icon: ClipboardCheck,  en: 'Criteria & Audit', ar: 'المعايير والتدقيق' },
-  { href: '/business/documents',    icon: FolderOpen,      en: 'Documents by Year', ar: 'المستندات حسب السنة' },
-  { href: '/business/inspections',  icon: Map,             en: 'Inspections',  ar: 'التفتيش' },
-  { href: '/business/certification',icon: Award,           en: 'Certification',ar: 'الشهادة' },
 ]
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {

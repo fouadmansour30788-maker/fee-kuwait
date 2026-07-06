@@ -28,7 +28,7 @@ language sql
 security definer
 set search_path = public
 as $$
-  select exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'));
+  select public.is_staff();
 $$;
 
 create policy "Users can view own profile" on public.users for select using (auth.uid() = id);
