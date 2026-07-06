@@ -1,226 +1,140 @@
-'use client'
+import { FileCheck, Award, Users, TrendingUp } from 'lucide-react'
+import { listApplications, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
+import { listCertificates } from '@/lib/db/certificates'
+import { listMembers } from '@/lib/db/members'
 
-import { motion } from 'framer-motion'
-import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend,
-} from 'recharts'
-import { TrendingUp, Award, School, Building2 } from 'lucide-react'
-
-/* ── Data ───────────────────────────────────────────────── */
-
-const MONTHLY = [
-  { month: 'Jan', Applications: 8,  Certifications: 5,  Renewals: 3 },
-  { month: 'Feb', Applications: 12, Certifications: 9,  Renewals: 5 },
-  { month: 'Mar', Applications: 15, Certifications: 11, Renewals: 7 },
-  { month: 'Apr', Applications: 10, Certifications: 8,  Renewals: 4 },
-  { month: 'May', Applications: 18, Certifications: 14, Renewals: 9 },
-]
-
-const PROGRAMME_PIE = [
-  { name: 'Eco-Schools', value: 142, color: '#52B788' },
-  { name: 'Green Key',   value: 34,  color: '#C8A951' },
-  { name: 'LEAF',        value: 28,  color: '#40916C' },
-  { name: 'YRE',         value: 19,  color: '#7C3AED' },
-  { name: 'Blue Flag',   value: 18,  color: '#3B9ECC' },
-  { name: 'Eco-Campus',  value: 7,   color: '#1B4332' },
-]
-
-const GOV_DATA = [
-  { name: 'Hawalli',           Certified: 62, Pending: 5 },
-  { name: 'Capital',           Certified: 48, Pending: 8 },
-  { name: 'Ahmadi',            Certified: 38, Pending: 3 },
-  { name: 'Farwaniya',         Certified: 35, Pending: 6 },
-  { name: 'Salmiya',           Certified: 29, Pending: 2 },
-  { name: 'Jahra',             Certified: 24, Pending: 4 },
-  { name: 'Mubarak Al-Kabeer', Certified: 12, Pending: 1 },
-]
-
-const YEARLY = [
-  { year: '2019', Schools: 12,  Businesses: 5  },
-  { year: '2020', Schools: 24,  Businesses: 12 },
-  { year: '2021', Schools: 38,  Businesses: 22 },
-  { year: '2022', Schools: 67,  Businesses: 41 },
-  { year: '2023', Schools: 112, Businesses: 68 },
-  { year: '2024', Schools: 145, Businesses: 89 },
-  { year: '2025', Schools: 160, Businesses: 96 },
-]
-
-/* ── Custom tooltip ─────────────────────────────────────── */
-
-function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) {
-  if (!active || !payload?.length) return null
-  return (
-    <div className="bg-white border rounded-xl px-3 py-2.5 shadow-lg text-xs" style={{ borderColor: '#E2E8F0' }}>
-      <p className="font-bold mb-1.5" style={{ color: '#0F172A' }}>{label}</p>
-      {payload.map(entry => (
-        <div key={entry.name} className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
-          <span style={{ color: '#64748B' }}>{entry.name}:</span>
-          <span className="font-semibold" style={{ color: '#1E293B' }}>{entry.value}</span>
-        </div>
-      ))}
-    </div>
-  )
+// Fixed categorical order for programmes (colour follows the programme, not rank).
+const PROGRAMME_COLOR: Record<string, string> = {
+  'eco-schools': '#2D9C6F', 'blue-flag': '#2563EB', 'green-key': '#C8A951',
+  'leaf': '#16A34A', 'yre': '#7C3AED', 'eco-campus': '#0891B2',
 }
 
-function PieLabel({ cx, cy, midAngle, outerRadius, name, percent }: { cx: number; cy: number; midAngle: number; outerRadius: number; name: string; percent: number }) {
-  if (percent < 0.05) return null
-  const rad = Math.PI / 180
-  const x = cx + (outerRadius + 22) * Math.cos(-midAngle * rad)
-  const y = cy + (outerRadius + 22) * Math.sin(-midAngle * rad)
-  return (
-    <text x={x} y={y} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }}>
-      {name} {(percent * 100).toFixed(0)}%
-    </text>
-  )
-}
+export default async function AnalyticsPage() {
+  const [apps, certs, members] = await Promise.all([listApplications(), listCertificates(), listMembers()])
 
-/* ── Page ───────────────────────────────────────────────── */
+  const total = apps.length
+  const approved = apps.filter((a) => ['approved', 'certified'].includes(a.status)).length
+  const approvedRate = total ? Math.round((approved / total) * 100) : 0
+  const schools = members.filter((m) => m.kind === 'School').length
+  const establishments = members.length - schools
 
-export default function AnalyticsPage() {
+  // Applications by status (reserved status palette + labels)
+  const statusOrder = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'approved', 'rejected']
+  const byStatus = statusOrder.map((st) => ({ st, ...statusMeta(st), count: apps.filter((a) => a.status === st).length })).filter((r) => r.count > 0)
+
+  // Applications by programme (fixed categorical order)
+  const byProgramme = Object.keys(PROGRAMME_LABEL).map((key) => ({
+    key, label: PROGRAMME_LABEL[key], color: PROGRAMME_COLOR[key] ?? '#94A3B8',
+    count: apps.filter((a) => a.programme === key).length,
+  }))
+  const progMax = Math.max(1, ...byProgramme.map((p) => p.count))
+
+  // Applications over the last 6 months (single series → no legend, direct labels)
+  const now = new Date()
+  const months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1)
+    return { key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('en-GB', { month: 'short' }), count: 0 }
+  })
+  for (const a of apps) {
+    if (!a.submitted_at) continue
+    const d = new Date(a.submitted_at)
+    const m = months.find((x) => x.key === `${d.getFullYear()}-${d.getMonth()}`)
+    if (m) m.count++
+  }
+  const monthMax = Math.max(1, ...months.map((m) => m.count))
+
+  const tiles = [
+    { label: 'Applications', value: total, Icon: FileCheck, color: '#2563EB' },
+    { label: 'Approval rate', value: `${approvedRate}%`, Icon: TrendingUp, color: '#059669' },
+    { label: 'Certificates', value: certs.length, Icon: Award, color: '#C8A951' },
+    { label: 'Members', value: members.length, Icon: Users, color: '#7C3AED' },
+  ]
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+      <div>
         <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Analytics</h1>
-        <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>Interactive dashboards · Jan–May 2026</p>
-      </motion.div>
+        <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>Live figures across your applications, certificates and members.</p>
+      </div>
 
-      {/* KPI row */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.05 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-      >
-        {[
-          { label: 'Total Certified',  value: '248', delta: '+42 YTD',      color: '#059669', bg: '#D1FAE5', Icon: Award      },
-          { label: 'Schools',          value: '160', delta: '+18 this year', color: '#3B82F6', bg: '#DBEAFE', Icon: School     },
-          { label: 'Businesses',       value: '88',  delta: '+7 this year',  color: '#D97706', bg: '#FEF3C7', Icon: Building2  },
-          { label: 'Active Regions',   value: '7',   delta: 'All Kuwait',    color: '#7C3AED', bg: '#EDE9FE', Icon: TrendingUp },
-        ].map((kpi, i) => (
-          <motion.div
-            key={kpi.label}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.08 + i * 0.05 }}
-            className="bg-white rounded-2xl p-5 border"
-            style={{ borderColor: '#E2E8F0' }}
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: kpi.bg }}>
-                <kpi.Icon className="w-4 h-4" style={{ color: kpi.color }} />
-              </div>
-              <span className="text-[11px] font-semibold" style={{ color: kpi.color }}>{kpi.delta}</span>
+      {/* Stat tiles */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {tiles.map((t) => (
+          <div key={t.label} className="bg-white rounded-2xl border p-5" style={{ borderColor: '#E2E8F0' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: `${t.color}14` }}>
+              <t.Icon className="w-5 h-5" style={{ color: t.color }} />
             </div>
-            <p className="text-3xl font-bold" style={{ color: '#0F172A' }}>{kpi.value}</p>
-            <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>{kpi.label}</p>
-          </motion.div>
+            <p className="text-3xl font-bold tracking-tight" style={{ color: '#0F172A' }}>{t.value}</p>
+            <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>{t.label}</p>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
-      {/* Monthly activity */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.18 }}>
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Applications by status */}
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-          <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Monthly Activity — Jan to May 2026</h2>
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={MONTHLY} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-              <Tooltip content={<ChartTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
-              <Line type="monotone" dataKey="Applications"   stroke="#3B82F6" strokeWidth={2.5} dot={{ r: 4, fill: '#3B82F6' }} activeDot={{ r: 6 }} />
-              <Line type="monotone" dataKey="Certifications" stroke="#52B788" strokeWidth={2.5} dot={{ r: 4, fill: '#52B788' }} activeDot={{ r: 6 }} />
-              <Line type="monotone" dataKey="Renewals"       stroke="#C8A951" strokeWidth={2.5} dot={{ r: 4, fill: '#C8A951' }} activeDot={{ r: 6 }} strokeDasharray="5 3" />
-            </LineChart>
-          </ResponsiveContainer>
+          <h2 className="font-bold text-sm mb-5" style={{ color: '#0F172A' }}>Applications by status</h2>
+          {byStatus.length > 0 ? (
+            <div className="space-y-3">
+              {byStatus.map((r) => (
+                <div key={r.st}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium" style={{ color: '#334155' }}>{r.label}</span>
+                    <span className="text-xs font-bold" style={{ color: '#0F172A' }}>{r.count}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${Math.round((r.count / total) * 100)}%`, background: r.color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : <p className="text-sm" style={{ color: '#94A3B8' }}>No applications yet.</p>}
         </div>
-      </motion.div>
 
-      {/* Pie + Bar row */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.24 }}
-        className="grid lg:grid-cols-2 gap-6"
-      >
+        {/* Applications by programme */}
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-          <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Certified Sites by Programme</h2>
-          <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-              <Pie
-                data={PROGRAMME_PIE}
-                cx="50%"
-                cy="50%"
-                innerRadius={58}
-                outerRadius={88}
-                paddingAngle={3}
-                dataKey="value"
-                labelLine={false}
-                label={PieLabel as never}
-              >
-                {PROGRAMME_PIE.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<ChartTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2">
-            {PROGRAMME_PIE.map(p => (
-              <div key={p.name} className="flex items-center gap-1.5 text-xs" style={{ color: '#64748B' }}>
-                <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: p.color }} />
-                {p.name}
+          <h2 className="font-bold text-sm mb-5" style={{ color: '#0F172A' }}>Applications by programme</h2>
+          <div className="space-y-3">
+            {byProgramme.map((p) => (
+              <div key={p.key}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium" style={{ color: '#334155' }}>{p.label}</span>
+                  <span className="text-xs font-bold" style={{ color: '#0F172A' }}>{p.count}</span>
+                </div>
+                <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-full rounded-full" style={{ width: `${Math.round((p.count / progMax) * 100)}%`, background: p.color }} />
+                </div>
               </div>
             ))}
           </div>
         </div>
+      </div>
 
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-          <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Certified Sites by Governorate</h2>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={GOV_DATA} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false} width={110} />
-              <Tooltip content={<ChartTooltip />} />
-              <Bar dataKey="Certified" fill="#52B788" radius={[0, 4, 4, 0]} barSize={10} />
-              <Bar dataKey="Pending"   fill="#FDE68A" radius={[0, 4, 4, 0]} barSize={10} />
-            </BarChart>
-          </ResponsiveContainer>
+      {/* Applications over time */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <h2 className="font-bold text-sm mb-5" style={{ color: '#0F172A' }}>Applications — last 6 months</h2>
+        <div className="flex items-end justify-between gap-3 h-40">
+          {months.map((m) => (
+            <div key={m.key} className="flex-1 flex flex-col items-center justify-end gap-2 h-full">
+              <span className="text-xs font-bold" style={{ color: '#0F172A' }}>{m.count}</span>
+              <div className="w-full rounded-t-md" style={{ height: `${Math.round((m.count / monthMax) * 100)}%`, minHeight: m.count ? 6 : 2, background: m.count ? '#40916C' : '#E2E8F0' }} />
+              <span className="text-[11px]" style={{ color: '#94A3B8' }}>{m.label}</span>
+            </div>
+          ))}
         </div>
-      </motion.div>
+      </div>
 
-      {/* Year-over-year growth */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.30 }}>
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-          <h2 className="font-bold text-sm mb-6" style={{ color: '#0F172A' }}>Cumulative Growth 2019 – 2025</h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={YEARLY} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
-              <defs>
-                <linearGradient id="gradSchools" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#52B788" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#52B788" stopOpacity={0.02} />
-                </linearGradient>
-                <linearGradient id="gradBiz" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#3B82F6" stopOpacity={0.20} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-              <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-              <Tooltip content={<ChartTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
-              <Area type="monotone" dataKey="Schools"    stroke="#52B788" strokeWidth={2.5} fill="url(#gradSchools)" dot={false} activeDot={{ r: 5 }} />
-              <Area type="monotone" dataKey="Businesses" stroke="#3B82F6" strokeWidth={2.5} fill="url(#gradBiz)"     dot={false} activeDot={{ r: 5 }} />
-            </AreaChart>
-          </ResponsiveContainer>
+      {/* Members split */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-white rounded-2xl border p-5" style={{ borderColor: '#E2E8F0' }}>
+          <p className="text-3xl font-bold" style={{ color: '#0F172A' }}>{schools}</p>
+          <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>Schools</p>
         </div>
-      </motion.div>
+        <div className="bg-white rounded-2xl border p-5" style={{ borderColor: '#E2E8F0' }}>
+          <p className="text-3xl font-bold" style={{ color: '#0F172A' }}>{establishments}</p>
+          <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>Establishments</p>
+        </div>
+      </div>
     </div>
   )
 }
