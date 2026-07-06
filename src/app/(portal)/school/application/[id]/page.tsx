@@ -6,15 +6,15 @@ import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { criteriaForProgramme } from '@/lib/criteria'
 import DocumentUpload from '@/components/documents/DocumentUpload'
-import CriteriaGrid from '@/components/audit/CriteriaGrid'
+import CriteriaChecklist from '@/components/audit/CriteriaChecklist'
 
 export default async function SchoolApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
   const [docs, assessments] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id)])
   const criteria = criteriaForProgramme(app.programme)
-  const hasResults = Object.values(assessments).some((a) => a.external !== 'pending')
-  const showResults = AUDIT_PUBLISHED_STATUSES.includes(app.status) && hasResults && criteria.length > 0
+  const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
+  const generalDocs = docs.filter((d) => !d.criterion_ref)
   const s = statusMeta(app.status)
 
   return (
@@ -39,11 +39,11 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
         </div>
       </div>
 
-      {showResults && (
+      {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
-          <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Audit results</h2>
-          <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Your assigned auditor&apos;s result and feedback for each criterion.</p>
-          <CriteriaGrid role="establishment" applicationId={app.id} criteria={criteria} initial={assessments} />
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Criteria &amp; evidence</h2>
+          <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Attach supporting evidence for each indicator and see your reviewer&apos;s feedback.</p>
+          <CriteriaChecklist applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} showExternal={showExternal} />
         </div>
       )}
 
@@ -60,15 +60,15 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div>
-            <h2 className="text-base font-bold" style={{ color: '#0F2318' }}>Supporting documents</h2>
-            <p className="text-xs mt-0.5" style={{ color: '#5B7568' }}>Upload evidence for your reviewer (PDF, images, spreadsheets…).</p>
+            <h2 className="text-base font-bold" style={{ color: '#0F2318' }}>General documents</h2>
+            <p className="text-xs mt-0.5" style={{ color: '#5B7568' }}>Evidence not tied to a specific indicator (PDF, images, spreadsheets…).</p>
           </div>
           <DocumentUpload applicationId={app.id} />
         </div>
 
-        {docs.length > 0 ? (
+        {generalDocs.length > 0 ? (
           <div className="space-y-2">
-            {docs.map((d) => (
+            {generalDocs.map((d) => (
               <div key={d.id} className="flex items-center gap-3 rounded-xl border p-3" style={{ borderColor: '#EEF5F0' }}>
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#F4F9F5' }}>
                   <FileText className="w-4 h-4" style={{ color: '#40916C' }} />

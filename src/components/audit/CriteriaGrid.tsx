@@ -2,11 +2,11 @@
 
 import { Fragment, useMemo, useState, useTransition } from 'react'
 import { Check, X, Search, Download, AlertCircle } from 'lucide-react'
-import { setCriterionResult, setCriterionNote, setInternalResult } from '@/lib/actions/assessments'
+import { setCriterionResult, setCriterionNote, setInternalResult, setInternalNote } from '@/lib/actions/assessments'
 import type { CriterionRef } from '@/lib/criteria'
 
 type Result = 'pending' | 'pass' | 'no_pass'
-export interface GridAssessment { internal: Result; external: Result; note: string | null }
+export interface GridAssessment { internal: Result; internalNote: string | null; external: Result; note: string | null }
 type Role = 'admin' | 'auditor' | 'establishment'
 
 const RESULT_META: Record<Result, { label: string; color: string; bg: string }> = {
@@ -50,7 +50,7 @@ export default function CriteriaGrid({
   role: Role
   externalAuditorName?: string | null
 }) {
-  const blank: GridAssessment = { internal: 'pending', external: 'pending', note: null }
+  const blank: GridAssessment = { internal: 'pending', internalNote: null, external: 'pending', note: null }
   const [rows, setRows] = useState<Record<string, GridAssessment>>(initial)
   const [search, setSearch] = useState('')
   const [area, setArea] = useState('all')
@@ -181,10 +181,15 @@ export default function CriteriaGrid({
                           </div>
                         </td>
                         {showInternal && (
-                          <td className="px-3 py-3">
+                          <td className="px-3 py-3 min-w-[180px]">
                             {editInternal
                               ? <Toggle value={a.internal} onChange={(r) => { patch(c.ref, { internal: r }); run(() => setInternalResult(applicationId, c.ref, r)) }} />
                               : <Chip r={a.internal} />}
+                            {editInternal
+                              ? <textarea defaultValue={a.internalNote ?? ''} rows={2} placeholder="Feedback to the establishment…"
+                                  onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.internalNote ?? '')) { patch(c.ref, { internalNote: e.target.value }); run(() => setInternalNote(applicationId, c.ref, e.target.value)) } }}
+                                  className="mt-1.5 w-full text-xs px-2.5 py-1.5 rounded-lg outline-none resize-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+                              : a.internalNote && <p className="text-xs mt-1" style={{ color: '#64748B' }}>{a.internalNote}</p>}
                           </td>
                         )}
                         {showAuditor && <td className="px-3 py-3 whitespace-nowrap" style={{ color: '#475569' }}>{extName}</td>}

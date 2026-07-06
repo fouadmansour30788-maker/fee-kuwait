@@ -4,6 +4,7 @@ export type CriterionResult = 'pending' | 'pass' | 'no_pass'
 
 export interface CriterionAssessment {
   internal: CriterionResult
+  internalNote: string | null
   external: CriterionResult
   note: string | null
 }
@@ -26,13 +27,14 @@ export async function listCriterionAssessments(applicationId: string): Promise<R
   const supabase = createClient()
   const { data, error } = await supabase
     .from('criterion_assessments')
-    .select('criterion_ref, result, internal_result, note')
+    .select('criterion_ref, result, internal_result, note, internal_note')
     .eq('application_id', applicationId)
   if (error) { console.error('listCriterionAssessments:', error.message); return {} }
   const map: Record<string, CriterionAssessment> = {}
   for (const r of data ?? []) {
     map[r.criterion_ref] = {
       internal: (r.internal_result ?? 'pending') as CriterionResult,
+      internalNote: r.internal_note ?? null,
       external: (r.result ?? 'pending') as CriterionResult,
       note: r.note ?? null,
     }

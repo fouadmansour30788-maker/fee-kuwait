@@ -110,7 +110,10 @@ export default async function ApplicationDetail({
                   <FileText className="w-4 h-4" style={{ color: '#64748B' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: '#1E293B' }}>{d.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold truncate" style={{ color: '#1E293B' }}>{d.name}</p>
+                    {d.criterion_ref && <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>{d.criterion_ref}</span>}
+                  </div>
                   <p className="text-xs" style={{ color: '#94A3B8' }}>{formatBytes(d.size)} · {new Date(d.created_at).toLocaleDateString('en-GB')}</p>
                 </div>
                 {d.url && (

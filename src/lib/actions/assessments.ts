@@ -71,3 +71,24 @@ export async function setInternalResult(applicationId: string, criterionRef: str
   revalidatePath(`/auditor/applications/${applicationId}`)
   return { ok: true }
 }
+
+// The National Operator (staff) records internal feedback shown to the establishment.
+export async function setInternalNote(applicationId: string, criterionRef: string, note: string): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+  if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Not allowed' }
+
+  const { error } = await supabase.from('criterion_assessments').upsert({
+    application_id: applicationId,
+    criterion_ref: criterionRef,
+    internal_note: note.trim().slice(0, 2000) || null,
+    updated_by: user.id,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'application_id,criterion_ref' })
+  if (error) return { error: error.message }
+
+  revalidatePath(`/applications/${applicationId}`)
+  return { ok: true }
+}
