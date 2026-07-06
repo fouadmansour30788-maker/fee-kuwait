@@ -25,6 +25,7 @@ const ACCESS: { prefix: string; roles: Role[] }[] = [
   { prefix: '/cb', roles: ['certification_body', 'admin', 'super_admin'] },
   { prefix: '/dashboard', roles: ['admin', 'super_admin'] },
   { prefix: '/applications', roles: ['admin', 'super_admin'] },
+  { prefix: '/tracker', roles: ['admin', 'super_admin'] },
   { prefix: '/auditors', roles: ['admin', 'super_admin'] },
   { prefix: '/certificates', roles: ['admin', 'super_admin'] },
   { prefix: '/members', roles: ['admin', 'super_admin'] },

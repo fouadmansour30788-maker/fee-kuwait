@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileCheck, Users, Award, FileBarChart, Newspaper, UserCog, Leaf, Menu, X,
+  LayoutDashboard, FileCheck, ClipboardList, Users, Award, FileBarChart, Newspaper, UserCog, Leaf, Menu, X,
   LogOut, ChevronRight, Bell, Search,
   MessageSquare, Paperclip, Send, RotateCcw,
 } from 'lucide-react'
@@ -24,6 +24,7 @@ const NOTIF_ICON: Record<NotificationKind, typeof Bell> = {
 const ADMIN_NAV = [
   { href: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/applications', icon: FileCheck,       label: 'Applications' },
+  { href: '/tracker',      icon: ClipboardList,   label: 'Tracker' },
   { href: '/members',      icon: Users,           label: 'Members' },
   { href: '/certificates', icon: Award,           label: 'Certificates' },
   { href: '/reports',      icon: FileBarChart,    label: 'Reports' },

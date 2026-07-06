@@ -3,14 +3,17 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
-import { listAssessments } from '@/lib/db/assessments'
+import { listCriterionAssessments } from '@/lib/db/assessments'
+import { criteriaForProgramme } from '@/lib/criteria'
 import DocumentUpload from '@/components/documents/DocumentUpload'
-import AuditResults from '@/components/audit/AuditResults'
+import CriteriaGrid from '@/components/audit/CriteriaGrid'
 
 export default async function BusinessApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments] = await Promise.all([listApplicationDocuments(params.id), listAssessments(params.id)])
+  const [docs, assessments] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id)])
+  const criteria = criteriaForProgramme(app.programme)
+  const hasResults = Object.values(assessments).some((a) => a.external !== 'pending')
   const s = statusMeta(app.status)
 
   return (
@@ -35,7 +38,13 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
         </div>
       </div>
 
-      <AuditResults programme={app.programme} assessments={assessments} />
+      {hasResults && criteria.length > 0 && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Audit results</h2>
+          <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Your assigned auditor&apos;s result and feedback for each criterion.</p>
+          <CriteriaGrid role="establishment" applicationId={app.id} criteria={criteria} initial={assessments} />
+        </div>
+      )}
 
       {app.cb_decision && app.cb_decision !== 'pending' && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>

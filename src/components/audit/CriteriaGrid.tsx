@@ -59,6 +59,7 @@ export default function CriteriaGrid({
   const [error, setError] = useState('')
 
   const showInternal = role !== 'establishment'
+  const showAuditor = role !== 'establishment'
   const editInternal = role === 'admin'
   const editExternal = role === 'auditor'
   const extName = externalAuditorName || (role === 'auditor' ? 'You' : '—')
@@ -106,28 +107,23 @@ export default function CriteriaGrid({
   }
 
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider'
-  const cols = 1 + (showInternal ? 1 : 0) + 3
+  const cols = 1 + (showInternal ? 1 : 0) + (showAuditor ? 1 : 0) + 2
 
   return (
     <div className="space-y-3">
       {/* Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="rounded-xl border p-2.5 text-center" style={{ borderColor: '#E2E8F0' }}>
-          <p className="text-lg font-bold" style={{ color: '#0891B2' }}>{extPass + extNoPass}/{criteria.length}</p>
-          <p className="text-[11px]" style={{ color: '#94A3B8' }}>External graded</p>
-        </div>
-        <div className="rounded-xl border p-2.5 text-center" style={{ borderColor: '#E2E8F0' }}>
-          <p className="text-lg font-bold" style={{ color: '#059669' }}>{extPass}</p>
-          <p className="text-[11px]" style={{ color: '#94A3B8' }}>External pass</p>
-        </div>
-        <div className="rounded-xl border p-2.5 text-center" style={{ borderColor: '#E2E8F0' }}>
-          <p className="text-lg font-bold" style={{ color: '#DC2626' }}>{extNoPass}</p>
-          <p className="text-[11px]" style={{ color: '#94A3B8' }}>External not pass</p>
-        </div>
-        <div className="rounded-xl border p-2.5 text-center" style={{ borderColor: '#E2E8F0' }}>
-          <p className="text-lg font-bold" style={{ color: '#7C3AED' }}>{intGraded}/{criteria.length}</p>
-          <p className="text-[11px]" style={{ color: '#94A3B8' }}>Internal graded</p>
-        </div>
+        {[
+          { label: showInternal ? 'External graded' : 'Graded', value: `${extPass + extNoPass}/${criteria.length}`, color: '#0891B2' },
+          { label: 'Pass', value: extPass, color: '#059669' },
+          { label: 'Not pass', value: extNoPass, color: '#DC2626' },
+          ...(showInternal ? [{ label: 'Internal graded', value: `${intGraded}/${criteria.length}`, color: '#7C3AED' }] : []),
+        ].map((t) => (
+          <div key={t.label} className="rounded-xl border p-2.5 text-center" style={{ borderColor: '#E2E8F0' }}>
+            <p className="text-lg font-bold" style={{ color: t.color }}>{t.value}</p>
+            <p className="text-[11px]" style={{ color: '#94A3B8' }}>{t.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* Toolbar */}
@@ -160,8 +156,8 @@ export default function CriteriaGrid({
               <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                 <th className={th} style={{ color: '#94A3B8' }}>Indicator</th>
                 {showInternal && <th className={th} style={{ color: '#94A3B8' }}>Internal (NO)</th>}
-                <th className={th} style={{ color: '#94A3B8' }}>Ext. auditor</th>
-                <th className={th} style={{ color: '#94A3B8' }}>Ext. result</th>
+                {showAuditor && <th className={th} style={{ color: '#94A3B8' }}>Ext. auditor</th>}
+                <th className={th} style={{ color: '#94A3B8' }}>{showInternal ? 'Ext. result' : 'Result'}</th>
                 <th className={th} style={{ color: '#94A3B8' }}>Feedback</th>
               </tr>
             </thead>
@@ -191,7 +187,7 @@ export default function CriteriaGrid({
                               : <Chip r={a.internal} />}
                           </td>
                         )}
-                        <td className="px-3 py-3 whitespace-nowrap" style={{ color: '#475569' }}>{extName}</td>
+                        {showAuditor && <td className="px-3 py-3 whitespace-nowrap" style={{ color: '#475569' }}>{extName}</td>}
                         <td className="px-3 py-3">
                           {editExternal
                             ? <Toggle value={a.external} onChange={(r) => { patch(c.ref, { external: r }); run(() => setCriterionResult(applicationId, c.ref, r)) }} />
