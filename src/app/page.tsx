@@ -12,6 +12,7 @@ import TestimonialsSection from '@/components/sections/TestimonialsSection'
 import NewsSection from '@/components/sections/NewsSection'
 import CtaSection from '@/components/sections/CtaSection'
 import PartnersStrip from '@/components/sections/PartnersStrip'
+import { listPublishedNews } from '@/lib/db/news'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -19,7 +20,8 @@ export const metadata: Metadata = {
   description: 'The national operator of FEE International in Kuwait — running Eco-Schools, Blue Flag, Green Key, LEAF, YRE, and Eco-Campus programmes.',
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const news = (await listPublishedNews()).slice(0, 3)
   return (
     <SmoothScrollProvider>
       <ScrollProgressBar />
@@ -31,7 +33,7 @@ export default function HomePage() {
         <ProgrammeCards />
         <HowItWorks />
         <TestimonialsSection />
-        <NewsSection />
+        <NewsSection articles={news} />
         <CtaSection />
         <PartnersStrip />
       </main>
