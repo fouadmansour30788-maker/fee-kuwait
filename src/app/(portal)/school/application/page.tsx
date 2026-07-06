@@ -16,7 +16,7 @@ export default async function SchoolApplicationPage() {
         </p>
       </div>
 
-      <NewApplicationForm programmes={['eco-schools', 'leaf', 'yre']} />
+      <NewApplicationForm programmes={['eco-schools', 'leaf', 'yre']} appliedProgrammes={apps.map((a) => a.programme)} />
 
       <div>
         <h2 className="text-base font-bold mb-3" style={{ color: '#0F2318' }}>Your applications</h2>

@@ -16,7 +16,7 @@ export default async function BusinessApplicationPage() {
         </p>
       </div>
 
-      <NewApplicationForm programmes={['green-key', 'blue-flag', 'eco-campus']} />
+      <NewApplicationForm programmes={['green-key', 'blue-flag', 'eco-campus']} appliedProgrammes={apps.map((a) => a.programme)} />
 
       <div>
         <h2 className="text-base font-bold mb-3" style={{ color: '#0F2318' }}>Your applications</h2>
