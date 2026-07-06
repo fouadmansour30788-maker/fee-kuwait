@@ -4,22 +4,19 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, CheckSquare, BookOpen,
-  Bell, FolderOpen, Map, Award, Leaf, Menu, X, LogOut,
+  LayoutDashboard, FileText, BookOpen,
+  Bell, Award, Leaf, Menu, X, LogOut,
   ChevronRight,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import SignOutButton from '@/components/auth/SignOutButton'
 
+// Only real (DB-backed) screens. Mock ones (Action Plan, Activities, Journey,
+// Documents, Resources, Notifications) are hidden until wired.
 const SCHOOL_NAV = [
   { href: '/school/dashboard',    icon: LayoutDashboard, en: 'Dashboard',    ar: 'لوحة التحكم' },
   { href: '/school/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
-  { href: '/school/action-plan',  icon: CheckSquare,     en: 'Action Plan',  ar: 'خطة العمل' },
-  { href: '/school/activities',   icon: BookOpen,        en: 'Activities',   ar: 'الأنشطة' },
-  { href: '/school/journey',      icon: Map,             en: 'My Journey',   ar: 'رحلتي' },
-  { href: '/school/documents',    icon: FolderOpen,      en: 'Documents',    ar: 'المستندات' },
-  { href: '/school/resources',    icon: BookOpen,        en: 'Resources',    ar: 'الموارد' },
-  { href: '/school/notifications',icon: Bell,            en: 'Notifications',ar: 'الإشعارات' },
+  { href: '/school/certification',icon: Award,           en: 'Certification', ar: 'الشهادة' },
 ]
 
 // Only real (DB-backed) screens. The mock ones (Criteria & Audit, Documents,

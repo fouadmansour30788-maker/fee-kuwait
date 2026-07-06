@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { FileText, Inbox, ChevronRight } from 'lucide-react'
 import { myApplications, myEntity } from '@/lib/db/establishment'
 import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
-import NewApplicationForm from './NewApplicationForm'
+import NewApplicationForm from '@/components/applications/NewApplicationForm'
 
 export default async function BusinessApplicationPage() {
   const [apps, ent] = await Promise.all([myApplications(), myEntity()])
@@ -16,7 +16,7 @@ export default async function BusinessApplicationPage() {
         </p>
       </div>
 
-      <NewApplicationForm />
+      <NewApplicationForm programmes={['green-key', 'blue-flag', 'eco-campus']} />
 
       <div>
         <h2 className="text-base font-bold mb-3" style={{ color: '#0F2318' }}>Your applications</h2>
