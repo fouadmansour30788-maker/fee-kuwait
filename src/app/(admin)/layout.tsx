@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileCheck, Users, Leaf, Menu, X,
+  LayoutDashboard, FileCheck, Users, Award, Leaf, Menu, X,
   LogOut, ChevronRight, Bell, Search,
   MessageSquare, Paperclip, Send, RotateCcw,
 } from 'lucide-react'
@@ -25,6 +25,7 @@ const ADMIN_NAV = [
   { href: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/applications', icon: FileCheck,       label: 'Applications' },
   { href: '/members',      icon: Users,           label: 'Members' },
+  { href: '/certificates', icon: Award,           label: 'Certificates' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

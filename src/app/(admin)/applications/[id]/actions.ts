@@ -28,7 +28,31 @@ export async function updateApplication(id: string, formData: FormData) {
     })
     .eq('id', id)
 
+  // Issue a certificate on approval (one per application; won't overwrite).
+  if (status === 'approved') {
+    const { data: appRow } = await supabase
+      .from('applications')
+      .select('applicant_id, entity_type, programme')
+      .eq('id', id)
+      .single()
+    if (appRow) {
+      const prefix: Record<string, string> = { 'green-key': 'GK', 'blue-flag': 'BF', 'eco-schools': 'ES', 'leaf': 'LF', 'yre': 'YR', 'eco-campus': 'EC' }
+      const number = `${prefix[appRow.programme] ?? 'FEE'}-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`
+      const expires = new Date(); expires.setFullYear(expires.getFullYear() + 2)
+      await supabase.from('certificates').upsert({
+        application_id: id,
+        applicant_id: appRow.applicant_id,
+        entity_type: appRow.entity_type,
+        programme: appRow.programme,
+        certificate_number: number,
+        expires_at: expires.toISOString(),
+      }, { onConflict: 'application_id', ignoreDuplicates: true })
+    }
+  }
+
   revalidatePath('/applications')
+  revalidatePath('/certificates')
+  revalidatePath('/business/certification')
   revalidatePath(`/applications/${id}`)
   revalidatePath('/dashboard')
   redirect(`/applications/${id}?saved=1`)

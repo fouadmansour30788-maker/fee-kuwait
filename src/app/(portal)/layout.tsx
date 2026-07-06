@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileText, CheckSquare, BookOpen,
-  Bell, FolderOpen, Map, Leaf, Menu, X, LogOut,
+  Bell, FolderOpen, Map, Award, Leaf, Menu, X, LogOut,
   ChevronRight,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
@@ -27,6 +27,7 @@ const SCHOOL_NAV = [
 const BUSINESS_NAV = [
   { href: '/business/dashboard',    icon: LayoutDashboard, en: 'Dashboard',    ar: 'لوحة التحكم' },
   { href: '/business/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
+  { href: '/business/certification',icon: Award,           en: 'Certification', ar: 'الشهادة' },
   { href: '/business/rulebook',     icon: BookOpen,        en: 'Rulebook', ar: 'دليل المعايير' },
 ]
 
