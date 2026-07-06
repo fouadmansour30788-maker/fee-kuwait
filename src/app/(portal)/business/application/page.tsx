@@ -1,4 +1,5 @@
-import { FileText, Inbox } from 'lucide-react'
+import Link from 'next/link'
+import { FileText, Inbox, ChevronRight } from 'lucide-react'
 import { myApplications, myEntity } from '@/lib/db/establishment'
 import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 import NewApplicationForm from './NewApplicationForm'
@@ -25,7 +26,7 @@ export default async function BusinessApplicationPage() {
               {apps.map((a) => {
                 const s = statusMeta(a.status)
                 return (
-                  <div key={a.id} className="flex items-center gap-4 px-5 py-3.5">
+                  <Link key={a.id} href={`/business/application/${a.id}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors">
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#F4F9F5' }}>
                       <FileText className="w-4 h-4" style={{ color: '#40916C' }} />
                     </div>
@@ -36,7 +37,8 @@ export default async function BusinessApplicationPage() {
                       </p>
                     </div>
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: s.bg, color: s.color }}>{s.label}</span>
-                  </div>
+                    <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />
+                  </Link>
                 )
               })}
             </div>
