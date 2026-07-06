@@ -5,6 +5,25 @@ import { OPERATOR_STATUSES } from '@/lib/db/applications'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+// Operator assigns (or clears) an auditor; moves the application into audit.
+export async function assignAuditor(applicationId: string, auditorId: string) {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+  if (!me || !['admin', 'super_admin'].includes(me.role)) return
+
+  await supabase.from('applications').update({
+    auditor_id: auditorId || null,
+    auditor_assigned_at: auditorId ? new Date().toISOString() : null,
+    status: auditorId ? 'audit' : 'under_review',
+    updated_at: new Date().toISOString(),
+  }).eq('id', applicationId)
+
+  revalidatePath(`/applications/${applicationId}`)
+  revalidatePath('/applications')
+}
+
 // Operator updates an application's status + review notes. RLS also enforces
 // that only staff can manage all applications; we re-check the session here.
 export async function updateApplication(id: string, formData: FormData) {

@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, Save, FileText, Download, Inbox } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, OPERATOR_STATUSES } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
+import { listAuditors, applicationAuditor } from '@/lib/db/audit'
+import AssignAuditor from '@/components/audit/AssignAuditor'
 import { updateApplication } from './actions'
 
 export default async function ApplicationDetail({
@@ -15,7 +17,9 @@ export default async function ApplicationDetail({
   const sp = searchParams
   const app = await getApplication(id)
   if (!app) notFound()
-  const docs = await listApplicationDocuments(id)
+  const [docs, auditors, currentAuditor] = await Promise.all([
+    listApplicationDocuments(id), listAuditors(), applicationAuditor(id),
+  ])
 
   const s = statusMeta(app.status)
 
@@ -57,6 +61,17 @@ export default async function ApplicationDetail({
           <CheckCircle2 className="w-4 h-4" /> Application updated.
         </div>
       )}
+
+      {/* Auditor assignment */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Auditor</h2>
+        <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>
+          {currentAuditor ? `Assigned to ${currentAuditor.name_en || currentAuditor.email}.` : 'Assign an independent auditor to conduct the audit.'} Assigning moves the application to “Under Audit”.
+        </p>
+        {auditors.length > 0
+          ? <AssignAuditor applicationId={id} auditors={auditors} currentId={currentAuditor?.id ?? null} />
+          : <p className="text-xs" style={{ color: '#94A3B8' }}>No auditor accounts yet — create one and set its role under Team.</p>}
+      </div>
 
       {/* Submitted documents */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>

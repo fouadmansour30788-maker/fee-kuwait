@@ -1,94 +1,40 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { Search, ArrowRight, CalendarClock, FileText } from 'lucide-react'
-import {
-  AUDIT_APPLICATIONS, AUDIT_STATUS_META, CURRENT_AUDITOR, DECIDED, type AuditStatus,
-} from '@/lib/data/audits'
+import { ChevronRight, Inbox } from 'lucide-react'
+import { auditorApplications } from '@/lib/db/audit'
+import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 
-type Filter = 'all' | 'audit' | 'cb_final' | 'closed'
-const TAB_LABEL: Record<Filter, string> = {
-  all: 'All', audit: 'Auditing', cb_final: 'Awaiting CB', closed: 'Decided',
-}
-
-export default function AuditorApplications() {
-  const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<Filter>('all')
-
-  const mine = AUDIT_APPLICATIONS.filter(a => a.auditorId === CURRENT_AUDITOR.id)
-
-  const match = (a: { status: AuditStatus }, f: Filter) =>
-    f === 'all' ? true : f === 'closed' ? DECIDED.includes(a.status) : a.status === f
-
-  const counts: Record<Filter, number> = {
-    all: mine.length,
-    audit: mine.filter(a => match(a, 'audit')).length,
-    cb_final: mine.filter(a => match(a, 'cb_final')).length,
-    closed: mine.filter(a => match(a, 'closed')).length,
-  }
-
-  const filtered = mine.filter(a => {
-    const s = a.entity.toLowerCase().includes(search.toLowerCase()) || a.id.toLowerCase().includes(search.toLowerCase())
-    return s && match(a, filter)
-  })
-
-  const tabs: Filter[] = ['all', 'audit', 'cb_final', 'closed']
+export default async function AuditorApplications() {
+  const apps = await auditorApplications()
 
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-        <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Assigned Audits</h1>
-        <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>{mine.length} applications assigned to you by the Certification Body</p>
-      </motion.div>
-
-      <div className="flex gap-2 flex-wrap">
-        {tabs.map(s => (
-          <button key={s} onClick={() => setFilter(s)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all"
-            style={filter === s ? { background: '#1B4332', color: '#fff' } : { background: '#fff', color: '#64748B', border: '1px solid #E2E8F0' }}>
-            {TAB_LABEL[s]}
-            <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: filter === s ? 'rgba(255,255,255,0.15)' : '#F1F5F9' }}>{counts[s]}</span>
-          </button>
-        ))}
+      <div>
+        <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Assigned Applications</h1>
+        <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>{apps.length} assigned to you</p>
       </div>
 
-      <div className="flex items-center gap-2.5 max-w-sm px-3.5 py-2.5 rounded-xl bg-white" style={{ border: '1px solid #E2E8F0' }}>
-        <Search className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or ID…"
-          className="bg-transparent text-sm outline-none w-full" style={{ color: '#1E293B' }} />
-      </div>
-
-      <div className="space-y-3">
-        {filtered.map((app, i) => {
-          const meta = AUDIT_STATUS_META[app.status]
-          return (
-            <motion.div key={app.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.04 }}>
-              <Link href={`/auditor/applications/${app.id}`}
-                className="group flex items-center gap-4 bg-white rounded-2xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-md" style={{ borderColor: '#E2E8F0' }}>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <p className="font-semibold truncate" style={{ color: '#1E293B' }}>{app.entity}</p>
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span>
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
+        {apps.length > 0 ? (
+          <div className="divide-y" style={{ borderColor: '#F8FAFC' }}>
+            {apps.map((a) => {
+              const s = statusMeta(a.status)
+              return (
+                <Link key={a.id} href={`/auditor/applications/${a.id}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>{a.applicant?.name_en || a.applicant?.email || '—'}</p>
+                    <p className="text-xs" style={{ color: '#94A3B8' }}>{PROGRAMME_LABEL[a.programme] ?? a.programme} · submitted {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB') : '—'}</p>
                   </div>
-                  <p className="text-xs mt-0.5" style={{ color: '#94A3B8' }}>{app.id} · {app.type} · {app.programme} · {app.governorate}</p>
-                </div>
-                <div className="hidden sm:flex items-center gap-1.5 text-xs" style={{ color: '#64748B' }}>
-                  <FileText className="w-3.5 h-3.5" /> {app.documents.length} docs
-                </div>
-                <div className="hidden md:flex items-center gap-1.5 text-xs" style={{ color: '#64748B' }}>
-                  <CalendarClock className="w-3.5 h-3.5" /> {app.deadline}
-                </div>
-                <ArrowRight className="w-4 h-4 flex-shrink-0 transition-transform group-hover:translate-x-1" style={{ color: '#94A3B8' }} />
-              </Link>
-            </motion.div>
-          )
-        })}
-        {filtered.length === 0 && (
-          <div className="bg-white rounded-2xl border p-12 text-center" style={{ borderColor: '#E2E8F0', color: '#94A3B8' }}>
-            <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
-            <p className="text-sm font-medium">No applications match.</p>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+                  <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />
+                </Link>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="py-16 text-center" style={{ color: '#94A3B8' }}>
+            <Inbox className="w-10 h-10 mx-auto mb-3 opacity-40" />
+            <p className="text-sm font-medium" style={{ color: '#475569' }}>No applications assigned</p>
+            <p className="text-xs mt-1">The operator assigns applications to you for audit.</p>
           </div>
         )}
       </div>

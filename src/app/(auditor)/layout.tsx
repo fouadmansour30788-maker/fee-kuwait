@@ -7,7 +7,6 @@ import {
   LayoutDashboard, ClipboardCheck, ShieldCheck,
   Menu, X, LogOut, ChevronRight, Bell,
 } from 'lucide-react'
-import { CURRENT_AUDITOR } from '@/lib/data/audits'
 import SignOutButton from '@/components/auth/SignOutButton'
 
 const NAV = [
@@ -18,7 +17,7 @@ const NAV = [
 export default function AuditorLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const initials = CURRENT_AUDITOR.name.split(' ').map(w => w[0]).slice(0, 2).join('')
+  const initials = 'AU'
 
   return (
     <div className="min-h-screen flex" style={{ background: '#F0F4F8' }}>
@@ -102,7 +101,7 @@ export default function AuditorLayout({ children }: { children: React.ReactNode 
               {initials}
             </div>
             <div className="hidden md:block">
-              <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>{CURRENT_AUDITOR.name}</p>
+              <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Auditor</p>
               <p className="text-xs" style={{ color: '#94A3B8' }}>FEE Kuwait Auditor</p>
             </div>
           </div>

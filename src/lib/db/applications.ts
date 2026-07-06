@@ -50,6 +50,7 @@ export const STATUS_META: Record<string, { label: string; color: string; bg: str
   under_review:           { label: 'Under Review',        color: '#7C3AED', bg: '#EDE9FE' },
   documents_pending:      { label: 'Documents Pending',   color: '#D97706', bg: '#FEF3C7' },
   site_visit_scheduled:   { label: 'Site Visit Scheduled',color: '#0891B2', bg: '#CFFAFE' },
+  audit:                  { label: 'Under Audit',         color: '#0891B2', bg: '#CFFAFE' },
   approved:               { label: 'Approved',            color: '#059669', bg: '#D1FAE5' },
   rejected:               { label: 'Rejected',            color: '#DC2626', bg: '#FEE2E2' },
   certified:              { label: 'Certified',           color: '#059669', bg: '#D1FAE5' },
