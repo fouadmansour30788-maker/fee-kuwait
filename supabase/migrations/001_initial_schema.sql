@@ -18,10 +18,23 @@ create table public.users (
   updated_at timestamptz default now()
 );
 alter table public.users enable row level security;
+
+-- Helper: is the current user staff (admin/super_admin)? SECURITY DEFINER so it
+-- reads public.users WITHOUT triggering RLS -> prevents infinite recursion in the
+-- users policies (Postgres error 42P17).
+create or replace function public.is_staff()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'));
+$$;
+
 create policy "Users can view own profile" on public.users for select using (auth.uid() = id);
 create policy "Users can update own profile" on public.users for update using (auth.uid() = id);
 create policy "Admins can view all users" on public.users for select using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── SCHOOLS ───────────────────────────────────────────────────────────
@@ -44,7 +57,7 @@ create table public.schools (
 alter table public.schools enable row level security;
 create policy "School owners can view own school" on public.schools for all using (user_id = auth.uid());
 create policy "Admins can view all schools" on public.schools for select using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── BUSINESSES ────────────────────────────────────────────────────────
@@ -70,7 +83,7 @@ create table public.businesses (
 alter table public.businesses enable row level security;
 create policy "Business owners can view own business" on public.businesses for all using (user_id = auth.uid());
 create policy "Admins can view all businesses" on public.businesses for select using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── APPLICATIONS ──────────────────────────────────────────────────────
@@ -91,7 +104,7 @@ create table public.applications (
 alter table public.applications enable row level security;
 create policy "Applicants can view own applications" on public.applications for select using (applicant_id = auth.uid());
 create policy "Admins can manage all applications" on public.applications for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── DOCUMENTS ─────────────────────────────────────────────────────────
@@ -113,7 +126,7 @@ create table public.documents (
 alter table public.documents enable row level security;
 create policy "Uploaders can manage own documents" on public.documents for all using (uploader_id = auth.uid());
 create policy "Admins can manage all documents" on public.documents for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── CERTIFICATIONS ────────────────────────────────────────────────────
@@ -133,7 +146,7 @@ create table public.certifications (
 alter table public.certifications enable row level security;
 create policy "Members can view own certifications" on public.certifications for select using (applicant_id = auth.uid());
 create policy "Admins can manage certifications" on public.certifications for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── NOTIFICATIONS ─────────────────────────────────────────────────────
@@ -174,7 +187,7 @@ create table public.news (
 alter table public.news enable row level security;
 create policy "Anyone can read published news" on public.news for select using (published = true);
 create policy "Admins can manage news" on public.news for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── EVENTS ────────────────────────────────────────────────────────────
@@ -195,7 +208,7 @@ create table public.events (
 alter table public.events enable row level security;
 create policy "Anyone can read published events" on public.events for select using (published = true);
 create policy "Admins can manage events" on public.events for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── MAP PINS ──────────────────────────────────────────────────────────
@@ -219,7 +232,7 @@ create table public.map_pins (
 alter table public.map_pins enable row level security;
 create policy "Anyone can read active map pins" on public.map_pins for select using (active = true);
 create policy "Admins can manage map pins" on public.map_pins for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── RESOURCES ─────────────────────────────────────────────────────────
@@ -242,7 +255,7 @@ create table public.resources (
 alter table public.resources enable row level security;
 create policy "Authenticated users can read resources" on public.resources for select using (auth.uid() is not null and published = true);
 create policy "Admins can manage resources" on public.resources for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── CHAT LOGS ─────────────────────────────────────────────────────────
@@ -274,7 +287,7 @@ create table public.automation_logs (
 );
 alter table public.automation_logs enable row level security;
 create policy "Admins can view automation logs" on public.automation_logs for select using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── YOUTH PLEDGES ─────────────────────────────────────────────────────
@@ -325,7 +338,7 @@ create table public.impact_stats (
 alter table public.impact_stats enable row level security;
 create policy "Anyone can read impact stats" on public.impact_stats for select using (true);
 create policy "Admins can manage impact stats" on public.impact_stats for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── PARTNERS ──────────────────────────────────────────────────────────

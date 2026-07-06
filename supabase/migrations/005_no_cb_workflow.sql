@@ -50,7 +50,7 @@ create or replace function public.enforce_checklist_lock()
 returns trigger as $$
 begin
   if old.checklist_locked = true and new.checklist_locked = false then
-    if not exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin')) then
+    if not public.is_staff() then
       raise exception 'Only the National Operator can reopen a locked checklist';
     end if;
     if new.status not in ('changes_requested', 'no_review') then

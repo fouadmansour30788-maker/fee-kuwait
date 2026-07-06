@@ -87,7 +87,7 @@ create policy "Applicants add criterion documents while open"
 -- Reviewers & admins read (they never write here).
 create policy "Admins read all criterion documents"
   on public.criterion_documents for select
-  using (exists (select 1 from public.users where id = auth.uid() and role in ('admin', 'super_admin')));
+  using (public.is_staff());
 
 create policy "Auditors read assigned criterion documents"
   on public.criterion_documents for select

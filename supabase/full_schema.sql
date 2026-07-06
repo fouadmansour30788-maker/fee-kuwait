@@ -1,9 +1,19 @@
--- FEE Kuwait — full schema (migrations 001–006 combined)
--- Paste this whole file once into the Supabase SQL Editor on a FRESH project.
--- Run order matters; it is already concatenated in order below.
+-- ============================================================
+-- FEE Kuwait — full schema (RESET + migrations 001-006)
+-- Paste this whole file once into the Supabase SQL Editor.
+-- Safe to re-run: it drops & recreates the public schema first (no data yet),
+-- then rebuilds every table, policy, function and trigger.
+-- ============================================================
+drop schema if exists public cascade;
+create schema public;
+grant usage on schema public to postgres, anon, authenticated, service_role;
+alter default privileges in schema public grant all on tables    to postgres, anon, authenticated, service_role;
+alter default privileges in schema public grant all on routines  to postgres, anon, authenticated, service_role;
+alter default privileges in schema public grant all on sequences to postgres, anon, authenticated, service_role;
+
 
 -- ============================================================
--- supabase/migrations/001_initial_schema.sql
+-- 001_initial_schema.sql
 -- ============================================================
 -- FEE Kuwait Full Database Schema
 
@@ -25,10 +35,23 @@ create table public.users (
   updated_at timestamptz default now()
 );
 alter table public.users enable row level security;
+
+-- Helper: is the current user staff (admin/super_admin)? SECURITY DEFINER so it
+-- reads public.users WITHOUT triggering RLS -> prevents infinite recursion in the
+-- users policies (Postgres error 42P17).
+create or replace function public.is_staff()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'));
+$$;
+
 create policy "Users can view own profile" on public.users for select using (auth.uid() = id);
 create policy "Users can update own profile" on public.users for update using (auth.uid() = id);
 create policy "Admins can view all users" on public.users for select using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── SCHOOLS ───────────────────────────────────────────────────────────
@@ -51,7 +74,7 @@ create table public.schools (
 alter table public.schools enable row level security;
 create policy "School owners can view own school" on public.schools for all using (user_id = auth.uid());
 create policy "Admins can view all schools" on public.schools for select using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── BUSINESSES ────────────────────────────────────────────────────────
@@ -77,7 +100,7 @@ create table public.businesses (
 alter table public.businesses enable row level security;
 create policy "Business owners can view own business" on public.businesses for all using (user_id = auth.uid());
 create policy "Admins can view all businesses" on public.businesses for select using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── APPLICATIONS ──────────────────────────────────────────────────────
@@ -98,7 +121,7 @@ create table public.applications (
 alter table public.applications enable row level security;
 create policy "Applicants can view own applications" on public.applications for select using (applicant_id = auth.uid());
 create policy "Admins can manage all applications" on public.applications for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── DOCUMENTS ─────────────────────────────────────────────────────────
@@ -120,7 +143,7 @@ create table public.documents (
 alter table public.documents enable row level security;
 create policy "Uploaders can manage own documents" on public.documents for all using (uploader_id = auth.uid());
 create policy "Admins can manage all documents" on public.documents for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── CERTIFICATIONS ────────────────────────────────────────────────────
@@ -140,7 +163,7 @@ create table public.certifications (
 alter table public.certifications enable row level security;
 create policy "Members can view own certifications" on public.certifications for select using (applicant_id = auth.uid());
 create policy "Admins can manage certifications" on public.certifications for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── NOTIFICATIONS ─────────────────────────────────────────────────────
@@ -181,7 +204,7 @@ create table public.news (
 alter table public.news enable row level security;
 create policy "Anyone can read published news" on public.news for select using (published = true);
 create policy "Admins can manage news" on public.news for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── EVENTS ────────────────────────────────────────────────────────────
@@ -202,7 +225,7 @@ create table public.events (
 alter table public.events enable row level security;
 create policy "Anyone can read published events" on public.events for select using (published = true);
 create policy "Admins can manage events" on public.events for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── MAP PINS ──────────────────────────────────────────────────────────
@@ -226,7 +249,7 @@ create table public.map_pins (
 alter table public.map_pins enable row level security;
 create policy "Anyone can read active map pins" on public.map_pins for select using (active = true);
 create policy "Admins can manage map pins" on public.map_pins for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── RESOURCES ─────────────────────────────────────────────────────────
@@ -249,7 +272,7 @@ create table public.resources (
 alter table public.resources enable row level security;
 create policy "Authenticated users can read resources" on public.resources for select using (auth.uid() is not null and published = true);
 create policy "Admins can manage resources" on public.resources for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── CHAT LOGS ─────────────────────────────────────────────────────────
@@ -281,7 +304,7 @@ create table public.automation_logs (
 );
 alter table public.automation_logs enable row level security;
 create policy "Admins can view automation logs" on public.automation_logs for select using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── YOUTH PLEDGES ─────────────────────────────────────────────────────
@@ -332,7 +355,7 @@ create table public.impact_stats (
 alter table public.impact_stats enable row level security;
 create policy "Anyone can read impact stats" on public.impact_stats for select using (true);
 create policy "Admins can manage impact stats" on public.impact_stats for all using (
-  exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin'))
+  public.is_staff()
 );
 
 -- ── PARTNERS ──────────────────────────────────────────────────────────
@@ -377,7 +400,7 @@ create trigger on_auth_user_created
 
 
 -- ============================================================
--- supabase/migrations/002_auditors.sql
+-- 002_auditors.sql
 -- ============================================================
 -- FEE Kuwait — Auditor role, assignment, and review comments
 -- Auditors are assigned by FEE Kuwait admins to review applications & documents,
@@ -465,7 +488,7 @@ create policy "Applicants view shared comments"
 
 
 -- ============================================================
--- supabase/migrations/003_green_key_alignment.sql
+-- 003_green_key_alignment.sql
 -- ============================================================
 -- FEE Kuwait — Green Key alignment
 -- Implements the role/decision separation and traceability required by the
@@ -564,7 +587,7 @@ create policy "CB views comments on assigned applications"
 
 
 -- ============================================================
--- supabase/migrations/004_criterion_documents.sql
+-- 004_criterion_documents.sql
 -- ============================================================
 -- FEE Kuwait — Multi-year, append-only certification documents
 --
@@ -655,7 +678,7 @@ create policy "Applicants add criterion documents while open"
 -- Reviewers & admins read (they never write here).
 create policy "Admins read all criterion documents"
   on public.criterion_documents for select
-  using (exists (select 1 from public.users where id = auth.uid() and role in ('admin', 'super_admin')));
+  using (public.is_staff());
 
 create policy "Auditors read assigned criterion documents"
   on public.criterion_documents for select
@@ -679,7 +702,7 @@ create or replace view public.criterion_document_years as
 
 
 -- ============================================================
--- supabase/migrations/005_no_cb_workflow.sql
+-- 005_no_cb_workflow.sql
 -- ============================================================
 -- FEE Kuwait — National Operator (NO) -> Certification Body (CB) -> Auditor workflow
 --
@@ -733,7 +756,7 @@ create or replace function public.enforce_checklist_lock()
 returns trigger as $$
 begin
   if old.checklist_locked = true and new.checklist_locked = false then
-    if not exists (select 1 from public.users where id = auth.uid() and role in ('admin','super_admin')) then
+    if not public.is_staff() then
       raise exception 'Only the National Operator can reopen a locked checklist';
     end if;
     if new.status not in ('changes_requested', 'no_review') then
@@ -751,7 +774,7 @@ create trigger applications_checklist_lock
 
 
 -- ============================================================
--- supabase/migrations/006_auth_profile_roles.sql
+-- 006_auth_profile_roles.sql
 -- ============================================================
 -- FEE Kuwait — sign-up profile creation with role & language
 --
@@ -790,5 +813,4 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
-
 
