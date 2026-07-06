@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { OPERATOR_STATUSES } from '@/lib/db/applications'
 import { issueCertificate, notifyApplicant } from '@/lib/certify'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 
 // Operator assigns (or clears) an auditor; moves the application into audit.
 export async function assignAuditor(applicationId: string, auditorId: string) {
@@ -74,17 +73,19 @@ export async function assignCb(applicationId: string, cbId: string) {
 
 // Operator updates an application's status + review notes. RLS also enforces
 // that only staff can manage all applications; we re-check the session here.
-export async function updateApplication(id: string, formData: FormData) {
+// Returns a result the client can act on (instead of redirecting) so the review
+// form can show pending/success/error state.
+export async function updateApplication(id: string, formData: FormData): Promise<{ ok?: true; error?: string }> {
   const status = formData.get('status')?.toString() ?? ''
   const notes = formData.get('review_notes')?.toString()?.trim() || null
   const rejection = formData.get('rejection_reason')?.toString()?.trim() || null
-  if (!OPERATOR_STATUSES.includes(status)) return
+  if (!OPERATOR_STATUSES.includes(status)) return { error: 'Invalid status' }
 
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) return { error: 'Not signed in' }
 
-  await supabase
+  const { error: upErr } = await supabase
     .from('applications')
     .update({
       status,
@@ -94,6 +95,7 @@ export async function updateApplication(id: string, formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
+  if (upErr) return { error: upErr.message }
 
   // Application + applicant (used for the certificate and the notification email).
   const { data: appRow } = await supabase
@@ -102,10 +104,14 @@ export async function updateApplication(id: string, formData: FormData) {
     .eq('id', id)
     .single()
 
-  // Issue a certificate on approval (one per application; won't overwrite).
+  // Issue a certificate on approval (best-effort — never fail the status save).
   let certificateNumber: string | null = null
   if (status === 'approved' && appRow) {
-    certificateNumber = await issueCertificate(supabase, { id, applicant_id: appRow.applicant_id, entity_type: appRow.entity_type, programme: appRow.programme })
+    try {
+      certificateNumber = await issueCertificate(supabase, { id, applicant_id: appRow.applicant_id, entity_type: appRow.entity_type, programme: appRow.programme })
+    } catch (e) {
+      console.error('issueCertificate failed:', e)
+    }
   }
 
   // Notify the applicant of the status change (best-effort; never blocks the save).
@@ -120,5 +126,5 @@ export async function updateApplication(id: string, formData: FormData) {
   revalidatePath('/business/certification')
   revalidatePath(`/applications/${id}`)
   revalidatePath('/dashboard')
-  redirect(`/applications/${id}?saved=1`)
+  return { ok: true }
 }
