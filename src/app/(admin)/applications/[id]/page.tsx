@@ -5,6 +5,7 @@ import { getApplication, PROGRAMME_LABEL, statusMeta, OPERATOR_STATUSES, CB_DECI
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listAuditors, applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
 import { listCriterionAssessments } from '@/lib/db/assessments'
+import { listCriterionMessages } from '@/lib/db/messages'
 import { criteriaForProgramme } from '@/lib/criteria'
 import AssignAuditor from '@/components/audit/AssignAuditor'
 import AssignCb from '@/components/audit/AssignCb'
@@ -21,9 +22,9 @@ export default async function ApplicationDetail({
   const sp = searchParams
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, auditors, currentAuditor, assessments, bodies, currentCb] = await Promise.all([
+  const [docs, auditors, currentAuditor, assessments, bodies, currentCb, messages] = await Promise.all([
     listApplicationDocuments(id), listAuditors(), applicationAuditor(id), listCriterionAssessments(id),
-    listCertificationBodies(), applicationCb(id),
+    listCertificationBodies(), applicationCb(id), listCriterionMessages(id),
   ])
   const criteria = criteriaForProgramme(app.programme)
 
@@ -137,7 +138,7 @@ export default async function ApplicationDetail({
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The establishment&apos;s evidence and comments alongside your feedback per indicator. The auditor&apos;s result is shown once assessed. Saved automatically.</p>
-          <CriteriaBoard role="admin" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} showExternal />
+          <CriteriaBoard role="admin" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal />
         </div>
       )}
 

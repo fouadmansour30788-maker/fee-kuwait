@@ -1,12 +1,15 @@
 'use client'
 
 import { Fragment, useMemo, useState, useTransition } from 'react'
-import { Check, X, Search, FileText, Download, AlertCircle } from 'lucide-react'
-import { setInternalResult, setInternalNote, setApplicantNote } from '@/lib/actions/assessments'
+import { useRouter } from 'next/navigation'
+import { Check, X, Search, FileText, Download, ChevronDown, MessageSquare, Send, Info, AlertCircle } from 'lucide-react'
+import { setInternalResult, setApplicantResult } from '@/lib/actions/assessments'
+import { postCriterionMessage } from '@/lib/actions/messages'
 import CriterionUpload from '@/components/documents/CriterionUpload'
 import type { CriterionRef } from '@/lib/criteria'
 import type { CriterionAssessment } from '@/lib/db/assessments'
 import type { AppDoc } from '@/lib/db/documents'
+import type { CriterionMessage } from '@/lib/db/messages'
 
 type Result = 'pending' | 'pass' | 'no_pass'
 type Role = 'admin' | 'establishment'
@@ -16,11 +19,12 @@ const RESULT_META: Record<Result, { label: string; color: string; bg: string }> 
   pass: { label: 'Pass', color: '#059669', bg: '#D1FAE5' },
   no_pass: { label: 'Not pass', color: '#DC2626', bg: '#FEE2E2' },
 }
+const ROLE_LABEL: Record<string, string> = { establishment: 'Establishment', operator: 'Operator', auditor: 'Auditor', cb: 'CB' }
 
 function Chip({ r }: { r: Result }) {
   const m = RESULT_META[r]
   return (
-    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1" style={{ background: m.bg, color: m.color }}>
+    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 whitespace-nowrap" style={{ background: m.bg, color: m.color }}>
       {r === 'pass' ? <Check className="w-3 h-3" /> : r === 'no_pass' ? <X className="w-3 h-3" /> : null}{m.label}
     </span>
   )
@@ -28,7 +32,7 @@ function Chip({ r }: { r: Result }) {
 
 function Toggle({ value, onChange }: { value: Result; onChange: (r: Result) => void }) {
   return (
-    <div className="inline-flex items-center gap-1.5">
+    <div className="inline-flex items-center gap-1">
       <button onClick={() => onChange('pass')} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold"
         style={value === 'pass' ? { background: '#059669', color: '#fff' } : { background: '#F1F5F9', color: '#059669' }}>
         <Check className="w-3 h-3" /> Pass
@@ -41,26 +45,32 @@ function Toggle({ value, onChange }: { value: Result; onChange: (r: Result) => v
   )
 }
 
-// Shared collaborative criteria table for the operator and the establishment.
-// Same columns for both; each side edits only its own (establishment: evidence +
-// comment; operator: feedback + comment). The external auditor's result is shown
-// read-only (to the establishment only once the audit is published).
+// Shared criteria board seen by the operator and the establishment (same table).
+// Establishment edits self-assessment + evidence + comments; operator edits its
+// feedback + evidence + comments. Description and the comment thread live in an
+// expandable panel per criterion. The auditor result is read-only and shown to
+// the establishment only once the audit is published.
 export default function CriteriaBoard({
-  applicationId, criteria, assessments, docs, role, showExternal,
+  applicationId, criteria, assessments, docs, messages, role, showExternal,
 }: {
   applicationId: string
   criteria: CriterionRef[]
   assessments: Record<string, CriterionAssessment>
   docs: AppDoc[]
+  messages: Record<string, CriterionMessage[]>
   role: Role
   showExternal: boolean
 }) {
-  const blank: CriterionAssessment = { internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
-  const [rows, setRows] = useState<Record<string, CriterionAssessment>>(assessments)
+  const blank: CriterionAssessment = { applicantResult: 'pending', internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
+  const [rows, setRows] = useState(assessments)
+  const [msgs, setMsgs] = useState(messages)
+  const [draft, setDraft] = useState<Record<string, string>>({})
+  const [open, setOpen] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [area, setArea] = useState('all')
   const [, start] = useTransition()
   const [error, setError] = useState('')
+  const router = useRouter()
 
   const isEstablishment = role === 'establishment'
   const isOperator = role === 'admin'
@@ -71,9 +81,17 @@ export default function CriteriaBoard({
 
   const docsByRef = useMemo(() => {
     const m = new Map<string, AppDoc[]>()
-    for (const d of docs) { if (!d.criterion_ref) continue; const a = m.get(d.criterion_ref) ?? []; a.push(d); m.set(d.criterion_ref, a) }
+    for (const d of docs) { if (!d.criterion_ref) continue; const arr = m.get(d.criterion_ref) ?? []; arr.push(d); m.set(d.criterion_ref, arr) }
     return m
   }, [docs])
+
+  function postMessage(ref: string) {
+    const body = (draft[ref] ?? '').trim()
+    if (!body) return
+    setMsgs((prev) => ({ ...prev, [ref]: [...(prev[ref] ?? []), { id: `tmp-${Date.now()}`, criterion_ref: ref, author_role: isOperator ? 'operator' : 'establishment', body, visibility: 'shared', created_at: new Date().toISOString() }] }))
+    setDraft((d) => ({ ...d, [ref]: '' }))
+    run(async () => { const r = await postCriterionMessage(applicationId, ref, body); if (!r.error) router.refresh(); return r })
+  }
 
   const areas = useMemo(() => Array.from(new Set(criteria.map((c) => c.area))), [criteria])
   const filtered = criteria.filter((c) => {
@@ -88,8 +106,20 @@ export default function CriteriaBoard({
   }, [filtered])
 
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
-  const taStyle = { background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' } as const
-  const cols = 5 + (showExternal ? 1 : 0)
+  const cols = 3 + 1 + (showExternal ? 1 : 0) + 1
+  const evidenceCol = (ref: string) => {
+    const list = docsByRef.get(ref) ?? []
+    return (
+      <div className="flex flex-col gap-1 items-start">
+        {list.map((d) => (
+          <a key={d.id} href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+            <FileText className="w-3 h-3" /> <span className="max-w-[110px] truncate">{d.name}</span> <Download className="w-3 h-3" />
+          </a>
+        ))}
+        <CriterionUpload applicationId={applicationId} criterionRef={ref} />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-3">
@@ -108,15 +138,15 @@ export default function CriteriaBoard({
 
       <div className="rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm" style={{ minWidth: 1080 }}>
+          <table className="w-full text-sm" style={{ minWidth: 880 }}>
             <thead>
               <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#94A3B8' }}>
                 <th className={th}>Indicator</th>
-                <th className={th}>Establishment evidence</th>
-                <th className={th}>Establishment comment</th>
-                <th className={th}>Operator feedback</th>
-                <th className={th}>Operator comment</th>
-                {showExternal && <th className={th}>Auditor</th>}
+                <th className={th}>Self-assessment</th>
+                <th className={th}>Evidence</th>
+                <th className={th}>Operator</th>
+                {showExternal && <th className={th}>Audit</th>}
+                <th className={th}>Comments</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: '#F1F5F9' }}>
@@ -130,62 +160,82 @@ export default function CriteriaBoard({
                   </tr>
                   {g.rows.map((c) => {
                     const a = get(c.ref)
-                    const myDocs = docsByRef.get(c.ref) ?? []
+                    const thread = msgs[c.ref] ?? []
+                    const isOpen = open === c.ref
                     return (
-                      <tr key={c.ref} className="align-top">
-                        <td className="px-3 py-3 min-w-[200px]">
-                          <div className="flex items-start gap-1.5">
-                            <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>
-                            <p className="min-w-0" style={{ color: '#1E293B' }}>{c.title}</p>
-                          </div>
-                        </td>
-
-                        {/* Establishment evidence */}
-                        <td className="px-3 py-3 min-w-[170px]">
-                          <div className="flex flex-col gap-1.5 items-start">
-                            {myDocs.map((d) => (
-                              <a key={d.id} href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
-                                <FileText className="w-3 h-3" /> <span className="max-w-[120px] truncate">{d.name}</span> <Download className="w-3 h-3" />
-                              </a>
-                            ))}
-                            {myDocs.length === 0 && !isEstablishment && <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>}
-                            {isEstablishment && <CriterionUpload applicationId={applicationId} criterionRef={c.ref} />}
-                          </div>
-                        </td>
-
-                        {/* Establishment comment */}
-                        <td className="px-3 py-3 min-w-[180px]">
-                          {isEstablishment
-                            ? <textarea defaultValue={a.applicantNote ?? ''} rows={2} placeholder="Add a comment…"
-                                onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.applicantNote ?? '')) { patch(c.ref, { applicantNote: e.target.value }); run(() => setApplicantNote(applicationId, c.ref, e.target.value)) } }}
-                                className="w-full text-xs px-2.5 py-2 rounded-lg outline-none resize-none" style={taStyle} />
-                            : <p className="text-xs" style={{ color: a.applicantNote ? '#475569' : '#CBD5E1' }}>{a.applicantNote || '—'}</p>}
-                        </td>
-
-                        {/* Operator feedback */}
-                        <td className="px-3 py-3">
-                          {isOperator
-                            ? <Toggle value={a.internal} onChange={(r) => { patch(c.ref, { internal: r }); run(() => setInternalResult(applicationId, c.ref, r)) }} />
-                            : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Awaiting review</span> : <Chip r={a.internal} />)}
-                        </td>
-
-                        {/* Operator comment */}
-                        <td className="px-3 py-3 min-w-[180px]">
-                          {isOperator
-                            ? <textarea defaultValue={a.internalNote ?? ''} rows={2} placeholder="Feedback to the establishment…"
-                                onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.internalNote ?? '')) { patch(c.ref, { internalNote: e.target.value }); run(() => setInternalNote(applicationId, c.ref, e.target.value)) } }}
-                                className="w-full text-xs px-2.5 py-2 rounded-lg outline-none resize-none" style={taStyle} />
-                            : <p className="text-xs" style={{ color: a.internalNote ? '#475569' : '#CBD5E1' }}>{a.internalNote || '—'}</p>}
-                        </td>
-
-                        {/* Auditor (read-only) */}
-                        {showExternal && (
-                          <td className="px-3 py-3 min-w-[150px]">
-                            {a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />}
-                            {a.note && <p className="text-xs mt-1" style={{ color: '#64748B' }}>{a.note}</p>}
+                      <Fragment key={c.ref}>
+                        <tr className="align-top">
+                          <td className="px-3 py-3 min-w-[220px]">
+                            <button onClick={() => setOpen(isOpen ? null : c.ref)} className="flex items-start gap-1.5 text-left">
+                              <ChevronDown className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 transition-transform" style={{ color: '#94A3B8', transform: isOpen ? 'rotate(180deg)' : 'none' }} />
+                              <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>
+                              <span className="min-w-0">
+                                <span style={{ color: '#1E293B' }}>{c.title}</span>
+                                {c.type && <span className="ml-1.5 text-[10px] font-bold px-1 py-0.5 rounded" style={{ background: c.type.includes('I') ? '#FEF3C7' : '#EEF2F6', color: c.type.includes('I') ? '#92400E' : '#64748B' }}>{c.type}</span>}
+                              </span>
+                            </button>
                           </td>
+                          <td className="px-3 py-3">
+                            {isEstablishment
+                              ? <Toggle value={a.applicantResult} onChange={(r) => { patch(c.ref, { applicantResult: r }); run(() => setApplicantResult(applicationId, c.ref, r)) }} />
+                              : <Chip r={a.applicantResult} />}
+                          </td>
+                          <td className="px-3 py-3 min-w-[140px]">{evidenceCol(c.ref)}</td>
+                          <td className="px-3 py-3">
+                            {isOperator
+                              ? <Toggle value={a.internal} onChange={(r) => { patch(c.ref, { internal: r }); run(() => setInternalResult(applicationId, c.ref, r)) }} />
+                              : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Awaiting</span> : <Chip r={a.internal} />)}
+                          </td>
+                          {showExternal && (
+                            <td className="px-3 py-3">
+                              {a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />}
+                            </td>
+                          )}
+                          <td className="px-3 py-3">
+                            <button onClick={() => setOpen(isOpen ? null : c.ref)} className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: thread.length ? '#40916C' : '#94A3B8' }}>
+                              <MessageSquare className="w-3.5 h-3.5" /> {thread.length}
+                            </button>
+                          </td>
+                        </tr>
+
+                        {isOpen && (
+                          <tr>
+                            <td colSpan={cols} className="px-4 py-3" style={{ background: '#FCFDFE' }}>
+                              {c.description && (
+                                <div className="flex items-start gap-2 mb-3 max-w-3xl">
+                                  <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#64748B' }} />
+                                  <p className="text-xs" style={{ color: '#475569' }}>{c.description}</p>
+                                </div>
+                              )}
+                              {showExternal && a.note && (
+                                <p className="text-xs mb-3 max-w-3xl" style={{ color: '#475569' }}><span className="font-semibold">Auditor remark:</span> {a.note}</p>
+                              )}
+                              <div className="max-w-2xl space-y-2">
+                                {thread.length === 0 && <p className="text-xs" style={{ color: '#94A3B8' }}>No comments yet.</p>}
+                                {thread.map((m) => (
+                                  <div key={m.id} className="rounded-lg p-2.5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#EEF2F6', color: '#475569' }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}</span>
+                                      {m.visibility === 'auditor_internal' && <span className="text-[10px] font-semibold" style={{ color: '#B45309' }}>internal</span>}
+                                      <span className="text-[10px]" style={{ color: '#94A3B8' }}>{new Date(m.created_at).toLocaleDateString('en-GB')}</span>
+                                    </div>
+                                    <p className="text-sm" style={{ color: '#334155' }}>{m.body}</p>
+                                  </div>
+                                ))}
+                                <div className="flex items-center gap-2 pt-1">
+                                  <input value={draft[c.ref] ?? ''} onChange={(e) => setDraft((d) => ({ ...d, [c.ref]: e.target.value }))}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') postMessage(c.ref) }} placeholder="Add a comment…"
+                                    className="flex-1 text-sm px-3 py-2 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+                                  <button onClick={() => postMessage(c.ref)} disabled={!(draft[c.ref] ?? '').trim()}
+                                    className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#40916C' }}>
+                                    <Send className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
                         )}
-                      </tr>
+                      </Fragment>
                     )
                   })}
                 </Fragment>

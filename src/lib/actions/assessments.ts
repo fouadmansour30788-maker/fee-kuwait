@@ -99,6 +99,32 @@ export async function setApplicantNote(applicationId: string, criterionRef: stri
   return { ok: true }
 }
 
+// The establishment records its own self-assessment per criterion. Ownership is
+// verified and the write uses the service role (applicants keep read-only RLS).
+export async function setApplicantResult(applicationId: string, criterionRef: string, result: string): Promise<{ ok?: true; error?: string }> {
+  if (!RESULTS.includes(result)) return { error: 'Invalid result' }
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const { data: own } = await supabase.from('applications').select('id').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
+  if (!own) return { error: 'Not allowed' }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('criterion_assessments').upsert({
+    application_id: applicationId,
+    criterion_ref: criterionRef,
+    applicant_result: result,
+    updated_by: user.id,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'application_id,criterion_ref' })
+  if (error) return { error: error.message }
+
+  revalidatePath(`/business/application/${applicationId}`)
+  revalidatePath(`/school/application/${applicationId}`)
+  revalidatePath(`/applications/${applicationId}`)
+  return { ok: true }
+}
+
 // The National Operator (staff) records internal feedback shown to the establishment.
 export async function setInternalNote(applicationId: string, criterionRef: string, note: string): Promise<{ ok?: true; error?: string }> {
   const supabase = createClient()
