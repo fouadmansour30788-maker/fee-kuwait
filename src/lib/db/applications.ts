@@ -59,3 +59,29 @@ export const STATUS_META: Record<string, { label: string; color: string; bg: str
 export function statusMeta(status: string) {
   return STATUS_META[status] ?? { label: status.replace(/_/g, ' '), color: '#475569', bg: '#F1F5F9' }
 }
+
+// Statuses an operator can set from the review screen.
+export const OPERATOR_STATUSES = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'approved', 'rejected']
+
+export interface AppDetail {
+  id: string
+  programme: string
+  status: string
+  entity_type: string | null
+  submitted_at: string
+  review_deadline: string | null
+  review_notes: string | null
+  rejection_reason: string | null
+  applicant: { email: string | null; name_en: string | null; name_ar: string | null } | null
+}
+
+export async function getApplication(id: string): Promise<AppDetail | null> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('applications')
+    .select('id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, applicant:users!applicant_id(email, name_en, name_ar)')
+    .eq('id', id)
+    .single()
+  if (error) { console.error('getApplication:', error.message); return null }
+  return data as unknown as AppDetail
+}

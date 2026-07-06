@@ -1,4 +1,5 @@
-import { FileText, Inbox } from 'lucide-react'
+import Link from 'next/link'
+import { FileText, Inbox, ChevronRight } from 'lucide-react'
 import { listApplications, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 
 export default async function ApplicationsPage() {
@@ -22,13 +23,14 @@ export default async function ApplicationsPage() {
               {['Applicant', 'Programme', 'Type', 'Status', 'Submitted'].map((h) => (
                 <th key={h} className="text-left px-5 py-3.5 font-semibold text-xs uppercase tracking-wider" style={{ color: '#94A3B8' }}>{h}</th>
               ))}
+              <th className="px-5 py-3.5" />
             </tr>
           </thead>
           <tbody className="divide-y" style={{ borderColor: '#F8FAFC' }}>
             {apps.map((a) => {
               const s = statusMeta(a.status)
               return (
-                <tr key={a.id} className="hover:bg-slate-50 transition-colors">
+                <tr key={a.id} className="hover:bg-slate-50 transition-colors group">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#F1F5F9' }}>
@@ -47,6 +49,11 @@ export default async function ApplicationsPage() {
                   </td>
                   <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>
                     {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB') : '—'}
+                  </td>
+                  <td className="px-5 py-3.5 text-right">
+                    <Link href={`/applications/${a.id}`} className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: '#40916C' }}>
+                      Open <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
                   </td>
                 </tr>
               )
