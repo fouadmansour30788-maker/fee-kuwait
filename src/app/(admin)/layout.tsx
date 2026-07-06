@@ -4,9 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileCheck, Award, Newspaper,
-  Users, BarChart3, UserCog, Leaf, Menu, X,
-  LogOut, ChevronRight, Bell, Search, LineChart, ClipboardCheck,
+  LayoutDashboard, FileCheck, Users, Leaf, Menu, X,
+  LogOut, ChevronRight, Bell, Search,
   MessageSquare, Paperclip, Send, RotateCcw,
 } from 'lucide-react'
 import { NO_NOTIFICATIONS, type NotificationKind } from '@/lib/data/audits'
@@ -19,23 +18,20 @@ const NOTIF_ICON: Record<NotificationKind, typeof Bell> = {
   changes_requested: RotateCcw,
 }
 
+// Only the screens wired to real data are shown. Mock screens (certificates,
+// analytics, content, reports, staff, certification reviews) are hidden until
+// they're backed by the database.
 const ADMIN_NAV = [
   { href: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/applications', icon: FileCheck,       label: 'Applications' },
-  { href: '/auditors',     icon: ClipboardCheck,  label: 'Certification Reviews' },
-  { href: '/certificates', icon: Award,           label: 'Certificates' },
   { href: '/members',      icon: Users,           label: 'Members' },
-  { href: '/analytics',    icon: LineChart,       label: 'Analytics' },
-  { href: '/content',      icon: Newspaper,       label: 'Content' },
-  { href: '/reports',      icon: BarChart3,       label: 'Reports' },
-  { href: '/staff',        icon: UserCog,         label: 'Staff' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
-  const [notifs, setNotifs] = useState(NO_NOTIFICATIONS)
+  const [notifs, setNotifs] = useState<typeof NO_NOTIFICATIONS>([])
   const unread = notifs.filter(n => !n.read).length
 
   return (
