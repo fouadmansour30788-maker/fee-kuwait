@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES, ESTABLISHMENT_EDITABLE_STATUSES } from '@/lib/db/applications'
-import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
+import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { myEntity } from '@/lib/db/establishment'
@@ -18,6 +18,7 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
   const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
   const locked = !ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status) || ent?.status !== 'active'
   const generalDocs = docs.filter((d) => !d.criterion_ref)
+  const reports = showExternal ? docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF) : []
   const s = statusMeta(app.status)
 
   return (
@@ -47,6 +48,23 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Attach evidence and add a comment for each indicator, and see your reviewer&apos;s feedback.</p>
           <CriteriaBoard role="establishment" applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} />
+        </div>
+      )}
+
+      {reports.length > 0 && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
+          <h2 className="text-base font-bold mb-3" style={{ color: '#0F2318' }}>Audit report</h2>
+          <div className="space-y-2">
+            {reports.map((d) => (
+              <a key={d.id} href={d.url ?? '#'} target="_blank" rel="noopener" className="flex items-center gap-3 rounded-xl border p-3" style={{ borderColor: '#EEF5F0' }}>
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#F4F9F5' }}>
+                  <FileText className="w-4 h-4" style={{ color: '#40916C' }} />
+                </div>
+                <p className="text-sm font-semibold flex-1 truncate" style={{ color: '#1E293B' }}>{d.name}</p>
+                <Download className="w-4 h-4" style={{ color: '#94A3B8' }} />
+              </a>
+            ))}
+          </div>
         </div>
       )}
 

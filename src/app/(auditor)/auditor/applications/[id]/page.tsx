@@ -2,16 +2,20 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox, Mail, Building2, Calendar } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
-import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
+import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { criteriaForProgramme } from '@/lib/criteria'
 import CriteriaGrid from '@/components/audit/CriteriaGrid'
+import AuditorSubmit from '@/components/audit/AuditorSubmit'
 
 export default async function AuditorApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
   const [docs, assessments] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id)])
   const criteria = criteriaForProgramme(app.programme)
+  const reports = docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF).map((d) => ({ id: d.id, name: d.name, url: d.url }))
+  const evidence = docs.filter((d) => d.criterion_ref !== AUDIT_REPORT_REF)
+  const inProgress = app.status === 'audit'
   const s = statusMeta(app.status)
 
   return (
@@ -45,18 +49,25 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
       {/* Criteria assessment */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
         <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria assessment</h2>
-        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Record Pass / Not pass and written feedback for each indicator. The internal (National Operator) result is shown for reference. Saved automatically.</p>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>{inProgress ? 'Record Pass / Not pass and written feedback for each indicator. Saved automatically.' : 'This audit has been submitted — results are locked.'}</p>
         {criteria.length > 0
-          ? <CriteriaGrid role="auditor" applicationId={params.id} criteria={criteria} initial={assessments} />
+          ? <CriteriaGrid role="auditor" applicationId={params.id} criteria={criteria} initial={assessments} readOnly={!inProgress} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
+      </div>
+
+      {/* Final report & submit */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Final report &amp; submission</h2>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Attach your audit report and submit. Submitting locks your results and hands the application to the Certification Body.</p>
+        <AuditorSubmit applicationId={params.id} status={app.status} reports={reports} />
       </div>
 
       {/* Evidence documents */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
         <h2 className="text-base font-bold mb-4" style={{ color: '#0F172A' }}>Evidence documents</h2>
-        {docs.length > 0 ? (
+        {evidence.length > 0 ? (
           <div className="space-y-2">
-            {docs.map((d) => (
+            {evidence.map((d) => (
               <div key={d.id} className="flex items-center gap-3 rounded-xl border p-3" style={{ borderColor: '#E2E8F0' }}>
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#F1F5F9' }}>
                   <FileText className="w-4 h-4" style={{ color: '#64748B' }} />

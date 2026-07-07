@@ -13,6 +13,8 @@ export interface AppDoc {
 
 const BUCKET = 'application-docs'
 
+export { AUDIT_REPORT_REF } from '@/lib/doc-refs'
+
 // Documents attached to an application, with short-lived signed download URLs.
 // RLS decides which rows are visible (applicant sees own, staff see all); the
 // signed URLs are generated with the service role so both sides can download.

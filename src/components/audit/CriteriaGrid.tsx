@@ -42,13 +42,14 @@ function Toggle({ value, onChange, disabled }: { value: Result; onChange: (r: Re
 }
 
 export default function CriteriaGrid({
-  applicationId, criteria, initial, role, externalAuditorName,
+  applicationId, criteria, initial, role, externalAuditorName, readOnly = false,
 }: {
   applicationId: string
   criteria: CriterionRef[]
   initial: Record<string, GridAssessment>
   role: Role
   externalAuditorName?: string | null
+  readOnly?: boolean
 }) {
   const blank: GridAssessment = { internal: 'pending', internalNote: null, external: 'pending', note: null }
   const [rows, setRows] = useState<Record<string, GridAssessment>>(initial)
@@ -60,8 +61,8 @@ export default function CriteriaGrid({
 
   const showInternal = role !== 'establishment'
   const showAuditor = role !== 'establishment'
-  const editInternal = role === 'admin'
-  const editExternal = role === 'auditor'
+  const editInternal = role === 'admin' && !readOnly
+  const editExternal = role === 'auditor' && !readOnly
   const extName = externalAuditorName || (role === 'auditor' ? 'You' : '—')
 
   const get = (ref: string) => rows[ref] ?? blank
