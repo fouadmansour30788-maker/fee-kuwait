@@ -71,6 +71,11 @@ export const OPERATOR_STATUSES = ['new', 'under_review', 'documents_pending', 's
 // During 'audit' the grading is still a draft, so it stays hidden from the applicant.
 export const AUDIT_PUBLISHED_STATUSES = ['cb_review', 'approved', 'certified', 'certified_rectification', 'not_certified', 'rejected']
 
+// While the application is with the establishment/operator (pre-audit), the
+// establishment can edit its board (self-assessment, evidence, comments). Once the
+// operator submits to the CB / audit begins, the board locks read-only for them.
+export const ESTABLISHMENT_EDITABLE_STATUSES = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled']
+
 export interface AppDetail {
   id: string
   programme: string

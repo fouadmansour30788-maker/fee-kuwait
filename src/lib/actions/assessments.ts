@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { ESTABLISHMENT_EDITABLE_STATUSES } from '@/lib/db/applications'
 import { revalidatePath } from 'next/cache'
 
 const RESULTS = ['pending', 'pass', 'no_pass']
@@ -106,8 +107,9 @@ export async function setApplicantResult(applicationId: string, criterionRef: st
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
-  const { data: own } = await supabase.from('applications').select('id').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
+  const { data: own } = await supabase.from('applications').select('status').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
   if (!own) return { error: 'Not allowed' }
+  if (!ESTABLISHMENT_EDITABLE_STATUSES.includes(own.status)) return { error: 'This application is locked for editing.' }
 
   const admin = createAdminClient()
   const { error } = await admin.from('criterion_assessments').upsert({

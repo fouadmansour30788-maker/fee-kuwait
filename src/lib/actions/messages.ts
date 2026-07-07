@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { ESTABLISHMENT_EDITABLE_STATUSES } from '@/lib/db/applications'
 import { revalidatePath } from 'next/cache'
 
 // Post a message to a criterion's thread. The author role is derived from the
@@ -21,6 +22,12 @@ export async function postCriterionMessage(applicationId: string, criterionRef: 
         : role === 'certification_body' ? 'cb'
           : 'establishment'
   const visibility = authorRole === 'auditor' ? 'auditor_internal' : 'shared'
+
+  // The establishment cannot comment once the application is locked (submitted to CB).
+  if (authorRole === 'establishment') {
+    const { data: appRow } = await supabase.from('applications').select('status').eq('id', applicationId).single()
+    if (!appRow || !ESTABLISHMENT_EDITABLE_STATUSES.includes(appRow.status)) return { error: 'This application is locked.' }
+  }
 
   const { error } = await supabase.from('criterion_messages').insert({
     application_id: applicationId,

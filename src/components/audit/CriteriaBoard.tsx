@@ -2,7 +2,7 @@
 
 import { Fragment, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, Search, FileText, Download, ChevronDown, MessageSquare, Send, Info, AlertCircle } from 'lucide-react'
+import { Check, X, Search, FileText, Download, ChevronDown, MessageSquare, Send, Info, AlertCircle, Lock } from 'lucide-react'
 import { setInternalResult, setApplicantResult } from '@/lib/actions/assessments'
 import { postCriterionMessage } from '@/lib/actions/messages'
 import CriterionUpload from '@/components/documents/CriterionUpload'
@@ -51,7 +51,7 @@ function Toggle({ value, onChange }: { value: Result; onChange: (r: Result) => v
 // expandable panel per criterion. The auditor result is read-only and shown to
 // the establishment only once the audit is published.
 export default function CriteriaBoard({
-  applicationId, criteria, assessments, docs, messages, role, showExternal,
+  applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false,
 }: {
   applicationId: string
   criteria: CriterionRef[]
@@ -60,6 +60,7 @@ export default function CriteriaBoard({
   messages: Record<string, CriterionMessage[]>
   role: Role
   showExternal: boolean
+  locked?: boolean
 }) {
   const blank: CriterionAssessment = { applicantResult: 'pending', internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
   const [rows, setRows] = useState(assessments)
@@ -74,6 +75,9 @@ export default function CriteriaBoard({
 
   const isEstablishment = role === 'establishment'
   const isOperator = role === 'admin'
+  const canEditSelf = isEstablishment && !locked
+  const canUpload = isOperator || (isEstablishment && !locked)
+  const canComment = isOperator || (isEstablishment && !locked)
 
   const get = (ref: string) => rows[ref] ?? blank
   const patch = (ref: string, p: Partial<CriterionAssessment>) => setRows((prev) => ({ ...prev, [ref]: { ...(prev[ref] ?? blank), ...p } }))
@@ -116,13 +120,19 @@ export default function CriteriaBoard({
             <FileText className="w-3 h-3" /> <span className="max-w-[110px] truncate">{d.name}</span> <Download className="w-3 h-3" />
           </a>
         ))}
-        <CriterionUpload applicationId={applicationId} criterionRef={ref} />
+        {canUpload ? <CriterionUpload applicationId={applicationId} criterionRef={ref} /> : (list.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>)}
       </div>
     )
   }
 
   return (
     <div className="space-y-3">
+      {isEstablishment && locked && (
+        <div className="flex items-start gap-2 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
+          <Lock className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <p>This application has been submitted for review and is now locked. You can view everything, but edits, uploads and comments are closed until the review completes.</p>
+        </div>
+      )}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white flex-1 min-w-[160px]" style={{ border: '1px solid #E2E8F0' }}>
           <Search className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />
@@ -176,7 +186,7 @@ export default function CriteriaBoard({
                             </button>
                           </td>
                           <td className="px-3 py-3">
-                            {isEstablishment
+                            {canEditSelf
                               ? <Toggle value={a.applicantResult} onChange={(r) => { patch(c.ref, { applicantResult: r }); run(() => setApplicantResult(applicationId, c.ref, r)) }} />
                               : <Chip r={a.applicantResult} />}
                           </td>
@@ -222,15 +232,19 @@ export default function CriteriaBoard({
                                     <p className="text-sm" style={{ color: '#334155' }}>{m.body}</p>
                                   </div>
                                 ))}
-                                <div className="flex items-center gap-2 pt-1">
-                                  <input value={draft[c.ref] ?? ''} onChange={(e) => setDraft((d) => ({ ...d, [c.ref]: e.target.value }))}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') postMessage(c.ref) }} placeholder="Add a comment…"
-                                    className="flex-1 text-sm px-3 py-2 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
-                                  <button onClick={() => postMessage(c.ref)} disabled={!(draft[c.ref] ?? '').trim()}
-                                    className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#40916C' }}>
-                                    <Send className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
+                                {canComment ? (
+                                  <div className="flex items-center gap-2 pt-1">
+                                    <input value={draft[c.ref] ?? ''} onChange={(e) => setDraft((d) => ({ ...d, [c.ref]: e.target.value }))}
+                                      onKeyDown={(e) => { if (e.key === 'Enter') postMessage(c.ref) }} placeholder="Add a comment…"
+                                      className="flex-1 text-sm px-3 py-2 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+                                    <button onClick={() => postMessage(c.ref)} disabled={!(draft[c.ref] ?? '').trim()}
+                                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-50" style={{ background: '#40916C' }}>
+                                      <Send className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <p className="flex items-center gap-1.5 text-[11px] pt-1" style={{ color: '#94A3B8' }}><Lock className="w-3 h-3" /> Comments are closed at this stage.</p>
+                                )}
                               </div>
                             </td>
                           </tr>
