@@ -3,8 +3,10 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, Mail, Calendar, Building2, FileText, Download, Inbox, Gavel, CheckCircle2, Award } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
-import { listAssessments } from '@/lib/db/assessments'
-import AuditResults from '@/components/audit/AuditResults'
+import { listCriterionAssessments } from '@/lib/db/assessments'
+import { listCriterionMessages } from '@/lib/db/messages'
+import { criteriaForProgramme } from '@/lib/criteria'
+import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import { recordCbDecision } from './actions'
 
 const DECISIONS = [
@@ -22,7 +24,8 @@ export default async function CbApplicationDetail({
   const { id } = params
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, assessments] = await Promise.all([listApplicationDocuments(id), listAssessments(id)])
+  const [docs, assessments, messages] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id)])
+  const criteria = criteriaForProgramme(app.programme)
   const s = statusMeta(app.status)
   const decided = !!app.cb_decision && app.cb_decision !== 'pending'
 
@@ -66,8 +69,14 @@ export default async function CbApplicationDetail({
         <p>Review the auditor&apos;s findings and evidence below, then record the certification decision. The auditor&apos;s results are read-only — you do not conduct the audit.</p>
       </div>
 
-      {/* Auditor's results (read-only) */}
-      <AuditResults programme={app.programme} assessments={assessments} />
+      {/* Criteria board (read-only) */}
+      {criteria.length > 0 && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The full checklist with the establishment&apos;s evidence, the auditor&apos;s results and remarks, and comments. You can add comments; results are read-only.</p>
+          <CriteriaBoard role="cb" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal />
+        </div>
+      )}
 
       {/* Evidence documents */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>

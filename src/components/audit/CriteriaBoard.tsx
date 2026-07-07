@@ -3,7 +3,7 @@
 import { Fragment, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, X, Search, FileText, Download, ChevronDown, MessageSquare, Send, Info, AlertCircle, Lock } from 'lucide-react'
-import { setInternalResult, setApplicantResult } from '@/lib/actions/assessments'
+import { setInternalResult, setApplicantResult, setCriterionResult, setCriterionNote } from '@/lib/actions/assessments'
 import { postCriterionMessage } from '@/lib/actions/messages'
 import CriterionUpload from '@/components/documents/CriterionUpload'
 import type { CriterionRef } from '@/lib/criteria'
@@ -12,7 +12,7 @@ import type { AppDoc } from '@/lib/db/documents'
 import type { CriterionMessage } from '@/lib/db/messages'
 
 type Result = 'pending' | 'pass' | 'no_pass'
-type Role = 'admin' | 'establishment'
+type Role = 'admin' | 'establishment' | 'auditor' | 'cb'
 
 const RESULT_META: Record<Result, { label: string; color: string; bg: string }> = {
   pending: { label: 'Pending', color: '#64748B', bg: '#F1F5F9' },
@@ -51,7 +51,7 @@ function Toggle({ value, onChange }: { value: Result; onChange: (r: Result) => v
 // expandable panel per criterion. The auditor result is read-only and shown to
 // the establishment only once the audit is published.
 export default function CriteriaBoard({
-  applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false,
+  applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false, auditEditable = false,
 }: {
   applicationId: string
   criteria: CriterionRef[]
@@ -61,6 +61,7 @@ export default function CriteriaBoard({
   role: Role
   showExternal: boolean
   locked?: boolean
+  auditEditable?: boolean
 }) {
   const blank: CriterionAssessment = { applicantResult: 'pending', internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
   const [rows, setRows] = useState(assessments)
@@ -77,9 +78,13 @@ export default function CriteriaBoard({
 
   const isEstablishment = role === 'establishment'
   const isOperator = role === 'admin'
+  const isAuditor = role === 'auditor'
+  const isCb = role === 'cb'
+  const myRole = isOperator ? 'operator' : isAuditor ? 'auditor' : isCb ? 'cb' : 'establishment'
   const canEditSelf = isEstablishment && !locked
   const canUpload = isOperator || (isEstablishment && !locked)
-  const canComment = isOperator || (isEstablishment && !locked)
+  const canComment = isOperator || isAuditor || isCb || (isEstablishment && !locked)
+  const editAudit = isAuditor && auditEditable
 
   const get = (ref: string) => rows[ref] ?? blank
   const patch = (ref: string, p: Partial<CriterionAssessment>) => setRows((prev) => ({ ...prev, [ref]: { ...(prev[ref] ?? blank), ...p } }))
@@ -99,7 +104,7 @@ export default function CriteriaBoard({
   function postMessage(ref: string) {
     const body = (draft[ref] ?? '').trim()
     if (!body) return
-    setMsgs((prev) => ({ ...prev, [ref]: [...(prev[ref] ?? []), { id: `tmp-${Date.now()}`, criterion_ref: ref, author_role: isOperator ? 'operator' : 'establishment', body, visibility: 'shared', created_at: new Date().toISOString() }] }))
+    setMsgs((prev) => ({ ...prev, [ref]: [...(prev[ref] ?? []), { id: `tmp-${Date.now()}`, criterion_ref: ref, author_role: myRole, body, visibility: isAuditor ? 'auditor_internal' : 'shared', created_at: new Date().toISOString() }] }))
     setDraft((d) => ({ ...d, [ref]: '' }))
     run(async () => { const r = await postCriterionMessage(applicationId, ref, body); if (!r.error) router.refresh(); return r })
   }
@@ -208,7 +213,9 @@ export default function CriteriaBoard({
                           </td>
                           {showExternal && (
                             <td className="px-3 py-3">
-                              {a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />}
+                              {editAudit
+                                ? <Toggle value={a.external} onChange={(r) => { patch(c.ref, { external: r }); run(() => setCriterionResult(applicationId, c.ref, r)) }} />
+                                : (a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />)}
                             </td>
                           )}
                           <td className="px-3 py-3">
@@ -227,9 +234,16 @@ export default function CriteriaBoard({
                                   <p className="text-xs" style={{ color: '#475569' }}>{c.description}</p>
                                 </div>
                               )}
-                              {showExternal && a.note && (
+                              {editAudit ? (
+                                <div className="mb-3 max-w-2xl">
+                                  <label className="block text-[11px] font-semibold mb-1" style={{ color: '#64748B' }}>Auditor remark</label>
+                                  <textarea defaultValue={a.note ?? ''} rows={2} placeholder="Your remark for this criterion…"
+                                    onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.note ?? '')) { patch(c.ref, { note: e.target.value }); run(() => setCriterionNote(applicationId, c.ref, e.target.value)) } }}
+                                    className="w-full text-xs px-2.5 py-2 rounded-lg outline-none resize-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+                                </div>
+                              ) : (showExternal && a.note && (
                                 <p className="text-xs mb-3 max-w-3xl" style={{ color: '#475569' }}><span className="font-semibold">Auditor remark:</span> {a.note}</p>
-                              )}
+                              ))}
                               <div className="max-w-2xl space-y-2">
                                 {thread.length === 0 && <p className="text-xs" style={{ color: '#94A3B8' }}>No comments yet.</p>}
                                 {thread.map((m) => (
