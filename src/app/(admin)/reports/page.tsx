@@ -37,5 +37,16 @@ export default async function ReportsPage() {
   const present = Array.from(new Set(apps.map((a) => a.status)))
   const statuses = present.map((key) => ({ key, label: STATUS_META[key]?.label ?? statusMeta(key).label }))
 
-  return <ReportsClient appRows={appRows} certRows={certRows} programmes={programmes} statuses={statuses} />
+  // Average time from submission to certificate (join certs -> app submitted_at).
+  const submittedById = new Map(apps.map((a) => [a.id, a.submitted_at]))
+  const durations = certs
+    .map((c) => {
+      const sub = submittedById.get(c.application_id)
+      if (!sub || !c.issued_at) return null
+      return (new Date(c.issued_at).getTime() - new Date(sub).getTime()) / 86_400_000
+    })
+    .filter((d): d is number => d !== null && d >= 0)
+  const avgDays = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : null
+
+  return <ReportsClient appRows={appRows} certRows={certRows} programmes={programmes} statuses={statuses} avgDays={avgDays} />
 }
