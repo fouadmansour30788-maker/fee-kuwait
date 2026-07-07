@@ -5,6 +5,47 @@ import { OPERATOR_STATUSES } from '@/lib/db/applications'
 import { issueCertificate, notifyApplicant } from '@/lib/certify'
 import { revalidatePath } from 'next/cache'
 
+// Operator re-opens an audited application for the establishment to fix its
+// non-conformities. Deadline: 15 days for 1-5 NCs, 3 months for 6+ (per spec).
+export async function reopenForRevision(applicationId: string): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+  if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Not allowed' }
+
+  const { count } = await supabase.from('criterion_assessments')
+    .select('id', { count: 'exact', head: true })
+    .eq('application_id', applicationId).eq('result', 'no_pass')
+  const nc = count ?? 0
+  if (nc === 0) return { error: 'There are no non-conformities to revise.' }
+
+  const deadline = new Date()
+  if (nc <= 5) deadline.setDate(deadline.getDate() + 15)
+  else deadline.setMonth(deadline.getMonth() + 3)
+
+  const { error } = await supabase.from('applications')
+    .update({ status: 'revision', revision_deadline: deadline.toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', applicationId)
+  if (error) return { error: error.message }
+
+  const { data: appRow } = await supabase
+    .from('applications')
+    .select('entity_type, programme, applicant:users!applicant_id(email)')
+    .eq('id', applicationId).single()
+  const applicant = Array.isArray(appRow?.applicant) ? appRow?.applicant[0] : appRow?.applicant
+  await notifyApplicant({
+    email: applicant?.email, programme: appRow?.programme ?? '', entityType: appRow?.entity_type ?? null,
+    applicationId, status: 'documents_pending',
+  })
+
+  revalidatePath(`/applications/${applicationId}`)
+  revalidatePath('/applications')
+  revalidatePath(`/business/application/${applicationId}`)
+  revalidatePath(`/school/application/${applicationId}`)
+  return { ok: true }
+}
+
 // Operator assigns (or clears) an auditor; moves the application into audit.
 export async function assignAuditor(applicationId: string, auditorId: string) {
   const supabase = createClient()

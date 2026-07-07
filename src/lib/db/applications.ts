@@ -51,6 +51,7 @@ export const STATUS_META: Record<string, { label: string; color: string; bg: str
   documents_pending:      { label: 'Documents Pending',   color: '#D97706', bg: '#FEF3C7' },
   site_visit_scheduled:   { label: 'Site Visit Scheduled',color: '#0891B2', bg: '#CFFAFE' },
   audit:                  { label: 'Under Audit',         color: '#0891B2', bg: '#CFFAFE' },
+  revision:               { label: 'In Revision',         color: '#B45309', bg: '#FEF3C7' },
   cb_review:              { label: 'CB Review',           color: '#B45309', bg: '#FEF3C7' },
   approved:               { label: 'Approved',            color: '#059669', bg: '#D1FAE5' },
   rejected:               { label: 'Rejected',            color: '#DC2626', bg: '#FEE2E2' },
@@ -69,12 +70,12 @@ export const OPERATOR_STATUSES = ['new', 'under_review', 'documents_pending', 's
 // Statuses at which the auditor's per-criterion results are finalised (audit handed
 // off to the CB, or a decision recorded) and may be shown to the establishment.
 // During 'audit' the grading is still a draft, so it stays hidden from the applicant.
-export const AUDIT_PUBLISHED_STATUSES = ['cb_review', 'approved', 'certified', 'certified_rectification', 'not_certified', 'rejected']
+export const AUDIT_PUBLISHED_STATUSES = ['cb_review', 'revision', 'approved', 'certified', 'certified_rectification', 'not_certified', 'rejected']
 
-// While the application is with the establishment/operator (pre-audit), the
-// establishment can edit its board (self-assessment, evidence, comments). Once the
-// operator submits to the CB / audit begins, the board locks read-only for them.
-export const ESTABLISHMENT_EDITABLE_STATUSES = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled']
+// While the application is with the establishment/operator (pre-audit) — or re-opened
+// for revision — the establishment can edit its board (self-assessment, evidence,
+// comments). Once submitted to the CB / audit begins, the board locks read-only.
+export const ESTABLISHMENT_EDITABLE_STATUSES = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'revision']
 
 export interface AppDetail {
   id: string
@@ -87,6 +88,7 @@ export interface AppDetail {
   rejection_reason: string | null
   cb_decision: string | null
   cb_note: string | null
+  revision_deadline: string | null
   applicant: { email: string | null; name_en: string | null; name_ar: string | null } | null
 }
 
@@ -94,7 +96,7 @@ export async function getApplication(id: string): Promise<AppDetail | null> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('applications')
-    .select('id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, cb_decision, cb_note, applicant:users!applicant_id(email, name_en, name_ar)')
+    .select('id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, cb_decision, cb_note, revision_deadline, applicant:users!applicant_id(email, name_en, name_ar)')
     .eq('id', id)
     .single()
   if (error) { console.error('getApplication:', error.message); return null }

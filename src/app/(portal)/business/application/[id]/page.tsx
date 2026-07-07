@@ -19,6 +19,7 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
   const locked = !ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status) || ent?.status !== 'active'
   const generalDocs = docs.filter((d) => !d.criterion_ref)
   const reports = showExternal ? docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF) : []
+  const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
   const s = statusMeta(app.status)
 
   return (
@@ -42,6 +43,12 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
           )}
         </div>
       </div>
+
+      {app.status === 'revision' && (
+        <div className="rounded-2xl border px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
+          <strong>Revision required.</strong> {ncCount} criteri{ncCount === 1 ? 'on' : 'a'} did not pass. Please update your evidence/comments for the flagged indicators{app.revision_deadline ? ` by ${new Date(app.revision_deadline).toLocaleDateString('en-GB')}` : ''}.
+        </div>
+      )}
 
       {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
