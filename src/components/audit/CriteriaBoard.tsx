@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useMemo, useState, useTransition } from 'react'
+import { Fragment, memo, useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock } from 'lucide-react'
 import { setInternalResult, setApplicantResult, setCriterionResult, setCriterionNote } from '@/lib/actions/assessments'
@@ -20,6 +20,9 @@ const RESULT_META: Record<Result, { label: string; color: string; bg: string }> 
   no_pass: { label: 'Not pass', color: '#DC2626', bg: '#FEE2E2' },
 }
 const ROLE_LABEL: Record<string, string> = { establishment: 'Establishment', operator: 'Operator', auditor: 'Auditor', cb: 'CB' }
+const BLANK: CriterionAssessment = { applicantResult: 'pending', internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
+const EMPTY_DOCS: AppDoc[] = []
+const EMPTY_MSGS: CriterionMessage[] = []
 
 function Chip({ r }: { r: Result }) {
   const m = RESULT_META[r]
@@ -38,9 +41,113 @@ function Toggle({ value, onChange }: { value: Result; onChange: (r: Result) => v
   )
 }
 
-// Shared collaborative criteria board (8-column layout): Indicator · Description ·
-// Self-assessment · Establishment attachment · Establishment comment · Operator
-// feedback · Operator comment · Operator attachment (+ Audit when published).
+interface RowProps {
+  c: CriterionRef
+  a: CriterionAssessment
+  docsList: AppDoc[]
+  thread: CriterionMessage[]
+  year: number
+  applicationId: string
+  applicantId?: string
+  estCanEdit: boolean
+  isOperator: boolean
+  canComment: boolean
+  editAudit: boolean
+  showExternal: boolean
+  onSelf: (ref: string, r: Result) => void
+  onOp: (ref: string, r: Result) => void
+  onAudit: (ref: string, r: Result) => void
+  onAuditNote: (ref: string, note: string) => void
+  onPost: (ref: string, body: string) => void
+}
+
+// One criterion row, memoized so an interaction only re-renders the affected row.
+// The comment input keeps its text in local state, so typing never re-renders the
+// rest of the (139-row) table.
+const Row = memo(function Row({
+  c, a, docsList, thread, year, applicationId, applicantId, estCanEdit, isOperator, canComment, editAudit, showExternal,
+  onSelf, onOp, onAudit, onAuditNote, onPost,
+}: RowProps) {
+  const [text, setText] = useState('')
+  const list = docsList.filter((d) => d.year === year || d.year == null)
+  const estDocs = list.filter((d) => applicantId && d.uploaded_by === applicantId)
+  const opDocs = list.filter((d) => !applicantId || d.uploaded_by !== applicantId)
+  function send() { const b = text.trim(); if (!b) return; onPost(c.ref, b); setText('') }
+
+  const Attach = ({ items, canUpload }: { items: AppDoc[]; canUpload: boolean }) => (
+    <div className="flex flex-col gap-1 items-start">
+      {items.map((d) => (
+        <a key={d.id} href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+          <FileText className="w-3 h-3" /> <span className="max-w-[100px] truncate">{d.name}</span> <Download className="w-3 h-3" />
+        </a>
+      ))}
+      {canUpload ? <CriterionUpload applicationId={applicationId} criterionRef={c.ref} year={year} /> : (items.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>)}
+    </div>
+  )
+
+  return (
+    <tr className="align-top">
+      <td className="px-3 py-3 min-w-[180px]">
+        <div className="flex items-start gap-1.5">
+          <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>
+          <span className="min-w-0">
+            <span style={{ color: '#1E293B' }}>{c.title}</span>
+            {c.type && <span className="ml-1.5 text-[10px] font-bold px-1 py-0.5 rounded" style={{ background: c.type.includes('I') ? '#FEF3C7' : '#EEF2F6', color: c.type.includes('I') ? '#92400E' : '#64748B' }}>{c.type}</span>}
+          </span>
+        </div>
+      </td>
+      <td className="px-3 py-3 min-w-[220px] text-xs" style={{ color: '#64748B' }}>{c.description || '—'}</td>
+      <td className="px-3 py-3">
+        {estCanEdit ? <Toggle value={a.applicantResult} onChange={(r) => onSelf(c.ref, r)} /> : <Chip r={a.applicantResult} />}
+      </td>
+      <td className="px-3 py-3 min-w-[130px]"><Attach items={estDocs} canUpload={estCanEdit} /></td>
+      <td className="px-3 py-3">
+        {isOperator ? <Toggle value={a.internal} onChange={(r) => onOp(c.ref, r)} /> : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Awaiting</span> : <Chip r={a.internal} />)}
+      </td>
+      <td className="px-3 py-3 min-w-[130px]"><Attach items={opDocs} canUpload={isOperator} /></td>
+      <td className="px-3 py-3 min-w-[220px]">
+        <div className="space-y-1.5">
+          <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
+            {thread.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>No comments yet</span>}
+            {thread.map((m) => {
+              const isEst = m.author_role === 'establishment'
+              const internal = m.visibility === 'auditor_internal'
+              const bg = isEst ? '#ECFDF3' : internal ? '#FEF9EC' : '#EFF6FF'
+              const bd = isEst ? '#A7F3D0' : internal ? '#FDE68A' : '#BFDBFE'
+              return (
+                <div key={m.id} className={isEst ? 'flex justify-start' : 'flex justify-end'}>
+                  <div className="rounded-lg px-2 py-1.5 max-w-[88%]" style={{ background: bg, border: `1px solid ${bd}` }}>
+                    <span className="text-[9px] font-semibold block" style={{ color: '#64748B' }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{internal ? ' · internal' : ''}</span>
+                    <span className="text-xs" style={{ color: '#334155' }}>{m.body}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          {canComment && (
+            <div className="flex items-center gap-1">
+              <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') send() }} placeholder="Message…"
+                className="flex-1 min-w-[110px] text-xs px-2 py-1.5 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+              <button onClick={send} disabled={!text.trim()} className="p-1.5 rounded-lg text-white disabled:opacity-50" style={{ background: '#40916C' }}><Send className="w-3 h-3" /></button>
+            </div>
+          )}
+        </div>
+      </td>
+      {showExternal && (
+        <td className="px-3 py-3 min-w-[150px]">
+          {editAudit
+            ? <Toggle value={a.external} onChange={(r) => onAudit(c.ref, r)} />
+            : (a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />)}
+          {editAudit
+            ? <textarea defaultValue={a.note ?? ''} rows={2} placeholder="Auditor remark…" onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.note ?? '')) onAuditNote(c.ref, e.target.value) }} className="mt-1.5 w-full text-xs px-2 py-1.5 rounded-lg outline-none resize-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+            : a.note && <p className="text-xs mt-1" style={{ color: '#64748B' }}>{a.note}</p>}
+        </td>
+      )}
+    </tr>
+  )
+})
+
+// Shared collaborative criteria board.
 export default function CriteriaBoard({
   applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false, auditEditable = false, applicantId,
 }: {
@@ -55,10 +162,8 @@ export default function CriteriaBoard({
   auditEditable?: boolean
   applicantId?: string
 }) {
-  const blank: CriterionAssessment = { applicantResult: 'pending', internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
   const [rows, setRows] = useState(assessments)
   const [msgs, setMsgs] = useState(messages)
-  const [draft, setDraft] = useState<Record<string, string>>({})
   const [search, setSearch] = useState('')
   const [area, setArea] = useState('all')
   const currentYear = new Date().getFullYear()
@@ -73,29 +178,45 @@ export default function CriteriaBoard({
   const isCb = role === 'cb'
   const myRole = isOperator ? 'operator' : isAuditor ? 'auditor' : isCb ? 'cb' : 'establishment'
   const estCanEdit = isEstablishment && !locked
-  const opCanComment = isOperator || isAuditor || isCb
+  const canComment = estCanEdit || isOperator || isAuditor || isCb
   const editAudit = isAuditor && auditEditable
-
-  const get = (ref: string) => rows[ref] ?? blank
-  const patch = (ref: string, p: Partial<CriterionAssessment>) => setRows((prev) => ({ ...prev, [ref]: { ...(prev[ref] ?? blank), ...p } }))
-  const run = (fn: () => Promise<{ error?: string }>) => { setError(''); start(async () => { const r = await fn(); if (r?.error) setError(r.error) }) }
 
   const docsByRef = useMemo(() => {
     const m = new Map<string, AppDoc[]>()
     for (const d of docs) { if (!d.criterion_ref) continue; const arr = m.get(d.criterion_ref) ?? []; arr.push(d); m.set(d.criterion_ref, arr) }
     return m
   }, [docs])
+  const msgsByRef = useMemo(() => {
+    const m = new Map<string, CriterionMessage[]>()
+    for (const ref of Object.keys(msgs)) m.set(ref, msgs[ref])
+    return m
+  }, [msgs])
   const years = useMemo(() => {
     const s = new Set<number>([currentYear]); for (const d of docs) if (d.year) s.add(d.year); return Array.from(s).sort((a, b) => b - a)
   }, [docs, currentYear])
 
-  function postMessage(ref: string) {
-    const body = (draft[ref] ?? '').trim()
-    if (!body) return
-    setMsgs((prev) => ({ ...prev, [ref]: [...(prev[ref] ?? []), { id: `tmp-${Date.now()}`, criterion_ref: ref, author_role: myRole, body, visibility: isAuditor ? 'auditor_internal' : 'shared', created_at: new Date().toISOString() }] }))
-    setDraft((d) => ({ ...d, [ref]: '' }))
-    run(async () => { const r = await postCriterionMessage(applicationId, ref, body); if (!r.error) router.refresh(); return r })
-  }
+  const bump = useCallback((res: { error?: string } | undefined) => { if (res?.error) setError(res.error) }, [])
+  const onSelf = useCallback((ref: string, r: Result) => {
+    setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), applicantResult: r } })); setError('')
+    start(async () => bump(await setApplicantResult(applicationId, ref, r)))
+  }, [applicationId, bump])
+  const onOp = useCallback((ref: string, r: Result) => {
+    setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), internal: r } })); setError('')
+    start(async () => bump(await setInternalResult(applicationId, ref, r)))
+  }, [applicationId, bump])
+  const onAudit = useCallback((ref: string, r: Result) => {
+    setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), external: r } })); setError('')
+    start(async () => bump(await setCriterionResult(applicationId, ref, r)))
+  }, [applicationId, bump])
+  const onAuditNote = useCallback((ref: string, note: string) => {
+    setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), note } })); setError('')
+    start(async () => bump(await setCriterionNote(applicationId, ref, note)))
+  }, [applicationId, bump])
+  const onPost = useCallback((ref: string, body: string) => {
+    setMsgs((p) => ({ ...p, [ref]: [...(p[ref] ?? []), { id: `tmp-${Date.now()}`, criterion_ref: ref, author_role: myRole, body, visibility: isAuditor ? 'auditor_internal' : 'shared', created_at: new Date().toISOString() }] }))
+    setError('')
+    start(async () => { const r = await postCriterionMessage(applicationId, ref, body); if (r.error) setError(r.error); else router.refresh() })
+  }, [applicationId, myRole, isAuditor, router])
 
   const areas = useMemo(() => Array.from(new Set(criteria.map((c) => c.area))), [criteria])
   const filtered = criteria.filter((c) => {
@@ -110,50 +231,6 @@ export default function CriteriaBoard({
 
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
   const cols = 7 + (showExternal ? 1 : 0)
-  const canComment = estCanEdit || opCanComment
-
-  function AttachCell({ list, canUpload, cref }: { list: AppDoc[]; canUpload: boolean; cref: string }) {
-    return (
-      <div className="flex flex-col gap-1 items-start">
-        {list.map((d) => (
-          <a key={d.id} href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
-            <FileText className="w-3 h-3" /> <span className="max-w-[100px] truncate">{d.name}</span> <Download className="w-3 h-3" />
-          </a>
-        ))}
-        {canUpload ? <CriterionUpload applicationId={applicationId} criterionRef={cref} year={year} /> : (list.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>)}
-      </div>
-    )
-  }
-  function ChatCell({ thread, canPost, cref }: { thread: CriterionMessage[]; canPost: boolean; cref: string }) {
-    return (
-      <div className="space-y-1.5">
-        <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
-          {thread.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>No comments yet</span>}
-          {thread.map((m) => {
-            const isEst = m.author_role === 'establishment'
-            const internal = m.visibility === 'auditor_internal'
-            const bg = isEst ? '#ECFDF3' : internal ? '#FEF9EC' : '#EFF6FF'
-            const bd = isEst ? '#A7F3D0' : internal ? '#FDE68A' : '#BFDBFE'
-            return (
-              <div key={m.id} className={isEst ? 'flex justify-start' : 'flex justify-end'}>
-                <div className="rounded-lg px-2 py-1.5 max-w-[88%]" style={{ background: bg, border: `1px solid ${bd}` }}>
-                  <span className="text-[9px] font-semibold block" style={{ color: '#64748B' }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{internal ? ' · internal' : ''}</span>
-                  <span className="text-xs" style={{ color: '#334155' }}>{m.body}</span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-        {canPost && (
-          <div className="flex items-center gap-1">
-            <input value={draft[cref] ?? ''} onChange={(e) => setDraft((d) => ({ ...d, [cref]: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') postMessage(cref) }} placeholder="Message…"
-              className="flex-1 min-w-[110px] text-xs px-2 py-1.5 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
-            <button onClick={() => postMessage(cref)} disabled={!(draft[cref] ?? '').trim()} className="p-1.5 rounded-lg text-white disabled:opacity-50" style={{ background: '#40916C' }}><Send className="w-3 h-3" /></button>
-          </div>
-        )}
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-3">
@@ -181,7 +258,7 @@ export default function CriteriaBoard({
 
       <div className="rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm" style={{ minWidth: 1360 }}>
+          <table className="w-full text-sm" style={{ minWidth: 1280 }}>
             <thead>
               <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#94A3B8' }}>
                 <th className={th}>Indicator</th>
@@ -203,46 +280,12 @@ export default function CriteriaBoard({
                       <span className="text-[11px] font-semibold ml-2" style={{ color: '#6B9080' }}>· {g.rows.length}</span>
                     </td>
                   </tr>
-                  {g.rows.map((c) => {
-                    const a = get(c.ref)
-                    const list = (docsByRef.get(c.ref) ?? []).filter((d) => d.year === year || d.year == null)
-                    const estDocs = list.filter((d) => applicantId && d.uploaded_by === applicantId)
-                    const opDocs = list.filter((d) => !applicantId || d.uploaded_by !== applicantId)
-                    const thread = msgs[c.ref] ?? []
-                    return (
-                      <tr key={c.ref} className="align-top">
-                        <td className="px-3 py-3 min-w-[180px]">
-                          <div className="flex items-start gap-1.5">
-                            <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>
-                            <span className="min-w-0">
-                              <span style={{ color: '#1E293B' }}>{c.title}</span>
-                              {c.type && <span className="ml-1.5 text-[10px] font-bold px-1 py-0.5 rounded" style={{ background: c.type.includes('I') ? '#FEF3C7' : '#EEF2F6', color: c.type.includes('I') ? '#92400E' : '#64748B' }}>{c.type}</span>}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-3 py-3 min-w-[220px] text-xs" style={{ color: '#64748B' }}>{c.description || '—'}</td>
-                        <td className="px-3 py-3">
-                          {estCanEdit ? <Toggle value={a.applicantResult} onChange={(r) => { patch(c.ref, { applicantResult: r }); run(() => setApplicantResult(applicationId, c.ref, r)) }} /> : <Chip r={a.applicantResult} />}
-                        </td>
-                        <td className="px-3 py-3 min-w-[130px]"><AttachCell list={estDocs} canUpload={estCanEdit} cref={c.ref} /></td>
-                        <td className="px-3 py-3">
-                          {isOperator ? <Toggle value={a.internal} onChange={(r) => { patch(c.ref, { internal: r }); run(() => setInternalResult(applicationId, c.ref, r)) }} /> : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Awaiting</span> : <Chip r={a.internal} />)}
-                        </td>
-                        <td className="px-3 py-3 min-w-[130px]"><AttachCell list={opDocs} canUpload={isOperator} cref={c.ref} /></td>
-                        <td className="px-3 py-3 min-w-[220px]"><ChatCell thread={thread} canPost={canComment} cref={c.ref} /></td>
-                        {showExternal && (
-                          <td className="px-3 py-3 min-w-[150px]">
-                            {editAudit
-                              ? <Toggle value={a.external} onChange={(r) => { patch(c.ref, { external: r }); run(() => setCriterionResult(applicationId, c.ref, r)) }} />
-                              : (a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />)}
-                            {editAudit
-                              ? <textarea defaultValue={a.note ?? ''} rows={2} placeholder="Auditor remark…" onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.note ?? '')) { patch(c.ref, { note: e.target.value }); run(() => setCriterionNote(applicationId, c.ref, e.target.value)) } }} className="mt-1.5 w-full text-xs px-2 py-1.5 rounded-lg outline-none resize-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
-                              : a.note && <p className="text-xs mt-1" style={{ color: '#64748B' }}>{a.note}</p>}
-                          </td>
-                        )}
-                      </tr>
-                    )
-                  })}
+                  {g.rows.map((c) => (
+                    <Row key={c.ref} c={c} a={rows[c.ref] ?? BLANK} docsList={docsByRef.get(c.ref) ?? EMPTY_DOCS} thread={msgsByRef.get(c.ref) ?? EMPTY_MSGS}
+                      year={year} applicationId={applicationId} applicantId={applicantId}
+                      estCanEdit={estCanEdit} isOperator={isOperator} canComment={canComment} editAudit={editAudit} showExternal={showExternal}
+                      onSelf={onSelf} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onPost={onPost} />
+                  ))}
                 </Fragment>
               ))}
               {filtered.length === 0 && (
