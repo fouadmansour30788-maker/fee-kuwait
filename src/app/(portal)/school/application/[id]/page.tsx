@@ -23,7 +23,7 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
   const s = statusMeta(app.status)
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
+    <div className="space-y-5">
       <div>
         <Link href="/school/application" className="inline-flex items-center gap-1.5 text-sm font-medium mb-4" style={{ color: '#5B7568' }}>
           <ArrowLeft className="w-4 h-4" /> Applications

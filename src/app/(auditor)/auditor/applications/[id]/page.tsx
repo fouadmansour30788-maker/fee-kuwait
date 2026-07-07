@@ -20,7 +20,7 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
   const s = statusMeta(app.status)
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
+    <div className="space-y-5">
       <div>
         <Link href="/auditor/applications" className="inline-flex items-center gap-1.5 text-sm font-medium mb-4" style={{ color: '#64748B' }}>
           <ArrowLeft className="w-4 h-4" /> Assigned Applications
