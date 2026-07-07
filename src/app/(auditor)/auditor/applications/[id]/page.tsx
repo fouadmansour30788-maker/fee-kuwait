@@ -53,7 +53,7 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
         <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
         <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>{inProgress ? 'Grade the Audit column (Pass / Not pass) and add remarks/comments per indicator. Your comments stay hidden from the establishment. Saved automatically.' : 'This audit has been submitted — results are locked.'}</p>
         {criteria.length > 0
-          ? <CriteriaBoard role="auditor" applicationId={params.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} />
+          ? <CriteriaBoard role="auditor" applicationId={params.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
       </div>
 

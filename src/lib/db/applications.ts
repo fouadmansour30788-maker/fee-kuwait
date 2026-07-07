@@ -79,6 +79,7 @@ export const ESTABLISHMENT_EDITABLE_STATUSES = ['new', 'under_review', 'document
 
 export interface AppDetail {
   id: string
+  applicant_id: string
   programme: string
   status: string
   entity_type: string | null
@@ -96,7 +97,7 @@ export async function getApplication(id: string): Promise<AppDetail | null> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('applications')
-    .select('id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, cb_decision, cb_note, revision_deadline, applicant:users!applicant_id(email, name_en, name_ar)')
+    .select('id, applicant_id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, cb_decision, cb_note, revision_deadline, applicant:users!applicant_id(email, name_en, name_ar)')
     .eq('id', id)
     .single()
   if (error) { console.error('getApplication:', error.message); return null }
