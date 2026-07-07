@@ -3,6 +3,7 @@ import { listUsers } from '@/lib/db/staff'
 import { ROLE_LABEL } from '@/lib/roles'
 import { getCurrentUser } from '@/lib/auth-server'
 import RoleSelect from '@/components/staff/RoleSelect'
+import AddTeamMember from '@/components/staff/AddTeamMember'
 
 export default async function StaffPage() {
   const [users, me] = await Promise.all([listUsers(), getCurrentUser()])
@@ -14,9 +15,11 @@ export default async function StaffPage() {
         <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>{users.length} users · assign roles (auditor, certification body, operator…)</p>
       </div>
 
+      <AddTeamMember />
+
       <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1E40AF' }}>
         <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-        <p>Create accounts in Supabase → Authentication (or have them self-register), then set the right role here. Changing a role takes effect on the person&apos;s next sign-in.</p>
+        <p>Add members above, or change anyone&apos;s role below. Role changes take effect on the person&apos;s next sign-in.</p>
       </div>
 
       <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
