@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, BookOpen,
+  LayoutDashboard, FileText, BookOpen, Wrench,
   Bell, Award, Leaf, Menu, X, LogOut,
   ChevronRight,
 } from 'lucide-react'
@@ -17,6 +17,7 @@ const SCHOOL_NAV = [
   { href: '/school/dashboard',    icon: LayoutDashboard, en: 'Dashboard',    ar: 'لوحة التحكم' },
   { href: '/school/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
   { href: '/school/certification',icon: Award,           en: 'Certification', ar: 'الشهادة' },
+  { href: '/school/resources',    icon: Wrench,          en: 'Resources',   ar: 'الأدوات' },
 ]
 
 // Only real (DB-backed) screens. The mock ones (Criteria & Audit, Documents,
@@ -26,6 +27,7 @@ const BUSINESS_NAV = [
   { href: '/business/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
   { href: '/business/certification',icon: Award,           en: 'Certification', ar: 'الشهادة' },
   { href: '/business/rulebook',     icon: BookOpen,        en: 'Rulebook', ar: 'دليل المعايير' },
+  { href: '/business/resources',    icon: Wrench,          en: 'Resources', ar: 'الأدوات' },
 ]
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileCheck, ClipboardList, Users, Award, FileBarChart, Newspaper, UserCog, Leaf, Menu, X,
+  LayoutDashboard, FileCheck, ClipboardList, Users, Award, FileBarChart, Newspaper, UserCog, BookOpen, Leaf, Menu, X,
   LogOut, ChevronRight, Bell, Search,
   MessageSquare, Paperclip, Send, RotateCcw,
 } from 'lucide-react'
@@ -29,6 +29,7 @@ const ADMIN_NAV = [
   { href: '/certificates', icon: Award,           label: 'Certificates' },
   { href: '/reports',      icon: FileBarChart,    label: 'Reports' },
   { href: '/content',      icon: Newspaper,       label: 'Content' },
+  { href: '/resources',    icon: BookOpen,        label: 'Resources' },
   { href: '/staff',        icon: UserCog,         label: 'Team' },
 ]
 
