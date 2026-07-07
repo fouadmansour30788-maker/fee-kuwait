@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import { Paperclip, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-// Compact evidence uploader tied to a single criterion. Uploads straight to
-// Storage (RLS: applicants write their own) and records the criterion_ref.
-export default function CriterionUpload({ applicationId, criterionRef }: { applicationId: string; criterionRef: string }) {
+// Compact evidence uploader tied to a single criterion (and year). Uploads
+// straight to Storage (RLS: applicants write their own) and records the
+// criterion_ref + year.
+export default function CriterionUpload({ applicationId, criterionRef, year }: { applicationId: string; criterionRef: string; year?: number }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -23,14 +24,15 @@ export default function CriterionUpload({ applicationId, criterionRef }: { appli
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setError('Not signed in'); setBusy(false); return }
 
+    const yr = year ?? new Date().getFullYear()
     const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-    const path = `${applicationId}/${criterionRef}/${Date.now()}-${safe}`
+    const path = `${applicationId}/${criterionRef}/${yr}/${Date.now()}-${safe}`
 
     const up = await supabase.storage.from('application-docs').upload(path, file)
     if (up.error) { setError(up.error.message); setBusy(false); return }
 
     const ins = await supabase.from('application_documents').insert({
-      application_id: applicationId, uploaded_by: user.id, criterion_ref: criterionRef,
+      application_id: applicationId, uploaded_by: user.id, criterion_ref: criterionRef, year: yr,
       name: file.name, path, size: file.size, mime_type: file.type || null,
     })
     if (ins.error) { setError(ins.error.message); setBusy(false); return }

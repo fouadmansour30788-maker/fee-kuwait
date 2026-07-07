@@ -69,6 +69,8 @@ export default function CriteriaBoard({
   const [open, setOpen] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [area, setArea] = useState('all')
+  const currentYear = new Date().getFullYear()
+  const [year, setYear] = useState(currentYear)
   const [, start] = useTransition()
   const [error, setError] = useState('')
   const router = useRouter()
@@ -88,6 +90,11 @@ export default function CriteriaBoard({
     for (const d of docs) { if (!d.criterion_ref) continue; const arr = m.get(d.criterion_ref) ?? []; arr.push(d); m.set(d.criterion_ref, arr) }
     return m
   }, [docs])
+  const years = useMemo(() => {
+    const s = new Set<number>([currentYear])
+    for (const d of docs) if (d.year) s.add(d.year)
+    return Array.from(s).sort((a, b) => b - a)
+  }, [docs, currentYear])
 
   function postMessage(ref: string) {
     const body = (draft[ref] ?? '').trim()
@@ -112,7 +119,7 @@ export default function CriteriaBoard({
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
   const cols = 3 + 1 + (showExternal ? 1 : 0) + 1
   const evidenceCol = (ref: string) => {
-    const list = docsByRef.get(ref) ?? []
+    const list = (docsByRef.get(ref) ?? []).filter((d) => d.year === year || d.year == null)
     return (
       <div className="flex flex-col gap-1 items-start">
         {list.map((d) => (
@@ -120,7 +127,7 @@ export default function CriteriaBoard({
             <FileText className="w-3 h-3" /> <span className="max-w-[110px] truncate">{d.name}</span> <Download className="w-3 h-3" />
           </a>
         ))}
-        {canUpload ? <CriterionUpload applicationId={applicationId} criterionRef={ref} /> : (list.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>)}
+        {canUpload ? <CriterionUpload applicationId={applicationId} criterionRef={ref} year={year} /> : (list.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>)}
       </div>
     )
   }
@@ -141,6 +148,9 @@ export default function CriteriaBoard({
         <select value={area} onChange={(e) => setArea(e.target.value)} className="text-sm px-3 py-2 rounded-xl bg-white outline-none" style={{ border: '1px solid #E2E8F0', color: '#475569' }}>
           <option value="all">All areas</option>
           {areas.map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <select value={year} onChange={(e) => setYear(Number(e.target.value))} title="Evidence year" className="text-sm px-3 py-2 rounded-xl bg-white outline-none" style={{ border: '1px solid #E2E8F0', color: '#475569' }}>
+          {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 

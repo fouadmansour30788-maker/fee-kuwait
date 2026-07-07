@@ -8,6 +8,7 @@ export interface AppDoc {
   size: number | null
   created_at: string
   criterion_ref: string | null
+  year: number | null
   url: string | null
 }
 
@@ -22,7 +23,7 @@ export async function listApplicationDocuments(applicationId: string): Promise<A
   const supabase = createClient()
   const { data, error } = await supabase
     .from('application_documents')
-    .select('id, name, path, size, created_at, criterion_ref')
+    .select('id, name, path, size, created_at, criterion_ref, year')
     .eq('application_id', applicationId)
     .order('created_at', { ascending: false })
   if (error) { console.error('listApplicationDocuments:', error.message); return [] }
