@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { MapPin, School, Building2, Users } from 'lucide-react'
+import { KUWAIT_GOV_SHAPES, KUWAIT_VIEWBOX } from '@/lib/data/kuwaitGovernorates'
 
 export interface GovDatum {
   key: string
@@ -12,19 +13,9 @@ export interface GovDatum {
   active: number
 }
 
-// Schematic choropleth of Kuwait's six governorates — positioned to mirror the
-// real layout (Al Jahra NW, Al Asimah NE on the bay, Hawalli on the east coast,
-// Al Farwaniyah west-central, Mubarak Al-Kabeer central, Al Ahmadi across the
-// south). Pure SVG: interactive, themeable, no external tiles or dependencies.
-const REGIONS = [
-  { key: 'jahra',      label: 'Al Jahra',          x: 10,  y: 10,  w: 150, h: 130 },
-  { key: 'capital',    label: 'Al Asimah',         x: 170, y: 10,  w: 120, h: 60 },
-  { key: 'hawalli',    label: 'Hawalli',           x: 170, y: 80,  w: 120, h: 60 },
-  { key: 'farwaniyah', label: 'Al Farwaniyah',     x: 10,  y: 150, w: 110, h: 110 },
-  { key: 'mubarak',    label: 'Mubarak Al-Kabeer', x: 130, y: 150, w: 160, h: 110 },
-  { key: 'ahmadi',     label: 'Al Ahmadi',         x: 10,  y: 270, w: 280, h: 60 },
-] as const
-
+// Real choropleth of Kuwait's six governorates — actual boundary outlines
+// (geoBoundaries KWT ADM1, OSM/ODbL, projected to SVG paths). Pure SVG:
+// interactive, themeable, no external tiles or dependencies.
 type Metric = 'total' | 'schools' | 'establishments'
 const METRICS: { key: Metric; label: string }[] = [
   { key: 'total', label: 'All members' },
@@ -86,22 +77,17 @@ export default function GovernorateMap({ data, other }: { data: GovDatum[]; othe
           ))}
         </div>
 
-        <svg viewBox="0 0 300 340" width="100%" height={300} preserveAspectRatio="xMidYMid meet" role="img" aria-label="Kuwait governorates map">
-          {/* Arabian Gulf accent */}
-          <rect x={293} y={10} width={7} height={250} rx={3} fill="#DBEAFE" />
-          {REGIONS.map((r) => {
-            const d = byKey[r.key]
+        <svg viewBox={KUWAIT_VIEWBOX} width="100%" height={340} preserveAspectRatio="xMidYMid meet" role="img" aria-label="Kuwait governorates map">
+          {KUWAIT_GOV_SHAPES.map((sh) => {
+            const d = byKey[sh.key]
             const val = metricVal(d)
-            const isSel = selected === r.key
-            const dark = textDark(r.key)
+            const isSel = selected === sh.key
+            const dark = textDark(sh.key)
             return (
-              <g key={r.key} onClick={() => setSelected(isSel ? null : r.key)} style={{ cursor: 'pointer' }}>
-                <title>{r.label}: {val}</title>
-                <rect x={r.x} y={r.y} width={r.w} height={r.h} rx={7}
-                  fill={fillFor(r.key)} stroke={isSel ? '#0F172A' : '#ffffff'} strokeWidth={isSel ? 3 : 3} />
-                <text x={r.x + r.w / 2} y={r.y + r.h / 2 - 3} textAnchor="middle" fontSize={9} fontWeight={600}
-                  fill={dark ? '#334155' : '#EAF7F0'} pointerEvents="none">{r.label}</text>
-                <text x={r.x + r.w / 2} y={r.y + r.h / 2 + 13} textAnchor="middle" fontSize={14} fontWeight={800}
+              <g key={sh.key} onClick={() => setSelected(isSel ? null : sh.key)} style={{ cursor: 'pointer' }}>
+                <title>{sh.label}: {val}</title>
+                <path d={sh.d} fill={fillFor(sh.key)} stroke={isSel ? '#0F172A' : '#ffffff'} strokeWidth={isSel ? 2 : 1} strokeLinejoin="round" />
+                <text x={sh.cx} y={sh.cy} textAnchor="middle" dominantBaseline="middle" fontSize={13} fontWeight={800}
                   fill={dark ? '#0F172A' : '#ffffff'} pointerEvents="none">{val}</text>
               </g>
             )
