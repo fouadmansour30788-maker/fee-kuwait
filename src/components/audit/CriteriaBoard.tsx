@@ -109,7 +109,8 @@ export default function CriteriaBoard({
   }, [filtered])
 
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
-  const cols = 8 + (showExternal ? 1 : 0)
+  const cols = 7 + (showExternal ? 1 : 0)
+  const canComment = estCanEdit || opCanComment
 
   function AttachCell({ list, canUpload, ref }: { list: AppDoc[]; canUpload: boolean; ref: string }) {
     return (
@@ -123,20 +124,30 @@ export default function CriteriaBoard({
       </div>
     )
   }
-  function CommentCell({ list, canPost, ref, tag }: { list: CriterionMessage[]; canPost: boolean; ref: string; tag: boolean }) {
+  function ChatCell({ thread, canPost, ref }: { thread: CriterionMessage[]; canPost: boolean; ref: string }) {
     return (
       <div className="space-y-1.5">
-        {list.map((m) => (
-          <div key={m.id} className="rounded-lg px-2 py-1.5" style={{ background: '#F8FAFC', border: '1px solid #EEF2F6' }}>
-            {tag && <span className="text-[9px] font-semibold mr-1" style={{ color: '#94A3B8' }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{m.visibility === 'auditor_internal' ? ' · internal' : ''}</span>}
-            <span className="text-xs" style={{ color: '#334155' }}>{m.body}</span>
-          </div>
-        ))}
-        {list.length === 0 && !canPost && <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>}
+        <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
+          {thread.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>No comments yet</span>}
+          {thread.map((m) => {
+            const isEst = m.author_role === 'establishment'
+            const internal = m.visibility === 'auditor_internal'
+            const bg = isEst ? '#ECFDF3' : internal ? '#FEF9EC' : '#EFF6FF'
+            const bd = isEst ? '#A7F3D0' : internal ? '#FDE68A' : '#BFDBFE'
+            return (
+              <div key={m.id} className={isEst ? 'flex justify-start' : 'flex justify-end'}>
+                <div className="rounded-lg px-2 py-1.5 max-w-[88%]" style={{ background: bg, border: `1px solid ${bd}` }}>
+                  <span className="text-[9px] font-semibold block" style={{ color: '#64748B' }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{internal ? ' · internal' : ''}</span>
+                  <span className="text-xs" style={{ color: '#334155' }}>{m.body}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
         {canPost && (
           <div className="flex items-center gap-1">
-            <input value={draft[ref] ?? ''} onChange={(e) => setDraft((d) => ({ ...d, [ref]: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') postMessage(ref) }} placeholder="Comment…"
-              className="flex-1 min-w-[90px] text-xs px-2 py-1.5 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+            <input value={draft[ref] ?? ''} onChange={(e) => setDraft((d) => ({ ...d, [ref]: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') postMessage(ref) }} placeholder="Message…"
+              className="flex-1 min-w-[110px] text-xs px-2 py-1.5 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
             <button onClick={() => postMessage(ref)} disabled={!(draft[ref] ?? '').trim()} className="p-1.5 rounded-lg text-white disabled:opacity-50" style={{ background: '#40916C' }}><Send className="w-3 h-3" /></button>
           </div>
         )}
@@ -177,10 +188,9 @@ export default function CriteriaBoard({
                 <th className={th}>Description</th>
                 <th className={th}>Self-assessment</th>
                 <th className={th}>Est. attachment</th>
-                <th className={th}>Est. comment</th>
                 <th className={th}>Operator feedback</th>
-                <th className={th}>Operator comment</th>
                 <th className={th}>Operator attachment</th>
+                <th className={th}>Comments</th>
                 {showExternal && <th className={th}>Audit</th>}
               </tr>
             </thead>
@@ -199,8 +209,6 @@ export default function CriteriaBoard({
                     const estDocs = list.filter((d) => applicantId && d.uploaded_by === applicantId)
                     const opDocs = list.filter((d) => !applicantId || d.uploaded_by !== applicantId)
                     const thread = msgs[c.ref] ?? []
-                    const estMsgs = thread.filter((m) => m.author_role === 'establishment')
-                    const opMsgs = thread.filter((m) => m.author_role !== 'establishment')
                     return (
                       <tr key={c.ref} className="align-top">
                         <td className="px-3 py-3 min-w-[180px]">
@@ -217,12 +225,11 @@ export default function CriteriaBoard({
                           {estCanEdit ? <Toggle value={a.applicantResult} onChange={(r) => { patch(c.ref, { applicantResult: r }); run(() => setApplicantResult(applicationId, c.ref, r)) }} /> : <Chip r={a.applicantResult} />}
                         </td>
                         <td className="px-3 py-3 min-w-[130px]"><AttachCell list={estDocs} canUpload={estCanEdit} ref={c.ref} /></td>
-                        <td className="px-3 py-3 min-w-[170px]"><CommentCell list={estMsgs} canPost={estCanEdit} ref={c.ref} tag={false} /></td>
                         <td className="px-3 py-3">
                           {isOperator ? <Toggle value={a.internal} onChange={(r) => { patch(c.ref, { internal: r }); run(() => setInternalResult(applicationId, c.ref, r)) }} /> : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Awaiting</span> : <Chip r={a.internal} />)}
                         </td>
-                        <td className="px-3 py-3 min-w-[170px]"><CommentCell list={opMsgs} canPost={opCanComment} ref={c.ref} tag /></td>
                         <td className="px-3 py-3 min-w-[130px]"><AttachCell list={opDocs} canUpload={isOperator} ref={c.ref} /></td>
+                        <td className="px-3 py-3 min-w-[220px]"><ChatCell thread={thread} canPost={canComment} ref={c.ref} /></td>
                         {showExternal && (
                           <td className="px-3 py-3 min-w-[150px]">
                             {editAudit
