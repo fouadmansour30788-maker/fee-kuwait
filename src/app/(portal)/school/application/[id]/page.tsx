@@ -5,6 +5,7 @@ import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_P
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listCriterionMessages } from '@/lib/db/messages'
+import { myEntity } from '@/lib/db/establishment'
 import { criteriaForProgramme } from '@/lib/criteria'
 import DocumentUpload from '@/components/documents/DocumentUpload'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
@@ -12,10 +13,10 @@ import CriteriaBoard from '@/components/audit/CriteriaBoard'
 export default async function SchoolApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments, messages] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id)])
+  const [docs, assessments, messages, ent] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity()])
   const criteria = criteriaForProgramme(app.programme)
   const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
-  const locked = !ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status)
+  const locked = !ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status) || ent?.status !== 'active'
   const generalDocs = docs.filter((d) => !d.criterion_ref)
   const s = statusMeta(app.status)
 

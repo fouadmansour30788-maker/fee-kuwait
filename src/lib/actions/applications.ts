@@ -27,6 +27,9 @@ export async function createApplication(programme: string): Promise<{ ok?: true;
   }
 
   const ent = await myEntity()
+  // Registration must be approved by the National Operator before applying (Step 1).
+  if (ent && ent.status !== 'active') return { error: 'Your registration is pending approval by the National Operator.' }
+
   const { error } = await supabase.from('applications').insert({
     applicant_id: user.id,
     entity_type: ent?.entityType ?? null,

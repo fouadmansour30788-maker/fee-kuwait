@@ -1,5 +1,6 @@
 import { Users, School, Building2 } from 'lucide-react'
 import { listMembers, MEMBER_STATUS_META } from '@/lib/db/members'
+import MemberActions from '@/components/members/MemberActions'
 
 export default async function MembersPage() {
   const members = await listMembers()
@@ -19,7 +20,7 @@ export default async function MembersPage() {
         <table className="w-full text-sm">
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-              {['Name', 'Kind', 'Type', 'Governorate', 'Status'].map((h) => (
+              {['Name', 'Kind', 'Type', 'Governorate', 'Status', 'Actions'].map((h) => (
                 <th key={h} className="text-left px-5 py-3.5 font-semibold text-xs uppercase tracking-wider" style={{ color: '#94A3B8' }}>{h}</th>
               ))}
             </tr>
@@ -43,6 +44,9 @@ export default async function MembersPage() {
                   <td className="px-5 py-3.5" style={{ color: '#334155' }}>{m.governorate ?? '—'}</td>
                   <td className="px-5 py-3.5">
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: st.bg, color: st.color }}>{st.label}</span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <MemberActions kind={m.kind} id={m.id} status={m.status} />
                   </td>
                 </tr>
               )

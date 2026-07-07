@@ -1,11 +1,12 @@
 import Link from 'next/link'
-import { FileText, Inbox, ChevronRight } from 'lucide-react'
+import { FileText, Inbox, ChevronRight, Clock } from 'lucide-react'
 import { myApplications, myEntity } from '@/lib/db/establishment'
 import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 import NewApplicationForm from '@/components/applications/NewApplicationForm'
 
 export default async function SchoolApplicationPage() {
   const [apps, ent] = await Promise.all([myApplications(), myEntity()])
+  const approved = ent?.status === 'active'
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -16,7 +17,17 @@ export default async function SchoolApplicationPage() {
         </p>
       </div>
 
-      <NewApplicationForm programmes={['eco-schools', 'leaf', 'yre']} appliedProgrammes={apps.map((a) => a.programme)} />
+      {approved ? (
+        <NewApplicationForm programmes={['eco-schools', 'leaf', 'yre']} appliedProgrammes={apps.map((a) => a.programme)} />
+      ) : (
+        <div className="rounded-2xl border p-5 flex items-start gap-3" style={{ borderColor: '#FDE68A', background: '#FEF9EC' }}>
+          <Clock className="w-5 h-5 flex-shrink-0" style={{ color: '#B45309' }} />
+          <div>
+            <h2 className="text-sm font-bold" style={{ color: '#854D0E' }}>Registration pending approval</h2>
+            <p className="text-xs mt-0.5" style={{ color: '#92400E' }}>Your registration is awaiting approval by the National Operator. You&apos;ll be able to start applications once it&apos;s approved.</p>
+          </div>
+        </div>
+      )}
 
       <div>
         <h2 className="text-base font-bold mb-3" style={{ color: '#0F2318' }}>Your applications</h2>
