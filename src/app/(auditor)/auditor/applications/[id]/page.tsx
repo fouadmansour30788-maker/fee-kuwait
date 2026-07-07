@@ -7,6 +7,7 @@ import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { criteriaForProgramme } from '@/lib/criteria'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
+import CompliancePanel from '@/components/audit/CompliancePanel'
 import AuditorSubmit from '@/components/audit/AuditorSubmit'
 
 export default async function AuditorApplicationDetail({ params }: { params: { id: string } }) {
@@ -55,6 +56,14 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
           ? <CriteriaBoard role="auditor" applicationId={params.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
       </div>
+
+      {criteria.length > 0 && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Certification requirement</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Auto-calculated from the programme criteria and your results.</p>
+          <CompliancePanel criteria={criteria} assessments={assessments} showProgress />
+        </div>
+      )}
 
       {/* Final report & submit */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>

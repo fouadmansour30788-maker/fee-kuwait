@@ -9,6 +9,7 @@ import { myEntity } from '@/lib/db/establishment'
 import { criteriaForProgramme } from '@/lib/criteria'
 import DocumentUpload from '@/components/documents/DocumentUpload'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
+import CompliancePanel from '@/components/audit/CompliancePanel'
 
 export default async function SchoolApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
@@ -55,6 +56,14 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Attach evidence and add a comment for each indicator, and see your reviewer&apos;s feedback.</p>
           <CriteriaBoard role="establishment" applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} />
+        </div>
+      )}
+
+      {criteria.length > 0 && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Certification requirement</h2>
+          <p className="text-xs mb-4" style={{ color: '#5B7568' }}>100% of imperative criteria plus a share of guidelines by certificate age.</p>
+          <CompliancePanel criteria={criteria} assessments={assessments} showProgress={showExternal} />
         </div>
       )}
 

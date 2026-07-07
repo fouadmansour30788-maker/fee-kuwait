@@ -7,6 +7,7 @@ import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { criteriaForProgramme } from '@/lib/criteria'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
+import CompliancePanel from '@/components/audit/CompliancePanel'
 import { recordCbDecision } from './actions'
 
 const DECISIONS = [
@@ -75,6 +76,14 @@ export default async function CbApplicationDetail({
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The full checklist with the establishment&apos;s evidence, the auditor&apos;s results and remarks, and comments. You can add comments; results are read-only.</p>
           <CriteriaBoard role="cb" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal />
+        </div>
+      )}
+
+      {criteria.length > 0 && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Certification requirement</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Auto-calculated from the programme criteria and the auditor&apos;s results.</p>
+          <CompliancePanel criteria={criteria} assessments={assessments} showProgress />
         </div>
       )}
 

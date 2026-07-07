@@ -10,6 +10,7 @@ import { criteriaForProgramme } from '@/lib/criteria'
 import AssignAuditor from '@/components/audit/AssignAuditor'
 import AssignCb from '@/components/audit/AssignCb'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
+import CompliancePanel from '@/components/audit/CompliancePanel'
 import ReopenRevision from '@/components/audit/ReopenRevision'
 import ReviewForm from './ReviewForm'
 
@@ -143,6 +144,15 @@ export default async function ApplicationDetail({
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The establishment&apos;s evidence and comments alongside your feedback per indicator. The auditor&apos;s result is shown once assessed. Saved automatically.</p>
           <CriteriaBoard role="admin" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal />
+        </div>
+      )}
+
+      {/* Certification requirement (auto-calculated) */}
+      {criteria.length > 0 && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Certification requirement</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Auto-calculated from the programme criteria and the audit results.</p>
+          <CompliancePanel criteria={criteria} assessments={assessments} showProgress />
         </div>
       )}
 
