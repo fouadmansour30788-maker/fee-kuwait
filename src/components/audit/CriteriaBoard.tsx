@@ -26,6 +26,22 @@ const BLANK: CriterionAssessment = { applicantResult: 'pending', internal: 'pend
 const EMPTY_DOCS: AppDoc[] = []
 const EMPTY_MSGS: CriterionMessage[] = []
 
+// Description can be long (full explanatory notes) — clamp with a show more/less toggle.
+function ExpandableText({ text }: { text: string }) {
+  const [open, setOpen] = useState(false)
+  const long = text.length > 160
+  return (
+    <div>
+      <p className="text-xs whitespace-pre-line" style={{ color: '#64748B', ...(open || !long ? {} : { display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }) }}>{text}</p>
+      {long && (
+        <button onClick={() => setOpen((o) => !o)} className="mt-0.5 text-[11px] font-semibold" style={{ color: '#40916C' }}>
+          {open ? 'Show less' : 'Show more'}
+        </button>
+      )}
+    </div>
+  )
+}
+
 function Chip({ r }: { r: Result }) {
   const m = RESULT_META[r]
   return (
@@ -98,7 +114,7 @@ const Row = memo(function Row({
           </span>
         </div>
       </td>
-      <td className="px-3 py-3 min-w-[220px] text-xs" style={{ color: '#64748B' }}>{c.description || '—'}</td>
+      <td className="px-3 py-3 min-w-[240px] max-w-[380px] align-top">{c.description ? <ExpandableText text={c.description} /> : <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>}</td>
       <td className="px-3 py-3">
         {estCanEdit ? <Toggle value={a.applicantResult} onChange={(r) => onSelf(c.ref, r)} /> : <Chip r={a.applicantResult} />}
       </td>
