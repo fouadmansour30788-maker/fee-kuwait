@@ -12,6 +12,8 @@ import type { AppDoc } from '@/lib/db/documents'
 import type { CriterionMessage } from '@/lib/db/messages'
 import type { AuditRecord } from '@/lib/db/audits'
 import { AUDIT_TYPE_META } from '@/lib/audit-types'
+import type { GKEvidence } from '@/lib/data/greenKeyEvidence'
+import { GK_EVIDENCE, UPLOAD_REQ_META } from '@/lib/data/greenKeyEvidence'
 
 type Result = 'pending' | 'pass' | 'no_pass'
 type Role = 'admin' | 'establishment' | 'auditor' | 'cb'
@@ -37,6 +39,28 @@ function ExpandableText({ text }: { text: string }) {
         <button onClick={() => setOpen((o) => !o)} className="mt-0.5 text-[11px] font-semibold" style={{ color: '#40916C' }}>
           {open ? 'Show less' : 'Show more'}
         </button>
+      )}
+    </div>
+  )
+}
+
+// Evidence-matrix hint: what to upload before the audit for this criterion.
+function EvidenceHint({ ev }: { ev: GKEvidence }) {
+  const [open, setOpen] = useState(false)
+  const meta = UPLOAD_REQ_META[ev.required]
+  const hasText = !!ev.upload
+  return (
+    <div className="mb-1.5">
+      <div className="flex items-center gap-1 flex-wrap">
+        {ev.required !== 'No' && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span>}
+        {hasText && <button onClick={() => setOpen((o) => !o)} className="text-[10px] font-semibold" style={{ color: '#40916C' }}>{open ? 'Hide' : 'What to upload'}</button>}
+      </div>
+      {open && hasText && (
+        <div className="mt-1 rounded-lg p-2 text-[11px] whitespace-pre-line" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569' }}>
+          {ev.upload}
+          {ev.format && <div className="mt-1 text-[10px]" style={{ color: '#94A3B8' }}>Format: {ev.format}</div>}
+          {ev.method && <div className="text-[10px]" style={{ color: '#94A3B8' }}>Audit method: {ev.method}</div>}
+        </div>
       )}
     </div>
   )
@@ -88,6 +112,7 @@ const Row = memo(function Row({
   onSelf, onOp, onAudit, onAuditNote, onPost,
 }: RowProps) {
   const [text, setText] = useState('')
+  const ev = GK_EVIDENCE[c.ref]
   const list = docsList.filter((d) => d.year === year || d.year == null)
   const estDocs = list.filter((d) => applicantId && d.uploaded_by === applicantId)
   function send() { const b = text.trim(); if (!b) return; onPost(c.ref, b); setText('') }
@@ -118,7 +143,10 @@ const Row = memo(function Row({
       <td className="px-3 py-3">
         {estCanEdit ? <Toggle value={a.applicantResult} onChange={(r) => onSelf(c.ref, r)} /> : <Chip r={a.applicantResult} />}
       </td>
-      <td className="px-3 py-3 min-w-[130px]"><Attach items={estDocs} canUpload={estCanEdit} /></td>
+      <td className="px-3 py-3 min-w-[150px] max-w-[260px] align-top">
+        {ev && (ev.required !== 'No' || ev.upload) && <EvidenceHint ev={ev} />}
+        <Attach items={estDocs} canUpload={estCanEdit} />
+      </td>
       <td className="px-3 py-3">
         {isOperator ? <Toggle value={a.internal} onChange={(r) => onOp(c.ref, r)} /> : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Awaiting</span> : <Chip r={a.internal} />)}
       </td>
