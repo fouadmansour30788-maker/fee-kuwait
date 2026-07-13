@@ -7,7 +7,9 @@ import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listAudits } from '@/lib/db/audits'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { myEntity } from '@/lib/db/establishment'
-import { criteriaForProgramme } from '@/lib/criteria'
+import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
+import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
+import PreScreeningBanner from '@/components/prescreening/PreScreeningBanner'
 import DocumentUpload from '@/components/documents/DocumentUpload'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
@@ -15,8 +17,9 @@ import CompliancePanel from '@/components/audit/CompliancePanel'
 export default async function SchoolApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments, messages, ent, audits] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity(), listAudits(params.id)])
-  const criteria = criteriaForProgramme(app.programme)
+  const [docs, assessments, messages, ent, audits, ps] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity(), listAudits(params.id), getPreScreening(params.id)])
+  const psApproved = preScreeningApproved(ps)
+  const criteria = app.programme === 'green-key' && psApproved && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
   const locked = !ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status) || ent?.status !== 'active'
   const generalDocs = docs.filter((d) => !d.criterion_ref)
@@ -45,6 +48,10 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
           )}
         </div>
       </div>
+
+      {app.programme === 'green-key' && (
+        <PreScreeningBanner href={`/school/pre-screening/${params.id}`} status={ps?.status ?? null} mainCategory={ps?.mainCategory ?? null} subCategories={ps?.subCategories} ineligibleReason={ps?.ineligibleReason} reviewNote={ps?.reviewNote} />
+      )}
 
       {app.status === 'revision' && (
         <div className="rounded-2xl border px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>

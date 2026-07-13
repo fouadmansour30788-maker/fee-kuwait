@@ -6,7 +6,8 @@ import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listAudits } from '@/lib/db/audits'
 import { listCriterionMessages } from '@/lib/db/messages'
-import { criteriaForProgramme } from '@/lib/criteria'
+import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
+import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 import { recordCbDecision } from './actions'
@@ -26,8 +27,8 @@ export default async function CbApplicationDetail({
   const { id } = params
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, assessments, messages, audits] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id)])
-  const criteria = criteriaForProgramme(app.programme)
+  const [docs, assessments, messages, audits, ps] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id), getPreScreening(id)])
+  const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const s = statusMeta(app.status)
   const decided = !!app.cb_decision && app.cb_decision !== 'pending'
 

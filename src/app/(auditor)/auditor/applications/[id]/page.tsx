@@ -6,7 +6,8 @@ import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/d
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listAudits } from '@/lib/db/audits'
 import { listCriterionMessages } from '@/lib/db/messages'
-import { criteriaForProgramme } from '@/lib/criteria'
+import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
+import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 import AuditorSubmit from '@/components/audit/AuditorSubmit'
@@ -14,8 +15,8 @@ import AuditorSubmit from '@/components/audit/AuditorSubmit'
 export default async function AuditorApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments, messages, audits] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), listAudits(params.id)])
-  const criteria = criteriaForProgramme(app.programme)
+  const [docs, assessments, messages, audits, ps] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), listAudits(params.id), getPreScreening(params.id)])
+  const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const reports = docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF).map((d) => ({ id: d.id, name: d.name, url: d.url }))
   const evidence = docs.filter((d) => d.criterion_ref !== AUDIT_REPORT_REF)
   const inProgress = app.status === 'audit'

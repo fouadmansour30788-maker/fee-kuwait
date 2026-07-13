@@ -7,7 +7,9 @@ import { listAuditors, applicationAuditor, listCertificationBodies, applicationC
 import { listAudits } from '@/lib/db/audits'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listCriterionMessages } from '@/lib/db/messages'
-import { criteriaForProgramme } from '@/lib/criteria'
+import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
+import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
+import PreScreeningReview from '@/components/prescreening/PreScreeningReview'
 import AssignAuditor from '@/components/audit/AssignAuditor'
 import ArchiveAudit from '@/components/audit/ArchiveAudit'
 import AssignCb from '@/components/audit/AssignCb'
@@ -26,11 +28,11 @@ export default async function ApplicationDetail({
   const sp = searchParams
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, auditors, currentAuditor, assessments, bodies, currentCb, messages, audits] = await Promise.all([
+  const [docs, auditors, currentAuditor, assessments, bodies, currentCb, messages, audits, ps] = await Promise.all([
     listApplicationDocuments(id), listAuditors(), applicationAuditor(id), listCriterionAssessments(id),
-    listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id),
+    listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id), getPreScreening(id),
   ])
-  const criteria = criteriaForProgramme(app.programme)
+  const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
 
   const s = statusMeta(app.status)
@@ -72,6 +74,11 @@ export default async function ApplicationDetail({
         <div className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm" style={{ background: '#ECFDF3', border: '1px solid #A7F3D0', color: '#047857' }}>
           <CheckCircle2 className="w-4 h-4" /> Application updated.
         </div>
+      )}
+
+      {/* Pre-screening review (National Operator) */}
+      {app.programme === 'green-key' && ps && (
+        <PreScreeningReview applicationId={id} answers={ps.answers} status={ps.status} mainCategory={ps.mainCategory} subCategories={ps.subCategories} />
       )}
 
       {/* Auditor assignment */}
