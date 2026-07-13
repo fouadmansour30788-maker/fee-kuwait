@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Gavel, Menu, X, LogOut, ChevronRight, Bell } from 'lucide-react'
+import { LayoutDashboard, Gavel, KeyRound, Menu, X, LogOut, ChevronRight, Bell } from 'lucide-react'
 import SignOutButton from '@/components/auth/SignOutButton'
 
 const NAV = [
   { href: '/cb/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/cb/registrations', icon: KeyRound, label: 'Registrations' },
 ]
 
 export default function CbLayout({ children }: { children: React.ReactNode }) {
