@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import SignOutButton from '@/components/auth/SignOutButton'
+import ChatWidget from '@/components/chat/ChatWidget'
 
 // Only real (DB-backed) screens. Mock ones (Action Plan, Activities, Journey,
 // Documents, Resources, Notifications) are hidden until wired.
@@ -138,6 +139,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           {children}
         </main>
       </div>
+      <ChatWidget />
     </div>
   )
 }

@@ -8,6 +8,7 @@ import {
   Menu, X, LogOut, ChevronRight, Bell,
 } from 'lucide-react'
 import SignOutButton from '@/components/auth/SignOutButton'
+import ChatWidget from '@/components/chat/ChatWidget'
 
 const NAV = [
   { href: '/auditor/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
@@ -111,6 +112,7 @@ export default function AuditorLayout({ children }: { children: React.ReactNode 
           {children}
         </main>
       </div>
+      <ChatWidget />
     </div>
   )
 }

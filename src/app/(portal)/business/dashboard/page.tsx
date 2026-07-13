@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, Plus, CheckCircle2, Clock, Inbox } from 'lucide-react'
+import { FileText, Plus, CheckCircle2, Clock, Inbox, KeyRound } from 'lucide-react'
 import { myApplications, myEntity } from '@/lib/db/establishment'
 import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 
@@ -20,6 +20,11 @@ export default async function BusinessDashboard() {
         <div>
           <h1 className="text-2xl font-bold" style={{ color: '#0F2318' }}>Welcome{ent ? `, ${ent.name}` : ''}</h1>
           <p className="text-sm mt-0.5" style={{ color: '#5B7568' }}>Your certification overview.</p>
+          {ent?.greenKeyNumber && (
+            <span className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>
+              <KeyRound className="w-3.5 h-3.5" /> Green Key #: {ent.greenKeyNumber}
+            </span>
+          )}
         </div>
         <Link href="/business/application" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
           <Plus className="w-4 h-4" /> New application

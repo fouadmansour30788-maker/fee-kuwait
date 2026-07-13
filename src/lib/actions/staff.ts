@@ -47,6 +47,24 @@ export async function addTeamMember(input: { email: string; name: string; role: 
   return { ok: true, tempPassword }
 }
 
+// Remove a team member's account entirely (auth user + profile via cascade).
+// Operator-gated; you can't remove yourself.
+export async function removeTeamMember(userId: string): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  if (user.id === userId) return { error: "You can't remove yourself" }
+  const gate = await requireOperator()
+  if (gate.error) return { error: gate.error }
+
+  const admin = createAdminClient()
+  const { error } = await admin.auth.admin.deleteUser(userId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/staff')
+  return { ok: true }
+}
+
 // Change a user's role. Gated to staff (admin/super_admin); the actual update
 // runs with the service role because updating *another* user's row is not
 // permitted by the users RLS.

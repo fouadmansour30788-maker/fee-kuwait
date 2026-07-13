@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Gavel, KeyRound, Menu, X, LogOut, ChevronRight, Bell } from 'lucide-react'
 import SignOutButton from '@/components/auth/SignOutButton'
+import ChatWidget from '@/components/chat/ChatWidget'
 
 const NAV = [
   { href: '/cb/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -89,6 +90,7 @@ export default function CbLayout({ children }: { children: React.ReactNode }) {
 
         <main className="flex-1 overflow-auto p-6 md:p-8">{children}</main>
       </div>
+      <ChatWidget />
     </div>
   )
 }

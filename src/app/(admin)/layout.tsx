@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { NO_NOTIFICATIONS, type NotificationKind } from '@/lib/data/audits'
 import SignOutButton from '@/components/auth/SignOutButton'
+import ChatWidget from '@/components/chat/ChatWidget'
 
 const NOTIF_ICON: Record<NotificationKind, typeof Bell> = {
   criterion_comment: MessageSquare,
@@ -169,6 +170,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </main>
       </div>
+      <ChatWidget />
     </div>
   )
 }

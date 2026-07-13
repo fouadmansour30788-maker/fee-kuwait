@@ -4,6 +4,7 @@ import { ROLE_LABEL } from '@/lib/roles'
 import { getCurrentUser } from '@/lib/auth-server'
 import RoleSelect from '@/components/staff/RoleSelect'
 import AddTeamMember from '@/components/staff/AddTeamMember'
+import RemoveMember from '@/components/staff/RemoveMember'
 
 export default async function StaffPage() {
   const [users, me] = await Promise.all([listUsers(), getCurrentUser()])
@@ -48,7 +49,12 @@ export default async function StaffPage() {
                     </div>
                   </td>
                   <td className="px-5 py-3.5" style={{ color: '#334155' }}>{ROLE_LABEL[u.role] ?? u.role}</td>
-                  <td className="px-5 py-3.5"><RoleSelect userId={u.id} role={u.role} disabled={isMe} /></td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <RoleSelect userId={u.id} role={u.role} disabled={isMe} />
+                      <RemoveMember userId={u.id} name={u.name_en || u.email} disabled={isMe} />
+                    </div>
+                  </td>
                   <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>{new Date(u.created_at).toLocaleDateString('en-GB')}</td>
                 </tr>
               )

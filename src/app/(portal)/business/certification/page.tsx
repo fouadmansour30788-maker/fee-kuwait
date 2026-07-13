@@ -1,4 +1,5 @@
-import { Award, Inbox, CheckCircle2 } from 'lucide-react'
+import Link from 'next/link'
+import { Award, Inbox, CheckCircle2, Download } from 'lucide-react'
 import { listCertificates, CERT_STATUS_META } from '@/lib/db/certificates'
 import { PROGRAMME_LABEL } from '@/lib/db/applications'
 
@@ -38,6 +39,9 @@ export default async function BusinessCertificationPage() {
                     <p style={{ color: '#1E293B' }}>{c.expires_at ? new Date(c.expires_at).toLocaleDateString('en-GB') : '—'}</p>
                   </div>
                 </div>
+                <Link href={`/certificate/${c.id}`} target="_blank" className="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold px-3.5 py-2 rounded-xl text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
+                  <Download className="w-4 h-4" /> Download certificate
+                </Link>
               </div>
             )
           })}
