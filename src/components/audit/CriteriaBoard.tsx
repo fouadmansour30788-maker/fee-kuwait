@@ -71,7 +71,6 @@ const Row = memo(function Row({
   const [text, setText] = useState('')
   const list = docsList.filter((d) => d.year === year || d.year == null)
   const estDocs = list.filter((d) => applicantId && d.uploaded_by === applicantId)
-  const opDocs = list.filter((d) => !applicantId || d.uploaded_by !== applicantId)
   function send() { const b = text.trim(); if (!b) return; onPost(c.ref, b); setText('') }
 
   const Attach = ({ items, canUpload }: { items: AppDoc[]; canUpload: boolean }) => (
@@ -104,7 +103,6 @@ const Row = memo(function Row({
       <td className="px-3 py-3">
         {isOperator ? <Toggle value={a.internal} onChange={(r) => onOp(c.ref, r)} /> : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Awaiting</span> : <Chip r={a.internal} />)}
       </td>
-      <td className="px-3 py-3 min-w-[130px]"><Attach items={opDocs} canUpload={isOperator} /></td>
       <td className="px-3 py-3 min-w-[220px]">
         <div className="space-y-1.5">
           <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
@@ -230,7 +228,7 @@ export default function CriteriaBoard({
   }, [filtered])
 
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
-  const cols = 7 + (showExternal ? 1 : 0)
+  const cols = 6 + (showExternal ? 1 : 0)
 
   return (
     <div className="space-y-3">
@@ -266,7 +264,6 @@ export default function CriteriaBoard({
                 <th className={th}>Self-assessment</th>
                 <th className={th}>Est. attachment</th>
                 <th className={th}>Operator feedback</th>
-                <th className={th}>Operator attachment</th>
                 <th className={th}>Comments</th>
                 {showExternal && <th className={th}>Audit</th>}
               </tr>
