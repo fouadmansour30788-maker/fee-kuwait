@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, BookOpen, Wrench,
+  LayoutDashboard, FileText, Wrench,
   Bell, Award, Leaf, Menu, X, LogOut,
   ChevronRight,
 } from 'lucide-react'
@@ -27,7 +27,6 @@ const BUSINESS_NAV = [
   { href: '/business/dashboard',    icon: LayoutDashboard, en: 'Dashboard',    ar: 'لوحة التحكم' },
   { href: '/business/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
   { href: '/business/certification',icon: Award,           en: 'Certification', ar: 'الشهادة' },
-  { href: '/business/rulebook',     icon: BookOpen,        en: 'Rulebook', ar: 'دليل المعايير' },
   { href: '/business/resources',    icon: Wrench,          en: 'Resources', ar: 'الأدوات' },
 ]
 
