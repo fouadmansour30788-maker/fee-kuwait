@@ -24,7 +24,17 @@ export default function CompliancePanel({
   const guideRefs = criteria.filter((c) => c.type === 'G')
   const imperative = impRefs.length
   const guideline = guideRefs.length
-  const passed = (ref: string) => assessments[ref]?.external === 'pass'
+  // Effective result per criterion: prefer the auditor's final result, then the
+  // operator's review, then the establishment's self-assessment — so progress is
+  // calculated automatically from whatever results are recorded so far.
+  const effective = (ref: string) => {
+    const a = assessments[ref]
+    if (!a) return 'pending'
+    if (a.external !== 'pending') return a.external
+    if (a.internal !== 'pending') return a.internal
+    return a.applicantResult ?? 'pending'
+  }
+  const passed = (ref: string) => effective(ref) === 'pass'
   const impPassed = impRefs.filter((c) => passed(c.ref)).length
   const guidePassed = guideRefs.filter((c) => passed(c.ref)).length
 
