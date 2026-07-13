@@ -4,10 +4,12 @@ import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, FileText, Download,
 import { getApplication, PROGRAMME_LABEL, statusMeta, OPERATOR_STATUSES, CB_DECISION_LABEL } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listAuditors, applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
+import { listAudits } from '@/lib/db/audits'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { criteriaForProgramme } from '@/lib/criteria'
 import AssignAuditor from '@/components/audit/AssignAuditor'
+import ArchiveAudit from '@/components/audit/ArchiveAudit'
 import AssignCb from '@/components/audit/AssignCb'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
@@ -24,9 +26,9 @@ export default async function ApplicationDetail({
   const sp = searchParams
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, auditors, currentAuditor, assessments, bodies, currentCb, messages] = await Promise.all([
+  const [docs, auditors, currentAuditor, assessments, bodies, currentCb, messages, audits] = await Promise.all([
     listApplicationDocuments(id), listAuditors(), applicationAuditor(id), listCriterionAssessments(id),
-    listCertificationBodies(), applicationCb(id), listCriterionMessages(id),
+    listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id),
   ])
   const criteria = criteriaForProgramme(app.programme)
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
@@ -81,6 +83,9 @@ export default async function ApplicationDetail({
         {auditors.length > 0
           ? <AssignAuditor applicationId={id} auditors={auditors} currentId={currentAuditor?.id ?? null} />
           : <p className="text-xs" style={{ color: '#94A3B8' }}>No auditor accounts yet — create one and set its role under Team.</p>}
+        <div className="mt-4">
+          <ArchiveAudit applicationId={id} />
+        </div>
       </div>
 
       {/* Certification Body assignment + decision */}
@@ -143,7 +148,7 @@ export default async function ApplicationDetail({
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The establishment&apos;s evidence and comments alongside your feedback per indicator. The auditor&apos;s result is shown once assessed. Saved automatically.</p>
-          <CriteriaBoard role="admin" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} />
+          <CriteriaBoard role="admin" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits} auditorName={currentAuditor?.name_en ?? currentAuditor?.email} />
         </div>
       )}
 

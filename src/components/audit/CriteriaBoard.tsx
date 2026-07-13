@@ -10,6 +10,8 @@ import type { CriterionRef } from '@/lib/criteria'
 import type { CriterionAssessment } from '@/lib/db/assessments'
 import type { AppDoc } from '@/lib/db/documents'
 import type { CriterionMessage } from '@/lib/db/messages'
+import type { AuditRecord } from '@/lib/db/audits'
+import { AUDIT_TYPE_META } from '@/lib/audit-types'
 
 type Result = 'pending' | 'pass' | 'no_pass'
 type Role = 'admin' | 'establishment' | 'auditor' | 'cb'
@@ -54,6 +56,7 @@ interface RowProps {
   canComment: boolean
   editAudit: boolean
   showExternal: boolean
+  selAudit: AuditRecord | null
   onSelf: (ref: string, r: Result) => void
   onOp: (ref: string, r: Result) => void
   onAudit: (ref: string, r: Result) => void
@@ -65,7 +68,7 @@ interface RowProps {
 // The comment input keeps its text in local state, so typing never re-renders the
 // rest of the (139-row) table.
 const Row = memo(function Row({
-  c, a, docsList, thread, year, applicationId, applicantId, estCanEdit, isOperator, canComment, editAudit, showExternal,
+  c, a, docsList, thread, year, applicationId, applicantId, estCanEdit, isOperator, canComment, editAudit, showExternal, selAudit,
   onSelf, onOp, onAudit, onAuditNote, onPost,
 }: RowProps) {
   const [text, setText] = useState('')
@@ -133,12 +136,21 @@ const Row = memo(function Row({
       </td>
       {showExternal && (
         <td className="px-3 py-3 min-w-[150px]">
-          {editAudit
-            ? <Toggle value={a.external} onChange={(r) => onAudit(c.ref, r)} />
-            : (a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />)}
-          {editAudit
-            ? <textarea defaultValue={a.note ?? ''} rows={2} placeholder="Auditor remark…" onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.note ?? '')) onAuditNote(c.ref, e.target.value) }} className="mt-1.5 w-full text-xs px-2 py-1.5 rounded-lg outline-none resize-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
-            : a.note && <p className="text-xs mt-1" style={{ color: '#64748B' }}>{a.note}</p>}
+          {selAudit ? (() => {
+            const snap = selAudit.results[c.ref]
+            const r = (snap?.result ?? 'pending') as Result
+            return <>
+              {r === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={r} />}
+              {snap?.note && <p className="text-xs mt-1" style={{ color: '#64748B' }}>{snap.note}</p>}
+            </>
+          })() : <>
+            {editAudit
+              ? <Toggle value={a.external} onChange={(r) => onAudit(c.ref, r)} />
+              : (a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />)}
+            {editAudit
+              ? <textarea defaultValue={a.note ?? ''} rows={2} placeholder="Auditor remark…" onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.note ?? '')) onAuditNote(c.ref, e.target.value) }} className="mt-1.5 w-full text-xs px-2 py-1.5 rounded-lg outline-none resize-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+              : a.note && <p className="text-xs mt-1" style={{ color: '#64748B' }}>{a.note}</p>}
+          </>}
         </td>
       )}
     </tr>
@@ -148,6 +160,7 @@ const Row = memo(function Row({
 // Shared collaborative criteria board.
 export default function CriteriaBoard({
   applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false, auditEditable = false, applicantId,
+  audits = [], auditorName,
 }: {
   applicationId: string
   criteria: CriterionRef[]
@@ -159,11 +172,15 @@ export default function CriteriaBoard({
   locked?: boolean
   auditEditable?: boolean
   applicantId?: string
+  audits?: AuditRecord[]
+  auditorName?: string | null
 }) {
   const [rows, setRows] = useState(assessments)
   const [msgs, setMsgs] = useState(messages)
   const [search, setSearch] = useState('')
   const [area, setArea] = useState('all')
+  const [auditId, setAuditId] = useState('')
+  const selAudit = useMemo(() => audits.find((a) => a.id === auditId) ?? null, [audits, auditId])
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
   const [, start] = useTransition()
@@ -250,7 +267,22 @@ export default function CriteriaBoard({
         <select value={year} onChange={(e) => setYear(Number(e.target.value))} title="Evidence year" className="text-sm px-3 py-2 rounded-xl bg-white outline-none" style={{ border: '1px solid #E2E8F0', color: '#475569' }}>
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
+        {showExternal && audits.length > 0 && (
+          <select value={auditId} onChange={(e) => setAuditId(e.target.value)} title="Audit" className="text-sm px-3 py-2 rounded-xl bg-white outline-none" style={{ border: '1px solid #E2E8F0', color: '#475569' }}>
+            <option value="">Live audit{auditorName ? ` · ${auditorName}` : ''}</option>
+            {audits.map((au) => <option key={au.id} value={au.id}>{AUDIT_TYPE_META[au.type].label} {au.period}{au.auditorName ? ` · ${au.auditorName}` : ''}</option>)}
+          </select>
+        )}
       </div>
+
+      {selAudit && (
+        <div className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs" style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', color: '#475569' }}>
+          <span className="font-semibold" style={{ color: '#1B4332' }}>{AUDIT_TYPE_META[selAudit.type].label} audit {selAudit.period}</span>
+          <span style={{ color: '#94A3B8' }}>· {AUDIT_TYPE_META[selAudit.type].cadence}</span>
+          {selAudit.auditorName && <span>· Auditor: <span className="font-semibold" style={{ color: '#334155' }}>{selAudit.auditorName}</span></span>}
+          <span className="ml-auto" style={{ color: '#94A3B8' }}>Read-only archived results</span>
+        </div>
+      )}
 
       {error && <p className="flex items-center gap-1.5 text-xs" style={{ color: '#E53E3E' }}><AlertCircle className="w-3.5 h-3.5" /> {error}</p>}
 
@@ -265,7 +297,7 @@ export default function CriteriaBoard({
                 <th className={th}>Est. attachment</th>
                 <th className={th}>Operator feedback</th>
                 <th className={th}>Comments</th>
-                {showExternal && <th className={th}>Audit</th>}
+                {showExternal && <th className={th}>{selAudit ? `${AUDIT_TYPE_META[selAudit.type].label} audit ${selAudit.period}` : 'Audit'}</th>}
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: '#F1F5F9' }}>
@@ -280,7 +312,7 @@ export default function CriteriaBoard({
                   {g.rows.map((c) => (
                     <Row key={c.ref} c={c} a={rows[c.ref] ?? BLANK} docsList={docsByRef.get(c.ref) ?? EMPTY_DOCS} thread={msgsByRef.get(c.ref) ?? EMPTY_MSGS}
                       year={year} applicationId={applicationId} applicantId={applicantId}
-                      estCanEdit={estCanEdit} isOperator={isOperator} canComment={canComment} editAudit={editAudit} showExternal={showExternal}
+                      estCanEdit={estCanEdit} isOperator={isOperator} canComment={canComment} editAudit={editAudit} showExternal={showExternal} selAudit={selAudit}
                       onSelf={onSelf} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onPost={onPost} />
                   ))}
                 </Fragment>

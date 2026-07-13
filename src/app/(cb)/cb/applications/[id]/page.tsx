@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Calendar, Building2, FileText, Download, Inbox, Gavel,
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
+import { listAudits } from '@/lib/db/audits'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { criteriaForProgramme } from '@/lib/criteria'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
@@ -25,7 +26,7 @@ export default async function CbApplicationDetail({
   const { id } = params
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, assessments, messages] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id)])
+  const [docs, assessments, messages, audits] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id)])
   const criteria = criteriaForProgramme(app.programme)
   const s = statusMeta(app.status)
   const decided = !!app.cb_decision && app.cb_decision !== 'pending'
@@ -75,7 +76,7 @@ export default async function CbApplicationDetail({
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The full checklist with the establishment&apos;s evidence, the auditor&apos;s results and remarks, and comments. You can add comments; results are read-only.</p>
-          <CriteriaBoard role="cb" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} />
+          <CriteriaBoard role="cb" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits} />
         </div>
       )}
 

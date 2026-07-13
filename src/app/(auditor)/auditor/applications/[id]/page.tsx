@@ -4,6 +4,7 @@ import { ArrowLeft, FileText, Download, Inbox, Mail, Building2, Calendar } from 
 import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
+import { listAudits } from '@/lib/db/audits'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { criteriaForProgramme } from '@/lib/criteria'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
@@ -13,7 +14,7 @@ import AuditorSubmit from '@/components/audit/AuditorSubmit'
 export default async function AuditorApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments, messages] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id)])
+  const [docs, assessments, messages, audits] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), listAudits(params.id)])
   const criteria = criteriaForProgramme(app.programme)
   const reports = docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF).map((d) => ({ id: d.id, name: d.name, url: d.url }))
   const evidence = docs.filter((d) => d.criterion_ref !== AUDIT_REPORT_REF)
@@ -53,7 +54,7 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
         <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
         <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>{inProgress ? 'Grade the Audit column (Pass / Not pass) and add remarks/comments per indicator. Your comments stay hidden from the establishment. Saved automatically.' : 'This audit has been submitted — results are locked.'}</p>
         {criteria.length > 0
-          ? <CriteriaBoard role="auditor" applicationId={params.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} />
+          ? <CriteriaBoard role="auditor" applicationId={params.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
       </div>
 

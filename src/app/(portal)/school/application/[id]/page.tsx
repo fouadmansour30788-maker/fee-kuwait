@@ -4,6 +4,7 @@ import { ArrowLeft, FileText, Download, Inbox } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES, ESTABLISHMENT_EDITABLE_STATUSES } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
+import { listAudits } from '@/lib/db/audits'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { myEntity } from '@/lib/db/establishment'
 import { criteriaForProgramme } from '@/lib/criteria'
@@ -14,7 +15,7 @@ import CompliancePanel from '@/components/audit/CompliancePanel'
 export default async function SchoolApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments, messages, ent] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity()])
+  const [docs, assessments, messages, ent, audits] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity(), listAudits(params.id)])
   const criteria = criteriaForProgramme(app.programme)
   const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
   const locked = !ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status) || ent?.status !== 'active'
@@ -55,7 +56,7 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Attach evidence and add a comment for each indicator, and see your reviewer&apos;s feedback.</p>
-          <CriteriaBoard role="establishment" applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} />
+          <CriteriaBoard role="establishment" applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} audits={audits} />
         </div>
       )}
 
