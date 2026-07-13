@@ -8,17 +8,17 @@ export interface MyApp {
   review_deadline: string | null
 }
 
-export interface MyEntity { entityType: 'school' | 'business'; entityId: string; name: string; status: string | null }
+export interface MyEntity { entityType: 'school' | 'business'; entityId: string; name: string; status: string | null; greenKeyNumber: string | null }
 
 // The signed-in user's school or establishment record (RLS: owner sees own).
 export async function myEntity(): Promise<MyEntity | null> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
-  const { data: biz } = await supabase.from('businesses').select('id, name_en, status').eq('user_id', user.id).maybeSingle()
-  if (biz) return { entityType: 'business', entityId: biz.id, name: biz.name_en, status: biz.status }
-  const { data: sch } = await supabase.from('schools').select('id, name_en, status').eq('user_id', user.id).maybeSingle()
-  if (sch) return { entityType: 'school', entityId: sch.id, name: sch.name_en, status: sch.status }
+  const { data: biz } = await supabase.from('businesses').select('id, name_en, status, green_key_number').eq('user_id', user.id).maybeSingle()
+  if (biz) return { entityType: 'business', entityId: biz.id, name: biz.name_en, status: biz.status, greenKeyNumber: biz.green_key_number }
+  const { data: sch } = await supabase.from('schools').select('id, name_en, status, green_key_number').eq('user_id', user.id).maybeSingle()
+  if (sch) return { entityType: 'school', entityId: sch.id, name: sch.name_en, status: sch.status, greenKeyNumber: sch.green_key_number }
   return null
 }
 

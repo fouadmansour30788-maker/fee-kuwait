@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, Inbox, ChevronRight, Clock } from 'lucide-react'
+import { FileText, Inbox, ChevronRight, Clock, KeyRound } from 'lucide-react'
 import { myApplications, myEntity } from '@/lib/db/establishment'
 import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 import NewApplicationForm from '@/components/applications/NewApplicationForm'
@@ -15,6 +15,11 @@ export default async function BusinessApplicationPage() {
         <p className="text-sm mt-0.5" style={{ color: '#5B7568' }}>
           {ent ? ent.name : 'Your establishment'} · {apps.length} {apps.length === 1 ? 'application' : 'applications'}
         </p>
+        {ent?.greenKeyNumber && (
+          <span className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>
+            <KeyRound className="w-3.5 h-3.5" /> Green Key #: {ent.greenKeyNumber}
+          </span>
+        )}
       </div>
 
       {approved ? (
