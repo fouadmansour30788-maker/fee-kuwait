@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileCheck, ClipboardList, Users, Award, FileBarChart, Newspaper, UserCog, BookOpen, Leaf, Menu, X,
-  LogOut, ChevronRight, Bell, Search,
+  LogOut, ChevronRight, Bell, Search, Radar,
   MessageSquare, Paperclip, Send, RotateCcw,
 } from 'lucide-react'
 import { NO_NOTIFICATIONS, type NotificationKind } from '@/lib/data/audits'
@@ -26,6 +26,7 @@ const ADMIN_NAV = [
   { href: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/applications', icon: FileCheck,       label: 'Applications' },
   { href: '/tracker',      icon: ClipboardList,   label: 'Tracker' },
+  { href: '/surveillance', icon: Radar,           label: 'Surveillance' },
   { href: '/members',      icon: Users,           label: 'Members' },
   { href: '/certificates', icon: Award,           label: 'Certificates' },
   { href: '/reports',      icon: FileBarChart,    label: 'Reports' },

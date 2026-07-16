@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileText, Wrench,
   Bell, Award, Leaf, Menu, X, LogOut,
-  ChevronRight,
+  ChevronRight, Radar,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import SignOutButton from '@/components/auth/SignOutButton'
@@ -17,6 +17,7 @@ import ChatWidget from '@/components/chat/ChatWidget'
 const SCHOOL_NAV = [
   { href: '/school/dashboard',    icon: LayoutDashboard, en: 'Dashboard',    ar: 'لوحة التحكم' },
   { href: '/school/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
+  { href: '/school/surveillance', icon: Radar,           en: 'Surveillance', ar: 'المراقبة' },
   { href: '/school/certification',icon: Award,           en: 'Certification', ar: 'الشهادة' },
   { href: '/school/resources',    icon: Wrench,          en: 'Resources',   ar: 'الأدوات' },
 ]
@@ -26,6 +27,7 @@ const SCHOOL_NAV = [
 const BUSINESS_NAV = [
   { href: '/business/dashboard',    icon: LayoutDashboard, en: 'Dashboard',    ar: 'لوحة التحكم' },
   { href: '/business/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
+  { href: '/business/surveillance', icon: Radar,           en: 'Surveillance', ar: 'المراقبة' },
   { href: '/business/certification',icon: Award,           en: 'Certification', ar: 'الشهادة' },
   { href: '/business/resources',    icon: Wrench,          en: 'Resources', ar: 'الأدوات' },
 ]
