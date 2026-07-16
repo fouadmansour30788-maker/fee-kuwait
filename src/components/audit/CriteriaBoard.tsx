@@ -29,17 +29,28 @@ const EMPTY_DOCS: AppDoc[] = []
 const EMPTY_MSGS: CriterionMessage[] = []
 
 // Description can be long (full explanatory notes) — clamp with a show more/less toggle.
-function ExpandableText({ text }: { text: string }) {
-  const [open, setOpen] = useState(false)
-  const long = text.length > 160
+function ExpandableText({ text, onOpen }: { text: string; onOpen: () => void }) {
+  const preview = text.length > 150 ? text.slice(0, 150).trimEnd() + '…' : text
   return (
     <div>
-      <p className="text-xs whitespace-pre-line" style={{ color: '#64748B', ...(open || !long ? {} : { display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }) }}>{text}</p>
-      {long && (
-        <button onClick={() => setOpen((o) => !o)} className="mt-0.5 text-[11px] font-semibold" style={{ color: '#40916C' }}>
-          {open ? 'Show less' : 'Show more'}
-        </button>
-      )}
+      <p className="text-xs" style={{ color: '#64748B', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{preview}</p>
+      <button onClick={onOpen} className="mt-0.5 text-[11px] font-semibold" style={{ color: '#40916C' }}>View full description</button>
+    </div>
+  )
+}
+
+// Full-description modal (rendered once at board level).
+function DescModal({ title, refId, text, onClose }: { title: string; refId: string; text: string; onClose: () => void }) {
+  return (
+    <div onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.55)' }}>
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col" style={{ border: '1px solid #E2E8F0' }}>
+        <div className="flex items-start gap-3 px-5 py-4" style={{ borderBottom: '1px solid #F1F5F9' }}>
+          <span className="text-xs font-mono font-semibold mt-1" style={{ color: '#40916C' }}>{refId}</span>
+          <h3 className="flex-1 font-semibold leading-snug" style={{ color: '#0F2318' }}>{title}</h3>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100" style={{ color: '#64748B' }}><X className="w-5 h-5" /></button>
+        </div>
+        <div className="px-5 py-4 overflow-y-auto text-sm whitespace-pre-line" style={{ color: '#334155', lineHeight: 1.65 }}>{text}</div>
+      </div>
     </div>
   )
 }
@@ -102,6 +113,7 @@ interface RowProps {
   onAudit: (ref: string, r: Result) => void
   onAuditNote: (ref: string, note: string) => void
   onPost: (ref: string, body: string) => void
+  onDesc: (c: CriterionRef) => void
 }
 
 // One criterion row, memoized so an interaction only re-renders the affected row.
@@ -109,7 +121,7 @@ interface RowProps {
 // rest of the (139-row) table.
 const Row = memo(function Row({
   c, a, docsList, thread, year, applicationId, applicantId, estCanEdit, isOperator, canComment, editAudit, showExternal, selAudit,
-  onSelf, onOp, onAudit, onAuditNote, onPost,
+  onSelf, onOp, onAudit, onAuditNote, onPost, onDesc,
 }: RowProps) {
   const [text, setText] = useState('')
   const ev = GK_EVIDENCE[c.ref]
@@ -139,7 +151,7 @@ const Row = memo(function Row({
           </span>
         </div>
       </td>
-      <td className="px-3 py-3 min-w-[240px] max-w-[380px] align-top">{c.description ? <ExpandableText text={c.description} /> : <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>}</td>
+      <td className="px-3 py-3 min-w-[240px] max-w-[380px] align-top">{c.description ? <ExpandableText text={c.description} onOpen={() => onDesc(c)} /> : <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>}</td>
       <td className="px-3 py-3">
         {estCanEdit ? <Toggle value={a.applicantResult} onChange={(r) => onSelf(c.ref, r)} /> : <Chip r={a.applicantResult} />}
       </td>
@@ -225,6 +237,8 @@ export default function CriteriaBoard({
   const [area, setArea] = useState('all')
   const [auditId, setAuditId] = useState('')
   const selAudit = useMemo(() => audits.find((a) => a.id === auditId) ?? null, [audits, auditId])
+  const [descOf, setDescOf] = useState<CriterionRef | null>(null)
+  const onDesc = useCallback((c: CriterionRef) => setDescOf(c), [])
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
   const [, start] = useTransition()
@@ -357,7 +371,7 @@ export default function CriteriaBoard({
                     <Row key={c.ref} c={c} a={rows[c.ref] ?? BLANK} docsList={docsByRef.get(c.ref) ?? EMPTY_DOCS} thread={msgsByRef.get(c.ref) ?? EMPTY_MSGS}
                       year={year} applicationId={applicationId} applicantId={applicantId}
                       estCanEdit={estCanEdit} isOperator={isOperator} canComment={canComment} editAudit={editAudit} showExternal={showExternal} selAudit={selAudit}
-                      onSelf={onSelf} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onPost={onPost} />
+                      onSelf={onSelf} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onPost={onPost} onDesc={onDesc} />
                   ))}
                 </Fragment>
               ))}
@@ -368,6 +382,8 @@ export default function CriteriaBoard({
           </table>
         </div>
       </div>
+
+      {descOf && <DescModal refId={descOf.ref} title={descOf.title} text={descOf.description ?? ''} onClose={() => setDescOf(null)} />}
     </div>
   )
 }

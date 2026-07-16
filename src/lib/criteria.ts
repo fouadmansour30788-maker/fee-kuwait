@@ -1,6 +1,7 @@
 import { GK_CRITERIA, GK_SECTIONS, isImperativeFor } from '@/lib/data/greenKeyCriteria'
 import type { EstablishmentCategory } from '@/lib/data/greenKeyCriteria'
 import { GK_FULL_NOTES } from '@/lib/data/greenKeyCriteriaNotes'
+import { GK_PDF_NOTES } from '@/lib/data/greenKeyPdfNotes'
 import { BF_CRITERIA, BF_SECTIONS } from '@/lib/data/blueFlagCriteria'
 
 // Minimal shape needed to filter criteria (satisfied by both the pre-screening
@@ -19,7 +20,7 @@ export function criteriaForProgramme(programme: string): CriterionRef[] {
   if (programme === 'green-key') {
     return GK_CRITERIA.map((c) => ({
       ref: c.id, title: c.title, area: GK_SECTIONS.find((s) => s.n === c.section)?.title ?? '',
-      description: GK_FULL_NOTES[c.id] ?? c.note, type: c.type,
+      description: GK_PDF_NOTES[c.id] ?? GK_FULL_NOTES[c.id] ?? c.note, type: c.type,
     }))
   }
   if (programme === 'blue-flag') {
@@ -54,7 +55,7 @@ export function applicableCriteria(result: CriteriaFilter): CriterionRef[] {
       if (result.flags.under50Employees && (c.id === '1.6' || c.id === '1.10')) type = 'G'
       return {
         ref: c.id, title: c.title, area: GK_SECTIONS.find((s) => s.n === c.section)?.title ?? '',
-        description: GK_FULL_NOTES[c.id] ?? c.note, type,
+        description: GK_PDF_NOTES[c.id] ?? GK_FULL_NOTES[c.id] ?? c.note, type,
       }
     })
 }
