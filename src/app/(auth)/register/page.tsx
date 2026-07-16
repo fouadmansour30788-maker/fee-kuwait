@@ -12,6 +12,9 @@ import {
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import { createClient } from '@/lib/supabase/client'
+import { PS_QUESTIONS, PS_SERVICES, evaluatePreScreening } from '@/lib/data/preScreening'
+import type { PSAnswers, PSQuestion } from '@/lib/data/preScreening'
+import { ESTABLISHMENT_CATEGORIES } from '@/lib/data/greenKeyCriteria'
 
 // ── Types ──────────────────────────────────────────
 type InstitutionType = 'school' | 'business'
@@ -102,12 +105,19 @@ const PROGRAMMES = [
   },
 ]
 
-const STEPS = [
-  { id: 'account',     en: 'Account',     ar: 'الحساب' },
-  { id: 'institution', en: 'Institution', ar: 'المؤسسة' },
-  { id: 'programme',   en: 'Programme',   ar: 'البرنامج' },
-  { id: 'review',      en: 'Review',      ar: 'المراجعة' },
-]
+// Wizard step labels. Hospitality (business) registrations get a pre-screening
+// section first; schools go straight to Account.
+const STEP_LABELS: Record<string, { en: string; ar: string }> = {
+  prescreen:   { en: 'Eligibility',  ar: 'الأهلية' },
+  account:     { en: 'Account',      ar: 'الحساب' },
+  institution: { en: 'Institution',  ar: 'المؤسسة' },
+  programme:   { en: 'Programme',    ar: 'البرنامج' },
+  review:      { en: 'Review',       ar: 'المراجعة' },
+}
+// Pre-screening sections shown in the wizard (General information is collected by
+// the Account/Institution steps, so it is omitted here).
+const PS_WIZARD_SECTIONS = ['Eligibility', 'Main category', 'Scope & sub-categories', 'Operational filters', 'Declarations']
+const catLabel = (c: string) => ESTABLISHMENT_CATEGORIES.find((x) => x.code === c)?.label ?? c
 
 const EMPTY: FormData = {
   name: '', email: '', password: '', confirmPassword: '',
@@ -152,6 +162,64 @@ function RegisterForm() {
   // If no type param, show a type selector before step 0
   const [typeChosen, setTypeChosen] = useState(!!typeParam)
 
+  // Pre-screening (hospitality only) — collected as the first wizard section.
+  const [ps, setPs] = useState<PSAnswers>({})
+  // Pre-screening applies to Green Key (hospitality). Gate on the Green Key entry
+  // so the step order stays stable through the wizard; other business
+  // registrations (e.g. Blue Flag beaches) skip it and can pre-screen later.
+  const hasPreScreen = institutionType === 'business' && progParam === 'green-key'
+  const flow: string[] = [...(hasPreScreen ? ['prescreen'] : []), 'account', 'institution', 'programme', 'review']
+  const stepId = flow[step] ?? 'review'
+  const psResult = evaluatePreScreening(ps)
+  const psVisible = PS_QUESTIONS.filter((q) => PS_WIZARD_SECTIONS.includes(q.section) && (!q.showIf || q.showIf(ps)))
+  const psComplete = psVisible.every((q) => {
+    const v = ps[q.id]
+    if (q.field === 'checkbox') return v === true
+    if (q.field === 'multiservice') return true
+    return v !== undefined && v !== '' && v !== null
+  }) && psResult.eligible === true
+  const setPsAnswer = (id: string, v: string | string[] | boolean) => { setPs((p) => ({ ...p, [id]: v })); setErrors((e) => ({ ...e, general: '' })) }
+  const togglePsService = (val: string) => {
+    const cur = Array.isArray(ps.q_services) ? ps.q_services : []
+    setPsAnswer('q_services', cur.includes(val) ? cur.filter((x) => x !== val) : [...cur, val])
+  }
+
+  function PsField({ q }: { q: PSQuestion }) {
+    if (q.field === 'yesno') return (
+      <div className="inline-flex items-center gap-1.5">
+        {(['yes', 'no'] as const).map((v) => {
+          const on = ps[q.id] === v
+          return (
+            <button key={v} type="button" onClick={() => setPsAnswer(q.id, v)} className="px-3.5 py-1.5 rounded-lg text-xs font-semibold"
+              style={on ? { background: v === 'yes' ? '#40916C' : '#DC2626', color: '#fff' } : { background: '#F4F9F5', color: v === 'yes' ? '#40916C' : '#DC2626', border: '1px solid #C8E6D0' }}>
+              {v === 'yes' ? (lang === 'ar' ? 'نعم' : 'Yes') : (lang === 'ar' ? 'لا' : 'No')}
+            </button>
+          )
+        })}
+      </div>
+    )
+    if (q.field === 'checkbox') return (
+      <label className="flex items-start gap-2 cursor-pointer">
+        <input type="checkbox" checked={ps[q.id] === true} onChange={(e) => setPsAnswer(q.id, e.target.checked)} className="mt-1 w-4 h-4 accent-green-700" />
+        <span className="text-sm" style={{ color: '#334155' }}>{q.text}</span>
+      </label>
+    )
+    if (q.field === 'multiservice') {
+      const cur = Array.isArray(ps.q_services) ? ps.q_services : []
+      return (
+        <div className="flex flex-col gap-1.5">
+          {PS_SERVICES.map((s) => (
+            <label key={s.value} className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: '#334155' }}>
+              <input type="checkbox" checked={cur.includes(s.value)} onChange={() => togglePsService(s.value)} className="w-4 h-4 accent-green-700" />{s.label}
+            </label>
+          ))}
+        </div>
+      )
+    }
+    const type = q.field === 'email' ? 'email' : 'text'
+    return <input type={type} value={(ps[q.id] as string) ?? ''} onChange={(e) => setPsAnswer(q.id, e.target.value)} className="input max-w-md" placeholder={q.field === 'country' ? (lang === 'ar' ? 'الدولة' : 'Country') : ''} />
+  }
+
   function set(key: keyof FormData, val: string) {
     setData(d => ({ ...d, [key]: val }))
     setErrors(e => ({ ...e, [key]: '' }))
@@ -163,11 +231,19 @@ function RegisterForm() {
   }
 
   // ── Validation ──────────────────────────────────
-  function validateStep(s: number): boolean {
+  function validateStep(s: string): boolean {
     const e: typeof errors = {}
     const required = (k: keyof FormData, msg: string) => { if (!data[k]) e[k] = msg }
 
-    if (s === 0) {
+    if (s === 'prescreen') {
+      if (!psComplete) {
+        e.general = psResult.eligible === false
+          ? (lang === 'ar' ? 'المنشأة غير مؤهلة بناءً على إجاباتك.' : 'Based on your answers, the establishment is not eligible.')
+          : (lang === 'ar' ? 'يرجى الإجابة على جميع أسئلة الأهلية.' : 'Please answer all eligibility questions.')
+      }
+    }
+
+    if (s === 'account') {
       required('name', lang === 'ar' ? 'الاسم مطلوب' : 'Name is required')
       required('email', lang === 'ar' ? 'البريد الإلكتروني مطلوب' : 'Email is required')
       if (data.email && !/^[^@]+@[^@]+\.[^@]+$/.test(data.email))
@@ -180,7 +256,7 @@ function RegisterForm() {
       required('confirmPassword', lang === 'ar' ? 'تأكيد كلمة المرور مطلوب' : 'Please confirm your password')
     }
 
-    if (s === 1) {
+    if (s === 'institution') {
       required('institutionName', lang === 'ar' ? 'اسم المؤسسة مطلوب' : 'Institution name is required')
       if (institutionType === 'school') {
         required('schoolType', lang === 'ar' ? 'نوع المدرسة مطلوب' : 'School type is required')
@@ -193,7 +269,7 @@ function RegisterForm() {
       required('contactPhone', lang === 'ar' ? 'رقم الهاتف مطلوب' : 'Phone number is required')
     }
 
-    if (s === 2) {
+    if (s === 'programme') {
       if (data.programmes.length === 0)
         e.programmes = lang === 'ar' ? 'يرجى اختيار برنامج واحد على الأقل' : 'Please select at least one programme'
     }
@@ -203,7 +279,7 @@ function RegisterForm() {
   }
 
   function next() {
-    if (!validateStep(step)) return
+    if (!validateStep(stepId)) return
     setDirection(1)
     setStep(s => s + 1)
   }
@@ -214,7 +290,7 @@ function RegisterForm() {
   }
 
   async function handleSubmit() {
-    if (!validateStep(3)) return
+    if (!validateStep('review')) return
     setSubmitting(true)
     setErrors(e => ({ ...e, general: '' }))
 
@@ -259,11 +335,21 @@ function RegisterForm() {
       }
       // One application per chosen programme (e.g. Green Key + Blue Flag).
       if (data.programmes.length > 0) {
-        await supabase.from('applications').insert(
+        const { data: createdApps } = await supabase.from('applications').insert(
           data.programmes.map((programme) => ({
             applicant_id: uid, entity_type: institutionType, entity_id: entityId, programme, status: 'new',
           }))
-        )
+        ).select('id, programme')
+
+        // Save the pre-screening (Stage 1) with the Green Key application.
+        const gk = createdApps?.find((a) => a.programme === 'green-key')
+        if (gk && hasPreScreen && psResult.mainCategory) {
+          await supabase.from('pre_screening').insert({
+            application_id: gk.id, answers: ps, eligible: psResult.eligible, ineligible_reason: psResult.ineligibleReason,
+            main_category: psResult.mainCategory, sub_categories: psResult.subCategories, flags: psResult.flags,
+            status: 'submitted', submitted_at: new Date().toISOString(),
+          })
+        }
       }
     }
 
@@ -367,8 +453,8 @@ function RegisterForm() {
 
       {/* Progress steps */}
       <div className="flex items-center mb-8 px-2">
-        {STEPS.map((s, i) => (
-          <div key={s.id} className="flex items-center flex-1 last:flex-none">
+        {flow.map((sid, i) => (
+          <div key={sid} className="flex items-center flex-1 last:flex-none">
             {/* Circle */}
             <div className="flex flex-col items-center gap-1.5">
               <div
@@ -383,11 +469,11 @@ function RegisterForm() {
               </div>
               <span className="text-[10px] font-semibold whitespace-nowrap hidden sm:block"
                 style={{ color: i === step ? '#74C69D' : 'rgba(255,255,255,0.3)' }}>
-                {lang === 'ar' ? s.ar : s.en}
+                {lang === 'ar' ? STEP_LABELS[sid].ar : STEP_LABELS[sid].en}
               </span>
             </div>
             {/* Connector */}
-            {i < STEPS.length - 1 && (
+            {i < flow.length - 1 && (
               <div className="flex-1 h-px mx-2 transition-colors duration-300"
                 style={{ background: i < step ? '#40916C' : 'rgba(255,255,255,0.08)' }} />
             )}
@@ -410,8 +496,52 @@ function RegisterForm() {
             className="p-8 md:p-10"
           >
 
+            {/* ── Pre-screening (hospitality) ─────── */}
+            {stepId === 'prescreen' && (
+              <div>
+                <h2 className="text-xl font-bold text-forest mb-1">{lang === 'ar' ? 'تقييم الأهلية المسبق' : 'Pre-screening'}</h2>
+                <p className="text-sm mb-6" style={{ color: '#5A6672' }}>
+                  {lang === 'ar' ? 'نحدّد أولاً أهليتك وفئة المفتاح الأخضر قبل التسجيل.' : "First, let's determine your eligibility and Green Key category before registration."}
+                </p>
+                <div className="space-y-6">
+                  {PS_WIZARD_SECTIONS.map((section) => {
+                    const qs = psVisible.filter((q) => q.section === section)
+                    if (!qs.length) return null
+                    return (
+                      <div key={section}>
+                        <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: '#40916C' }}>{section}</p>
+                        <div className="space-y-4">
+                          {qs.map((q) => (
+                            <div key={q.id}>
+                              {q.field !== 'checkbox' && <label className="block text-sm font-medium mb-1.5" style={{ color: '#1E293B' }}>{q.text}</label>}
+                              <PsField q={q} />
+                              {q.help && <p className="text-xs mt-1" style={{ color: '#94A3B8' }}>{q.help}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {/* Live result */}
+                  <div className="rounded-2xl p-4" style={{ background: '#F4F9F5', border: '1px solid #C8E6D0' }}>
+                    {psResult.eligible === false ? (
+                      <p className="text-sm font-medium" style={{ color: '#B91C1C' }}>{lang === 'ar' ? 'غير مؤهل: ' : 'Not eligible: '}{psResult.ineligibleReason}</p>
+                    ) : psResult.mainCategory ? (
+                      <div className="text-sm" style={{ color: '#334155' }}>
+                        <p className="font-semibold" style={{ color: '#047857' }}>{lang === 'ar' ? 'يبدو مؤهلاً للمفتاح الأخضر.' : 'Seems eligible for Green Key.'}</p>
+                        <p className="mt-1">{lang === 'ar' ? 'الفئة الرئيسية: ' : 'Main category: '}<strong>{catLabel(psResult.mainCategory)} ({psResult.mainCategory})</strong></p>
+                        {psResult.subCategories.length > 0 && <p>{lang === 'ar' ? 'فئات فرعية: ' : 'Sub-categories: '}<strong>{psResult.subCategories.map(catLabel).join(', ')}</strong></p>}
+                      </div>
+                    ) : (
+                      <p className="text-sm" style={{ color: '#7A9080' }}>{lang === 'ar' ? 'أجب عن الأسئلة أعلاه لعرض الأهلية والفئة.' : 'Answer the questions above to see eligibility and category.'}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ── Step 0: Account ─────────────────── */}
-            {step === 0 && (
+            {stepId === 'account' && (
               <div>
                 <h2 className="text-xl font-bold text-forest mb-1">
                   {lang === 'ar' ? 'تفاصيل الحساب' : 'Account Details'}
@@ -491,7 +621,7 @@ function RegisterForm() {
             )}
 
             {/* ── Step 1: Institution ─────────────── */}
-            {step === 1 && (
+            {stepId === 'institution' && (
               <div>
                 <h2 className="text-xl font-bold text-forest mb-1">
                   {lang === 'ar' ? 'تفاصيل المؤسسة' : 'Institution Details'}
@@ -610,7 +740,7 @@ function RegisterForm() {
             )}
 
             {/* ── Step 2: Programme ───────────────── */}
-            {step === 2 && (
+            {stepId === 'programme' && (
               <div>
                 <h2 className="text-xl font-bold text-forest mb-1">
                   {lang === 'ar' ? 'اختر برنامجك' : 'Choose Your Programme'}
@@ -689,7 +819,7 @@ function RegisterForm() {
             )}
 
             {/* ── Step 3: Review ──────────────────── */}
-            {step === 3 && (
+            {stepId === 'review' && (
               <div>
                 <h2 className="text-xl font-bold text-forest mb-1">
                   {lang === 'ar' ? 'مراجعة طلبك' : 'Review Your Application'}
@@ -705,7 +835,7 @@ function RegisterForm() {
                       <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>
                         {lang === 'ar' ? 'الحساب' : 'Account'}
                       </p>
-                      <button onClick={() => { setDirection(-1); setStep(0) }} className="text-xs font-semibold text-brand hover:text-emerald transition-colors">
+                      <button onClick={() => { setDirection(-1); setStep(flow.indexOf('account')) }} className="text-xs font-semibold text-brand hover:text-emerald transition-colors">
                         {lang === 'ar' ? 'تعديل' : 'Edit'}
                       </button>
                     </div>
@@ -721,7 +851,7 @@ function RegisterForm() {
                       <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>
                         {lang === 'ar' ? 'المؤسسة' : 'Institution'}
                       </p>
-                      <button onClick={() => { setDirection(-1); setStep(1) }} className="text-xs font-semibold text-brand hover:text-emerald transition-colors">
+                      <button onClick={() => { setDirection(-1); setStep(flow.indexOf('institution')) }} className="text-xs font-semibold text-brand hover:text-emerald transition-colors">
                         {lang === 'ar' ? 'تعديل' : 'Edit'}
                       </button>
                     </div>
@@ -739,7 +869,7 @@ function RegisterForm() {
                       <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>
                         {lang === 'ar' ? 'البرنامج' : 'Programme'}
                       </p>
-                      <button onClick={() => { setDirection(-1); setStep(2) }} className="text-xs font-semibold text-brand hover:text-emerald transition-colors">
+                      <button onClick={() => { setDirection(-1); setStep(flow.indexOf('programme')) }} className="text-xs font-semibold text-brand hover:text-emerald transition-colors">
                         {lang === 'ar' ? 'تعديل' : 'Edit'}
                       </button>
                     </div>
@@ -791,13 +921,13 @@ function RegisterForm() {
           </button>
 
           <div className="flex gap-1.5">
-            {STEPS.map((_, i) => (
+            {flow.map((_, i) => (
               <div key={i} className="w-1.5 h-1.5 rounded-full transition-all duration-300"
                 style={{ background: i === step ? '#40916C' : '#C8E6D0', width: i === step ? '1.5rem' : '0.375rem' }} />
             ))}
           </div>
 
-          {step < 3 ? (
+          {step < flow.length - 1 ? (
             <button onClick={next}
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
               style={{ background: 'linear-gradient(135deg, #40916C, #52B788)', boxShadow: '0 4px 12px rgba(64,145,108,0.35)' }}>
