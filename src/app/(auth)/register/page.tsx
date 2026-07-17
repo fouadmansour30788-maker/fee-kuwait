@@ -162,22 +162,23 @@ function RegisterForm() {
   // If no type param, show a type selector before step 0
   const [typeChosen, setTypeChosen] = useState(!!typeParam)
 
-  // Pre-screening (hospitality only) — collected as the first wizard section.
+  // Pre-screening (hospitality) — collected as the first wizard section for every
+  // business/hospitality registration. Green Key establishments get a category;
+  // non-Green-Key businesses (e.g. Blue Flag beaches) can still proceed.
   const [ps, setPs] = useState<PSAnswers>({})
-  // Pre-screening applies to Green Key (hospitality). Gate on the Green Key entry
-  // so the step order stays stable through the wizard; other business
-  // registrations (e.g. Blue Flag beaches) skip it and can pre-screen later.
-  const hasPreScreen = institutionType === 'business' && progParam === 'green-key'
+  const hasPreScreen = institutionType === 'business'
   const flow: string[] = [...(hasPreScreen ? ['prescreen'] : []), 'account', 'institution', 'programme', 'review']
   const stepId = flow[step] ?? 'review'
   const psResult = evaluatePreScreening(ps)
   const psVisible = PS_QUESTIONS.filter((q) => PS_WIZARD_SECTIONS.includes(q.section) && (!q.showIf || q.showIf(ps)))
+  // All visible questions answered, and not explicitly ineligible. A null result
+  // (e.g. a beach with no Green Key category) may still continue to registration.
   const psComplete = psVisible.every((q) => {
     const v = ps[q.id]
     if (q.field === 'checkbox') return v === true
     if (q.field === 'multiservice') return true
     return v !== undefined && v !== '' && v !== null
-  }) && psResult.eligible === true
+  }) && psResult.eligible !== false
   const setPsAnswer = (id: string, v: string | string[] | boolean) => { setPs((p) => ({ ...p, [id]: v })); setErrors((e) => ({ ...e, general: '' })) }
   const togglePsService = (val: string) => {
     const cur = Array.isArray(ps.q_services) ? ps.q_services : []
