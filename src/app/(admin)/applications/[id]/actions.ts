@@ -46,6 +46,41 @@ export async function reopenForRevision(applicationId: string): Promise<{ ok?: t
   return { ok: true }
 }
 
+// Operator re-opens a locked/closed application so the establishment can edit
+// again (evidence, status, comments). Reopens to 'under_review' and records the
+// change in the audit trail for traceability.
+export async function reopenApplication(applicationId: string, reason: string): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const { data: me } = await supabase.from('users').select('role, name_en, email').eq('id', user.id).single()
+  if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Not allowed' }
+
+  const { data: app } = await supabase.from('applications').select('status, entity_type, programme, applicant:users!applicant_id(email)').eq('id', applicationId).single()
+  const prev = app?.status ?? null
+  if (prev === 'under_review') return { error: 'The application is already open for editing.' }
+
+  const { error } = await supabase.from('applications')
+    .update({ status: 'under_review', revision_deadline: null, updated_at: new Date().toISOString() })
+    .eq('id', applicationId)
+  if (error) return { error: error.message }
+
+  await supabase.from('audit_trail').insert({
+    application_id: applicationId, entity: 'application', field: 'Application re-opened',
+    previous_value: prev, new_value: reason?.trim() ? `under_review — ${reason.trim()}` : 'under_review',
+    user_id: user.id, user_name: me.name_en || me.email, user_role: me.role,
+  })
+
+  const applicant = Array.isArray(app?.applicant) ? app?.applicant[0] : app?.applicant
+  await notifyApplicant({ email: applicant?.email, programme: app?.programme ?? '', entityType: app?.entity_type ?? null, applicationId, status: 'under_review' })
+
+  revalidatePath(`/applications/${applicationId}`)
+  revalidatePath('/applications')
+  revalidatePath(`/business/application/${applicationId}`)
+  revalidatePath(`/school/application/${applicationId}`)
+  return { ok: true }
+}
+
 // Operator assigns (or clears) an auditor; moves the application into audit.
 export async function assignAuditor(applicationId: string, auditorId: string) {
   const supabase = createClient()

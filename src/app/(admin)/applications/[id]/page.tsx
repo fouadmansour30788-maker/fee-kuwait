@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, FileText, Download, Inbox } from 'lucide-react'
-import { getApplication, PROGRAMME_LABEL, statusMeta, STATUS_META, OPERATOR_STATUSES, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
+import { getApplication, PROGRAMME_LABEL, statusMeta, STATUS_META, OPERATOR_STATUSES, ESTABLISHMENT_EDITABLE_STATUSES, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listAuditors, applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
 import { listAudits } from '@/lib/db/audits'
@@ -13,6 +13,7 @@ import PreScreeningReview from '@/components/prescreening/PreScreeningReview'
 import AssignAuditor from '@/components/audit/AssignAuditor'
 import ArchiveAudit from '@/components/audit/ArchiveAudit'
 import ManualOverride from '@/components/admin/ManualOverride'
+import ReopenApplication from '@/components/admin/ReopenApplication'
 import AssignCb from '@/components/audit/AssignCb'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
@@ -186,6 +187,15 @@ export default async function ApplicationDetail({
         rejection={app.rejection_reason ?? ''}
         statuses={OPERATOR_STATUSES.map((st) => ({ value: st, label: statusMeta(st).label }))}
       />
+
+      {/* Re-open a locked/closed application for the establishment to edit again */}
+      {!ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status) && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Re-open application</h2>
+          <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>The application is currently locked for the establishment. Re-open it so they can edit their evidence, status and comments again.</p>
+          <ReopenApplication applicationId={id} />
+        </div>
+      )}
 
       {/* Manual override + traceability trail */}
       <ManualOverride applicationId={id} currentStatus={app.status} statuses={Object.keys(STATUS_META).map((st) => ({ value: st, label: statusMeta(st).label }))} />
