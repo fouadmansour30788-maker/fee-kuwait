@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, FileText, Download, Inbox } from 'lucide-react'
+import { ArrowLeft, FileText, Download, Inbox, Clock } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES, ESTABLISHMENT_EDITABLE_STATUSES } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
@@ -26,6 +26,25 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
   const reports = showExternal ? docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF) : []
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
   const s = statusMeta(app.status)
+
+  // The application stays closed until the National Operator approves the
+  // registration (registration under review / pending).
+  if (ent && ent.status !== 'active') {
+    return (
+      <div className="space-y-5 max-w-2xl">
+        <Link href="/business/application" className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: '#5B7568' }}>
+          <ArrowLeft className="w-4 h-4" /> Applications
+        </Link>
+        <div className="rounded-2xl border p-6 flex items-start gap-3" style={{ borderColor: '#FDE68A', background: '#FEF9EC' }}>
+          <Clock className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#B45309' }} />
+          <div>
+            <h2 className="text-base font-bold" style={{ color: '#854D0E' }}>Registration under review</h2>
+            <p className="text-sm mt-1" style={{ color: '#92400E' }}>Your registration is pending approval by the National Operator. Your application will open once your registration is approved.</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-5">

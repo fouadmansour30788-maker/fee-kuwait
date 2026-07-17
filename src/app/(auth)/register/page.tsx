@@ -77,13 +77,13 @@ const PROGRAMMES = [
     id: 'blue-flag', en: 'Blue Flag', ar: 'العلم الأزرق',
     desc_en: 'For beaches, marinas and sustainable boating operators.',
     desc_ar: 'للشواطئ والمراسي ومشغلي القوارب المستدامة.',
-    color: '#006994', Icon: Waves, eligible: ['business'],
+    color: '#006994', Icon: Waves, eligible: ['business'], bizTypes: ['beach', 'marina', 'other'],
   },
   {
     id: 'green-key', en: 'Green Key', ar: 'المفتاح الأخضر',
     desc_en: 'For hotels, restaurants, and tourism operators.',
     desc_ar: 'للفنادق والمطاعم ومشغلي السياحة.',
-    color: '#C8A951', Icon: KeyRound, eligible: ['business'],
+    color: '#C8A951', Icon: KeyRound, eligible: ['business'], bizTypes: ['hotel', 'restaurant', 'other'],
   },
   {
     id: 'leaf', en: 'LEAF', ar: 'LEAF',
@@ -95,13 +95,13 @@ const PROGRAMMES = [
     id: 'yre', en: 'Young Reporters (YRE)', ar: 'المراسلون الشباب (YRE)',
     desc_en: 'For young journalists aged 13–25 in schools or universities.',
     desc_ar: 'للصحفيين الشباب 13–25 في المدارس أو الجامعات.',
-    color: '#74C69D', Icon: Newspaper, eligible: ['school', 'business'],
+    color: '#74C69D', Icon: Newspaper, eligible: ['school', 'business'], bizTypes: ['other'],
   },
   {
     id: 'eco-campus', en: 'Eco-Campus', ar: 'الحرم البيئي',
     desc_en: 'For universities and higher education institutions.',
     desc_ar: 'للجامعات ومؤسسات التعليم العالي.',
-    color: '#40916C', Icon: GraduationCap, eligible: ['business'],
+    color: '#40916C', Icon: GraduationCap, eligible: ['business'], bizTypes: ['other'],
   },
 ]
 
@@ -362,8 +362,14 @@ function RegisterForm() {
   }
 
   // ── Eligible programmes for this institution type ──
-  const eligibleProgs = PROGRAMMES.filter(p => p.eligible.includes(institutionType))
-  const otherProgs = PROGRAMMES.filter(p => !p.eligible.includes(institutionType))
+  // For a business, also narrow by the selected establishment type so a hotel
+  // doesn't see education/other-sector programmes (e.g. Eco-Campus, YRE).
+  const fitsBizType = (p: (typeof PROGRAMMES)[number]) => {
+    const bt = (p as { bizTypes?: string[] }).bizTypes
+    return institutionType !== 'business' || !bt || !data.businessType || bt.includes(data.businessType)
+  }
+  const eligibleProgs = PROGRAMMES.filter(p => p.eligible.includes(institutionType) && fitsBizType(p))
+  const otherProgs = PROGRAMMES.filter(p => !(p.eligible.includes(institutionType) && fitsBizType(p)))
 
   // ── Type selector (shown when no ?type param) ──────
   if (!typeChosen) {
