@@ -2,8 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 
 export type CriterionResult = 'pending' | 'pass' | 'no_pass'
 
+export type ApplicantStatus = 'in_progress' | 'complete' | 'na'
+
 export interface CriterionAssessment {
   applicantResult: CriterionResult
+  applicantStatus: ApplicantStatus | null
   internal: CriterionResult
   internalNote: string | null
   external: CriterionResult
@@ -29,13 +32,14 @@ export async function listCriterionAssessments(applicationId: string): Promise<R
   const supabase = createClient()
   const { data, error } = await supabase
     .from('criterion_assessments')
-    .select('criterion_ref, result, internal_result, note, internal_note, applicant_note, applicant_result')
+    .select('criterion_ref, result, internal_result, note, internal_note, applicant_note, applicant_result, applicant_status')
     .eq('application_id', applicationId)
   if (error) { console.error('listCriterionAssessments:', error.message); return {} }
   const map: Record<string, CriterionAssessment> = {}
   for (const r of data ?? []) {
     map[r.criterion_ref] = {
       applicantResult: (r.applicant_result ?? 'pending') as CriterionResult,
+      applicantStatus: (r.applicant_status ?? null) as ApplicantStatus | null,
       internal: (r.internal_result ?? 'pending') as CriterionResult,
       internalNote: r.internal_note ?? null,
       external: (r.result ?? 'pending') as CriterionResult,

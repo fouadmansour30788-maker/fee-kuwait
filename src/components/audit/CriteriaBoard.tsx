@@ -3,7 +3,7 @@
 import { Fragment, memo, useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock } from 'lucide-react'
-import { setInternalResult, setApplicantResult, setCriterionResult, setCriterionNote } from '@/lib/actions/assessments'
+import { setInternalResult, setApplicantStatus, setCriterionResult, setCriterionNote } from '@/lib/actions/assessments'
 import { postCriterionMessage } from '@/lib/actions/messages'
 import CriterionUpload from '@/components/documents/CriterionUpload'
 import type { CriterionRef } from '@/lib/criteria'
@@ -16,7 +16,14 @@ import type { GKEvidence } from '@/lib/data/greenKeyEvidence'
 import { GK_EVIDENCE, UPLOAD_REQ_META } from '@/lib/data/greenKeyEvidence'
 
 type Result = 'pending' | 'pass' | 'no_pass'
+type PStatus = 'in_progress' | 'complete' | 'na'
 type Role = 'admin' | 'establishment' | 'auditor' | 'cb'
+
+const STATUS_META: Record<PStatus, { label: string; color: string; bg: string }> = {
+  complete:    { label: 'Complete',    color: '#059669', bg: '#D1FAE5' },
+  in_progress: { label: 'In progress', color: '#B45309', bg: '#FEF3C7' },
+  na:          { label: 'N/A',         color: '#64748B', bg: '#F1F5F9' },
+}
 
 const RESULT_META: Record<Result, { label: string; color: string; bg: string }> = {
   pending: { label: 'Pending', color: '#64748B', bg: '#F1F5F9' },
@@ -24,7 +31,7 @@ const RESULT_META: Record<Result, { label: string; color: string; bg: string }> 
   no_pass: { label: 'Not pass', color: '#DC2626', bg: '#FEE2E2' },
 }
 const ROLE_LABEL: Record<string, string> = { establishment: 'Establishment', operator: 'Operator', auditor: 'Auditor', cb: 'CB' }
-const BLANK: CriterionAssessment = { applicantResult: 'pending', internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
+const BLANK: CriterionAssessment = { applicantResult: 'pending', applicantStatus: null, internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
 const EMPTY_DOCS: AppDoc[] = []
 const EMPTY_MSGS: CriterionMessage[] = []
 
@@ -85,6 +92,24 @@ function Chip({ r }: { r: Result }) {
     </span>
   )
 }
+function StatusChip({ s }: { s: PStatus | null }) {
+  if (!s) return <span className="text-xs" style={{ color: '#CBD5E1' }}>Not set</span>
+  const m = STATUS_META[s]
+  return <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: m.bg, color: m.color }}>{m.label}</span>
+}
+function StatusSelect({ value, onChange }: { value: PStatus | null; onChange: (s: PStatus) => void }) {
+  return (
+    <div className="inline-flex flex-col gap-1 items-start">
+      {(['complete', 'in_progress', 'na'] as const).map((s) => {
+        const m = STATUS_META[s]; const on = value === s
+        return (
+          <button key={s} onClick={() => onChange(s)} className="px-2 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap"
+            style={on ? { background: m.color, color: '#fff' } : { background: '#F1F5F9', color: m.color }}>{m.label}</button>
+        )
+      })}
+    </div>
+  )
+}
 function Toggle({ value, onChange }: { value: Result; onChange: (r: Result) => void }) {
   return (
     <div className="inline-flex items-center gap-1">
@@ -108,7 +133,7 @@ interface RowProps {
   editAudit: boolean
   showExternal: boolean
   selAudit: AuditRecord | null
-  onSelf: (ref: string, r: Result) => void
+  onStatus: (ref: string, s: PStatus) => void
   onOp: (ref: string, r: Result) => void
   onAudit: (ref: string, r: Result) => void
   onAuditNote: (ref: string, note: string) => void
@@ -121,7 +146,7 @@ interface RowProps {
 // rest of the (139-row) table.
 const Row = memo(function Row({
   c, a, docsList, thread, year, applicationId, applicantId, estCanEdit, isOperator, canComment, editAudit, showExternal, selAudit,
-  onSelf, onOp, onAudit, onAuditNote, onPost, onDesc,
+  onStatus, onOp, onAudit, onAuditNote, onPost, onDesc,
 }: RowProps) {
   const [text, setText] = useState('')
   const ev = GK_EVIDENCE[c.ref]
@@ -153,7 +178,7 @@ const Row = memo(function Row({
       </td>
       <td className="px-3 py-3 min-w-[240px] max-w-[380px] align-top">{c.description ? <ExpandableText text={c.description} onOpen={() => onDesc(c)} /> : <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>}</td>
       <td className="px-3 py-3">
-        {estCanEdit ? <Toggle value={a.applicantResult} onChange={(r) => onSelf(c.ref, r)} /> : <Chip r={a.applicantResult} />}
+        {estCanEdit ? <StatusSelect value={a.applicantStatus} onChange={(s) => onStatus(c.ref, s)} /> : <StatusChip s={a.applicantStatus} />}
       </td>
       <td className="px-3 py-3 min-w-[150px] max-w-[260px] align-top">
         {ev && (ev.required !== 'No' || ev.upload) && <EvidenceHint ev={ev} />}
@@ -269,9 +294,9 @@ export default function CriteriaBoard({
   }, [docs, currentYear])
 
   const bump = useCallback((res: { error?: string } | undefined) => { if (res?.error) setError(res.error) }, [])
-  const onSelf = useCallback((ref: string, r: Result) => {
-    setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), applicantResult: r } })); setError('')
-    start(async () => bump(await setApplicantResult(applicationId, ref, r)))
+  const onStatus = useCallback((ref: string, s: PStatus) => {
+    setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), applicantStatus: s } })); setError('')
+    start(async () => bump(await setApplicantStatus(applicationId, ref, s)))
   }, [applicationId, bump])
   const onOp = useCallback((ref: string, r: Result) => {
     setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), internal: r } })); setError('')
@@ -301,6 +326,12 @@ export default function CriteriaBoard({
     for (const c of filtered) { if (!map.has(c.area)) { map.set(c.area, []); order.push(c.area) } map.get(c.area)!.push(c) }
     return order.map((a) => ({ area: a, rows: map.get(a)! }))
   }, [filtered])
+
+  const statusCounts = useMemo(() => {
+    let complete = 0, inprog = 0, na = 0
+    for (const c of criteria) { const s = rows[c.ref]?.applicantStatus; if (s === 'complete') complete++; else if (s === 'in_progress') inprog++; else if (s === 'na') na++ }
+    return { complete, inprog, na, total: criteria.length, notset: criteria.length - complete - inprog - na }
+  }, [rows, criteria])
 
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
   const cols = 6 + (showExternal ? 1 : 0)
@@ -344,6 +375,18 @@ export default function CriteriaBoard({
 
       {error && <p className="flex items-center gap-1.5 text-xs" style={{ color: '#E53E3E' }}><AlertCircle className="w-3.5 h-3.5" /> {error}</p>}
 
+      {/* Establishment progress summary */}
+      <div className="flex items-center gap-2 flex-wrap rounded-xl border px-4 py-2.5" style={{ borderColor: '#E2E8F0', background: '#F8FAFC' }}>
+        <span className="text-xs font-semibold" style={{ color: '#475569' }}>Progress:</span>
+        {([['complete', statusCounts.complete], ['in_progress', statusCounts.inprog], ['na', statusCounts.na]] as const).map(([k, n]) => (
+          <span key={k} className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: STATUS_META[k].bg, color: STATUS_META[k].color }}>
+            {STATUS_META[k].label} <span className="font-bold">{n}</span>
+          </span>
+        ))}
+        <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#94A3B8' }}>Not set <span className="font-bold">{statusCounts.notset}</span></span>
+        <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{statusCounts.complete} / {statusCounts.total} complete</span>
+      </div>
+
       <div className="rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm" style={{ minWidth: 1280 }}>
@@ -351,7 +394,7 @@ export default function CriteriaBoard({
               <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#94A3B8' }}>
                 <th className={th}>Indicator</th>
                 <th className={th}>Description</th>
-                <th className={th}>Self-assessment</th>
+                <th className={th}>Status</th>
                 <th className={th}>Est. attachment</th>
                 <th className={th}>Operator feedback</th>
                 <th className={th}>Comments</th>
@@ -371,7 +414,7 @@ export default function CriteriaBoard({
                     <Row key={c.ref} c={c} a={rows[c.ref] ?? BLANK} docsList={docsByRef.get(c.ref) ?? EMPTY_DOCS} thread={msgsByRef.get(c.ref) ?? EMPTY_MSGS}
                       year={year} applicationId={applicationId} applicantId={applicantId}
                       estCanEdit={estCanEdit} isOperator={isOperator} canComment={canComment} editAudit={editAudit} showExternal={showExternal} selAudit={selAudit}
-                      onSelf={onSelf} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onPost={onPost} onDesc={onDesc} />
+                      onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onPost={onPost} onDesc={onDesc} />
                   ))}
                 </Fragment>
               ))}

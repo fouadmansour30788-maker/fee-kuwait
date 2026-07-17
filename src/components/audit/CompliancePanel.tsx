@@ -32,6 +32,7 @@ export default function CompliancePanel({
     if (!a) return 'pending'
     if (a.external !== 'pending') return a.external
     if (a.internal !== 'pending') return a.internal
+    if (a.applicantStatus === 'complete') return 'pass'
     return a.applicantResult ?? 'pending'
   }
   const passed = (ref: string) => effective(ref) === 'pass'

@@ -127,6 +127,54 @@ export async function setApplicantResult(applicationId: string, criterionRef: st
   return { ok: true }
 }
 
+const STATUSES = ['in_progress', 'complete', 'na']
+
+// The establishment sets its progress status for a criterion (In progress /
+// Complete / N/A). Written via the service role after an ownership check. When
+// marked Complete, the operator(s) are notified to check it.
+export async function setApplicantStatus(applicationId: string, criterionRef: string, status: string): Promise<{ ok?: true; error?: string }> {
+  if (!STATUSES.includes(status)) return { error: 'Invalid status' }
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const { data: own } = await supabase.from('applications').select('status').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
+  if (!own) return { error: 'Not allowed' }
+  if (!ESTABLISHMENT_EDITABLE_STATUSES.includes(own.status)) return { error: 'This application is locked for editing.' }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('criterion_assessments').upsert({
+    application_id: applicationId,
+    criterion_ref: criterionRef,
+    applicant_status: status,
+    updated_by: user.id,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'application_id,criterion_ref' })
+  if (error) return { error: error.message }
+
+  // Notify the operator(s) when a criterion is completed, so they check it.
+  if (status === 'complete') {
+    const { data: me } = await admin.from('users').select('name_en, email').eq('id', user.id).maybeSingle()
+    const estName = me?.name_en || me?.email || 'An establishment'
+    const { data: staff } = await admin.from('users').select('id').in('role', ['admin', 'super_admin'])
+    if (staff?.length) {
+      await admin.from('notifications').insert(staff.map((s) => ({
+        user_id: s.id,
+        type: 'criterion_complete',
+        title_en: 'Criterion marked complete',
+        title_ar: 'تم إكمال معيار',
+        message_en: `${estName} marked criterion ${criterionRef} as complete — please check.`,
+        message_ar: `${estName} أكمل المعيار ${criterionRef} — يرجى المراجعة.`,
+        action_url: `/applications/${applicationId}`,
+      })))
+    }
+  }
+
+  revalidatePath(`/business/application/${applicationId}`)
+  revalidatePath(`/school/application/${applicationId}`)
+  revalidatePath(`/applications/${applicationId}`)
+  return { ok: true }
+}
+
 // The National Operator (staff) records internal feedback shown to the establishment.
 export async function setInternalNote(applicationId: string, criterionRef: string, note: string): Promise<{ ok?: true; error?: string }> {
   const supabase = createClient()
