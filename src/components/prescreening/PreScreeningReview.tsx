@@ -96,6 +96,7 @@ export default function PreScreeningReview({
             <XCircle className="w-4 h-4" /> Reject
           </button>
         </div>
+        {!main && <p className="text-xs" style={{ color: '#B45309' }}>Confirm a main category above to enable approval.</p>}
 
         {status !== 'draft' && (
           <div className="flex items-center gap-2 flex-wrap pt-1">

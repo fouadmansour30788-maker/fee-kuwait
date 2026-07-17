@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { evaluatePreScreening, isPreScreeningComplete } from '@/lib/data/preScreening'
 import type { PSAnswers } from '@/lib/data/preScreening'
@@ -75,6 +76,8 @@ export async function reviewPreScreening(
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
+  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+  if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Not authorised' }
 
   const patch: Record<string, unknown> = {
     status: decision, review_note: note || null, reviewed_by: user.id,
@@ -88,9 +91,17 @@ export async function reviewPreScreening(
     patch.eligible = false
   }
 
-  const { error } = await supabase.from('pre_screening').update(patch).eq('application_id', applicationId)
+  // Service-role write after the role check: the operator is updating the
+  // applicant's pre-screening row, which RLS would otherwise drop to 0 rows
+  // (a silent no-op that looks like "the button does nothing").
+  const admin = createAdminClient()
+  const { data: rows, error } = await admin.from('pre_screening').update(patch).eq('application_id', applicationId).select('id')
   if (error) return { error: error.message }
+  if (!rows || rows.length === 0) return { error: 'Pre-screening record not found for this application.' }
+
   revalidatePath(`/applications/${applicationId}`)
+  revalidatePath(`/business/application/${applicationId}`)
+  revalidatePath(`/school/application/${applicationId}`)
   revalidatePath(`/business/pre-screening/${applicationId}`)
   revalidatePath(`/school/pre-screening/${applicationId}`)
   return { ok: true }
@@ -103,11 +114,18 @@ export async function unlockPreScreening(applicationId: string, reason: string):
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
-  const { error } = await supabase.from('pre_screening').update({
+  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+  if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Not authorised' }
+
+  const admin = createAdminClient()
+  const { data: rows, error } = await admin.from('pre_screening').update({
     status: 'draft', unlock_reason: reason.trim(), reviewed_by: user.id, updated_at: new Date().toISOString(),
-  }).eq('application_id', applicationId)
+  }).eq('application_id', applicationId).select('id')
   if (error) return { error: error.message }
+  if (!rows || rows.length === 0) return { error: 'Pre-screening record not found for this application.' }
   revalidatePath(`/applications/${applicationId}`)
+  revalidatePath(`/business/pre-screening/${applicationId}`)
+  revalidatePath(`/school/pre-screening/${applicationId}`)
   return { ok: true }
 }
 
