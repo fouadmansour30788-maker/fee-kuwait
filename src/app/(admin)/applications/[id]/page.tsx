@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, FileText, Download, Inbox } from 'lucide-react'
-import { getApplication, PROGRAMME_LABEL, statusMeta, OPERATOR_STATUSES, CB_DECISION_LABEL } from '@/lib/db/applications'
+import { getApplication, PROGRAMME_LABEL, statusMeta, STATUS_META, OPERATOR_STATUSES, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listAuditors, applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
 import { listAudits } from '@/lib/db/audits'
@@ -12,6 +12,7 @@ import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import PreScreeningReview from '@/components/prescreening/PreScreeningReview'
 import AssignAuditor from '@/components/audit/AssignAuditor'
 import ArchiveAudit from '@/components/audit/ArchiveAudit'
+import ManualOverride from '@/components/admin/ManualOverride'
 import AssignCb from '@/components/audit/AssignCb'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
@@ -32,6 +33,7 @@ export default async function ApplicationDetail({
     listApplicationDocuments(id), listAuditors(), applicationAuditor(id), listCriterionAssessments(id),
     listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id), getPreScreening(id),
   ])
+  const trail = await listAuditTrail(id)
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
 
@@ -184,6 +186,27 @@ export default async function ApplicationDetail({
         rejection={app.rejection_reason ?? ''}
         statuses={OPERATOR_STATUSES.map((st) => ({ value: st, label: statusMeta(st).label }))}
       />
+
+      {/* Manual override + traceability trail */}
+      <ManualOverride applicationId={id} currentStatus={app.status} statuses={Object.keys(STATUS_META).map((st) => ({ value: st, label: statusMeta(st).label }))} />
+
+      {trail.length > 0 && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Audit trail</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Every manual change is recorded with the previous and new value, who made it, and when.</p>
+          <div className="space-y-2">
+            {trail.map((t) => (
+              <div key={t.id} className="rounded-xl border p-3 text-sm" style={{ borderColor: '#E2E8F0' }}>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold" style={{ color: '#1E293B' }}>{t.field}</span>
+                  <span className="text-xs" style={{ color: '#94A3B8' }}>{statusMeta(t.previousValue ?? '').label} → {t.newValue}</span>
+                  <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{t.userName} · {t.userRole} · {new Date(t.createdAt).toLocaleString('en-GB')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

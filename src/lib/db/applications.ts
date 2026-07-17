@@ -64,6 +64,31 @@ export function statusMeta(status: string) {
   return STATUS_META[status] ?? { label: status.replace(/_/g, ' '), color: '#475569', bg: '#F1F5F9' }
 }
 
+export interface TrailEntry {
+  id: string
+  field: string
+  previousValue: string | null
+  newValue: string | null
+  userName: string | null
+  userRole: string | null
+  createdAt: string
+}
+
+// The traceability trail for an application (RLS: admins all; assigned auditor/CB).
+export async function listAuditTrail(applicationId: string): Promise<TrailEntry[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('audit_trail')
+    .select('id, field, previous_value, new_value, user_name, user_role, created_at')
+    .eq('application_id', applicationId)
+    .order('created_at', { ascending: false })
+  if (error) { console.error('listAuditTrail:', error.message); return [] }
+  return (data ?? []).map((r) => ({
+    id: r.id, field: r.field, previousValue: r.previous_value ?? null, newValue: r.new_value ?? null,
+    userName: r.user_name ?? null, userRole: r.user_role ?? null, createdAt: r.created_at,
+  }))
+}
+
 // Statuses an operator can set from the review screen.
 export const OPERATOR_STATUSES = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'approved', 'rejected']
 
