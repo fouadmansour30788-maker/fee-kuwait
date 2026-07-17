@@ -7,10 +7,10 @@
 export type UploadRequirement = 'Yes' | 'Voluntary' | 'Conditional' | 'No'
 
 export interface GKEvidence {
-  method: string          // audit method (document review, interview, visual inspection, sampling)
-  upload: string          // what to upload before the audit (empty = nothing to upload)
+  method: string
+  upload: string
   required: UploadRequirement
-  format: string          // accepted upload formats
+  format: string
 }
 
 export const GK_EVIDENCE: Record<string, GKEvidence> = {
@@ -280,32 +280,32 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "1.15": {
     "method": "Document review + Interview",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "1.16": {
     "method": "Document review + Visual inspection + Interview",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "1.17": {
     "method": "Document review + Visual inspection + Interview",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "1.18": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "1.19": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "1.22": {
@@ -322,8 +322,8 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "1.24": {
     "method": "Document review + Visual inspection + Interview",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "1.4": {
@@ -334,14 +334,14 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "2.10": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "2.11": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "2.4": {
@@ -352,14 +352,14 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "2.6": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "2.7": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "2.8": {
@@ -376,38 +376,38 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "3.10": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "3.11": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "3.12": {
     "method": "Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "3.13": {
     "method": "Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "3.14": {
     "method": "Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "3.17": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "3.5": {
@@ -418,26 +418,26 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "3.8": {
     "method": "Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "3.9": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.10": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.11": {
     "method": "Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.15": {
@@ -454,86 +454,86 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "4.21": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.22": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.23": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.24": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.25": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.26": {
     "method": "Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.28": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.29": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.4": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.5": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.6": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.7": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.8": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "4.9": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "5.1": {
@@ -544,14 +544,14 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "5.12": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "5.13": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "5.3": {
@@ -568,8 +568,8 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "5.7": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "5.8": {
@@ -586,14 +586,14 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "6.10": {
     "method": "Document review + Visual inspection + Interview",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.11": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.14": {
@@ -604,26 +604,26 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "6.17": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.18": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.19": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.20": {
     "method": "Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.21": {
@@ -634,62 +634,62 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "6.26": {
     "method": "Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.27": {
     "method": "Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.28": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.29": {
     "method": "Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.30": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.31": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.6": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.7": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.8": {
     "method": "Document review + Visual inspection + Sampling/cross-check",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "6.9": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "7.1": {
@@ -700,44 +700,44 @@ export const GK_EVIDENCE: Record<string, GKEvidence> = {
   },
   "7.12": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "7.13": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "7.14": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "7.4": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "7.5": {
     "method": "Document review",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "7.6": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "7.7": {
     "method": "Document review + Visual inspection",
-    "upload": "235",
-    "required": "No",
+    "upload": "",
+    "required": "Voluntary",
     "format": "PDF/DOC/XLS/photo/link as applicable"
   },
   "1.10": {
