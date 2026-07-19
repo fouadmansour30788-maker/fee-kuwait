@@ -105,6 +105,19 @@ export async function reviewPreScreening(
   if (error) return { error: error.message }
   if (!rows || rows.length === 0) return { error: 'Pre-screening record not found for this application.' }
 
+  // Approving eligibility is the single operator gate: it also activates the
+  // establishment's registration so the application opens right away (no separate
+  // approval on the Members page).
+  if (decision === 'eligible') {
+    const { data: app } = await admin.from('applications').select('applicant_id').eq('id', applicationId).single()
+    if (app?.applicant_id) {
+      const now = new Date().toISOString()
+      const { data: biz } = await admin.from('businesses').update({ status: 'active', updated_at: now }).eq('user_id', app.applicant_id).select('id')
+      if (!biz || biz.length === 0) await admin.from('schools').update({ status: 'active', updated_at: now }).eq('user_id', app.applicant_id)
+    }
+    revalidatePath('/members')
+  }
+
   revalidatePath(`/applications/${applicationId}`)
   revalidatePath(`/business/application/${applicationId}`)
   revalidatePath(`/school/application/${applicationId}`)
