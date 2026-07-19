@@ -47,6 +47,30 @@ interface FormData {
   contactPhone: string
   // Step 3 — Programme(s)
   programmes: string[]
+  // Step 4 — Programme details (Green Key / Eco-Schools registration forms)
+  website: string
+  socialLinks: string
+  // Green Key
+  numRooms: string
+  numGuestsYear: string
+  numGuestNightsYear: string
+  gmName: string
+  gmEmail: string
+  envDirName: string
+  envDirEmail: string
+  contactEmail: string
+  // Eco-Schools
+  coordinatorName: string
+  teacher1: string
+  teacher2: string
+  parentRep: string
+  whyInterested: string
+  committeeFrequency: string
+  themes: string[]
+  comments: string
+  // Declaration
+  declaration: boolean
+  signatureName: string
 }
 
 // ── Constants ───────────────────────────────────────
@@ -112,6 +136,7 @@ const STEP_LABELS: Record<string, { en: string; ar: string }> = {
   account:     { en: 'Account',      ar: 'الحساب' },
   institution: { en: 'Institution',  ar: 'المؤسسة' },
   programme:   { en: 'Programme',    ar: 'البرنامج' },
+  details:     { en: 'Details',      ar: 'التفاصيل' },
   review:      { en: 'Review',       ar: 'المراجعة' },
 }
 // Pre-screening sections shown in the wizard (General information is collected by
@@ -119,12 +144,34 @@ const STEP_LABELS: Record<string, { en: string; ar: string }> = {
 const PS_WIZARD_SECTIONS = ['Eligibility', 'Main category', 'Scope & sub-categories', 'Operational filters', 'Declarations']
 const catLabel = (c: string) => ESTABLISHMENT_CATEGORIES.find((x) => x.code === c)?.label ?? c
 
+// The 12 Eco-Schools themes (official list) — shown as a checklist for schools.
+const ECO_SCHOOLS_THEMES = [
+  { en: 'Water', ar: 'المياه' },
+  { en: 'Biodiversity & Nature', ar: 'التنوع البيولوجي والطبيعة' },
+  { en: 'Climate Change', ar: 'تغيّر المناخ' },
+  { en: 'Energy', ar: 'الطاقة' },
+  { en: 'Litter', ar: 'النفايات المتناثرة' },
+  { en: 'Waste', ar: 'النفايات' },
+  { en: 'Food', ar: 'الغذاء' },
+  { en: 'Health & Wellbeing', ar: 'الصحة والرفاهية' },
+  { en: 'Marine and Coast', ar: 'البحار والسواحل' },
+  { en: 'School Grounds', ar: 'ساحات المدرسة' },
+  { en: 'Transport', ar: 'النقل' },
+  { en: 'Global Citizenship', ar: 'المواطنة العالمية' },
+]
+
 const EMPTY: FormData = {
   name: '', email: '', password: '', confirmPassword: '',
   institutionName: '', institutionNameAr: '',
   schoolType: '', businessType: '', governorate: '',
   address: '', studentsCount: '', contactName: '', contactPhone: '',
   programmes: [],
+  website: '', socialLinks: '',
+  numRooms: '', numGuestsYear: '', numGuestNightsYear: '',
+  gmName: '', gmEmail: '', envDirName: '', envDirEmail: '', contactEmail: '',
+  coordinatorName: '', teacher1: '', teacher2: '', parentRep: '',
+  whyInterested: '', committeeFrequency: '', themes: [], comments: '',
+  declaration: false, signatureName: '',
 }
 
 // ── Helpers ─────────────────────────────────────────
@@ -167,7 +214,11 @@ function RegisterForm() {
   // non-Green-Key businesses (e.g. Blue Flag beaches) can still proceed.
   const [ps, setPs] = useState<PSAnswers>({})
   const hasPreScreen = institutionType === 'business'
-  const flow: string[] = [...(hasPreScreen ? ['prescreen'] : []), 'account', 'institution', 'programme', 'review']
+  // Programme-specific details step: Green Key (business) or Eco-Schools (school).
+  const showGKDetails = institutionType === 'business' && data.programmes.includes('green-key')
+  const showESDetails = institutionType === 'school' && data.programmes.includes('eco-schools')
+  const hasDetails = showGKDetails || showESDetails
+  const flow: string[] = [...(hasPreScreen ? ['prescreen'] : []), 'account', 'institution', 'programme', ...(hasDetails ? ['details'] : []), 'review']
   const stepId = flow[step] ?? 'review'
   const psResult = evaluatePreScreening(ps)
   const psVisible = PS_QUESTIONS.filter((q) => PS_WIZARD_SECTIONS.includes(q.section) && (!q.showIf || q.showIf(ps)))
@@ -226,6 +277,9 @@ function RegisterForm() {
     setErrors(e => ({ ...e, [key]: '' }))
   }
 
+  function toggleTheme(t: string) {
+    setData(d => ({ ...d, themes: d.themes.includes(t) ? d.themes.filter(x => x !== t) : [...d.themes, t] }))
+  }
   function toggleProgramme(id: string) {
     setData(d => ({ ...d, programmes: d.programmes.includes(id) ? d.programmes.filter(p => p !== id) : [...d.programmes, id] }))
     setErrors(e => ({ ...e, programmes: '' }))
@@ -275,6 +329,32 @@ function RegisterForm() {
         e.programmes = lang === 'ar' ? 'يرجى اختيار برنامج واحد على الأقل' : 'Please select at least one programme'
     }
 
+    if (s === 'details') {
+      const req = (k: keyof FormData, msg: string) => { if (!data[k]) e[k] = msg }
+      const emailOk = (k: keyof FormData) => { const v = data[k] as string; if (v && !/^[^@]+@[^@]+\.[^@]+$/.test(v)) e[k] = lang === 'ar' ? 'بريد إلكتروني غير صالح' : 'Invalid email address' }
+      if (showGKDetails) {
+        req('website', lang === 'ar' ? 'الموقع الإلكتروني مطلوب' : 'Website is required')
+        req('numRooms', lang === 'ar' ? 'عدد الغرف مطلوب' : 'Number of rooms is required')
+        req('numGuestsYear', lang === 'ar' ? 'عدد الضيوف سنوياً مطلوب' : 'Guests per year is required')
+        req('numGuestNightsYear', lang === 'ar' ? 'عدد ليالي الضيوف مطلوب' : 'Guest-nights per year is required')
+        req('gmName', lang === 'ar' ? 'اسم المدير العام مطلوب' : 'General Manager name is required')
+        req('gmEmail', lang === 'ar' ? 'بريد المدير العام مطلوب' : 'General Manager email is required')
+        req('envDirName', lang === 'ar' ? 'اسم المدير البيئي مطلوب' : 'Environmental Director name is required')
+        req('envDirEmail', lang === 'ar' ? 'بريد المدير البيئي مطلوب' : 'Environmental Director email is required')
+        req('contactEmail', lang === 'ar' ? 'بريد جهة الاتصال مطلوب' : 'Contact person email is required')
+        emailOk('gmEmail'); emailOk('envDirEmail'); emailOk('contactEmail')
+      }
+      if (showESDetails) {
+        req('coordinatorName', lang === 'ar' ? 'اسم منسق البرنامج مطلوب' : 'Programme coordinator is required')
+        req('teacher1', lang === 'ar' ? 'المعلم الأول مطلوب' : 'Teacher 1 is required')
+        req('teacher2', lang === 'ar' ? 'المعلم الثاني مطلوب' : 'Teacher 2 is required')
+        req('whyInterested', lang === 'ar' ? 'هذا الحقل مطلوب' : 'This field is required')
+        req('committeeFrequency', lang === 'ar' ? 'هذا الحقل مطلوب' : 'This field is required')
+      }
+      if (!data.declaration) e.declaration = lang === 'ar' ? 'يرجى الموافقة على الإقرار' : 'Please accept the declaration'
+      req('signatureName', lang === 'ar' ? 'التوقيع (الاسم) مطلوب' : 'Signature (typed name) is required')
+    }
+
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -319,18 +399,45 @@ function RegisterForm() {
     if (signUp.session) {
       const uid = signUp.user.id
       let entityId: string | null = null
+      const declarationMeta = data.declaration
+        ? { declaration: true, signatureName: data.signatureName, signedAt: new Date().toISOString() }
+        : {}
       if (institutionType === 'school') {
+        const details = showESDetails ? {
+          socialLinks: data.socialLinks || null,
+          coordinatorName: data.coordinatorName || null,
+          teachers: [data.teacher1, data.teacher2].filter(Boolean),
+          parentRep: data.parentRep || null,
+          whyInterested: data.whyInterested || null,
+          committeeFrequency: data.committeeFrequency || null,
+          themes: data.themes,
+          comments: data.comments || null,
+          ...declarationMeta,
+        } : {}
         const { data: row } = await supabase.from('schools').insert({
           user_id: uid, name_en: data.institutionName, name_ar: data.institutionNameAr || null,
           type: data.schoolType || null, governorate: GOV_MAP[data.governorate] ?? null,
           address: data.address || null, students_count: data.studentsCount ? Number(data.studentsCount) : null,
           principal_name: data.contactName || null, principal_phone: data.contactPhone || null,
+          details,
         }).select('id').single()
         entityId = row?.id ?? null
       } else {
+        const details = showGKDetails ? {
+          website: data.website || null,
+          socialLinks: data.socialLinks || null,
+          numRooms: data.numRooms ? Number(data.numRooms) : null,
+          numGuestsYear: data.numGuestsYear ? Number(data.numGuestsYear) : null,
+          numGuestNightsYear: data.numGuestNightsYear ? Number(data.numGuestNightsYear) : null,
+          generalManager: { name: data.gmName || null, email: data.gmEmail || null },
+          environmentalDirector: { name: data.envDirName || null, email: data.envDirEmail || null },
+          contactPerson: { name: data.contactName || null, phone: data.contactPhone || null, email: data.contactEmail || null },
+          ...declarationMeta,
+        } : {}
         const { data: row } = await supabase.from('businesses').insert({
           user_id: uid, name_en: data.institutionName, name_ar: data.institutionNameAr || null,
           type: data.businessType || null, governorate: data.governorate || null, address: data.address || null,
+          details,
         }).select('id').single()
         entityId = row?.id ?? null
       }
@@ -795,6 +902,182 @@ function RegisterForm() {
                   })}
                 </div>
 
+              </div>
+            )}
+
+            {/* ── Step: Programme details (Green Key / Eco-Schools) ─ */}
+            {stepId === 'details' && (
+              <div>
+                <h2 className="text-xl font-bold text-forest mb-1">
+                  {showGKDetails ? (lang === 'ar' ? 'استمارة المفتاح الأخضر' : 'Green Key Application') : (lang === 'ar' ? 'استمارة المدارس البيئية' : 'Eco-Schools Application')}
+                </h2>
+                <p className="text-sm mb-7" style={{ color: '#5A6672' }}>
+                  {lang === 'ar' ? 'أكمل تفاصيل التسجيل الخاصة بالبرنامج.' : 'Complete the programme-specific registration details.'}
+                </p>
+
+                {/* Green Key */}
+                {showGKDetails && (
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>{lang === 'ar' ? 'الموقع الإلكتروني' : 'Website'}</Label>
+                        <input type="text" value={data.website} onChange={e => set('website', e.target.value)} className="input" placeholder="https://" />
+                        {errors.website && <FieldError msg={errors.website} />}
+                      </div>
+                      <div>
+                        <Label>{lang === 'ar' ? 'روابط التواصل الاجتماعي' : 'Social media links'}</Label>
+                        <input type="text" value={data.socialLinks} onChange={e => set('socialLinks', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label>{lang === 'ar' ? 'عدد الغرف' : 'Number of rooms'}</Label>
+                        <input type="number" min="0" value={data.numRooms} onChange={e => set('numRooms', e.target.value)} className="input" placeholder="0" />
+                        {errors.numRooms && <FieldError msg={errors.numRooms} />}
+                      </div>
+                      <div>
+                        <Label>{lang === 'ar' ? 'الضيوف / السنة' : 'Guests / year'}</Label>
+                        <input type="number" min="0" value={data.numGuestsYear} onChange={e => set('numGuestsYear', e.target.value)} className="input" placeholder="0" />
+                        {errors.numGuestsYear && <FieldError msg={errors.numGuestsYear} />}
+                      </div>
+                      <div>
+                        <Label>{lang === 'ar' ? 'ليالي الضيوف / السنة' : 'Guest-nights / year'}</Label>
+                        <input type="number" min="0" value={data.numGuestNightsYear} onChange={e => set('numGuestNightsYear', e.target.value)} className="input" placeholder="0" />
+                        {errors.numGuestNightsYear && <FieldError msg={errors.numGuestNightsYear} />}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl p-4 space-y-4" style={{ background: '#F9FBF9', border: '1px solid #C8E6D0' }}>
+                      <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>{lang === 'ar' ? 'المدير العام' : 'General Manager'}</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>{lang === 'ar' ? 'الاسم' : 'Name'}</Label>
+                          <input type="text" value={data.gmName} onChange={e => set('gmName', e.target.value)} className="input" />
+                          {errors.gmName && <FieldError msg={errors.gmName} />}
+                        </div>
+                        <div>
+                          <Label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</Label>
+                          <input type="email" value={data.gmEmail} onChange={e => set('gmEmail', e.target.value)} className="input" />
+                          {errors.gmEmail && <FieldError msg={errors.gmEmail} />}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-2xl p-4 space-y-4" style={{ background: '#F9FBF9', border: '1px solid #C8E6D0' }}>
+                      <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>{lang === 'ar' ? 'المدير البيئي' : 'Environmental Director'}</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>{lang === 'ar' ? 'الاسم' : 'Name'}</Label>
+                          <input type="text" value={data.envDirName} onChange={e => set('envDirName', e.target.value)} className="input" />
+                          {errors.envDirName && <FieldError msg={errors.envDirName} />}
+                        </div>
+                        <div>
+                          <Label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</Label>
+                          <input type="email" value={data.envDirEmail} onChange={e => set('envDirEmail', e.target.value)} className="input" />
+                          {errors.envDirEmail && <FieldError msg={errors.envDirEmail} />}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-2xl p-4 space-y-4" style={{ background: '#F9FBF9', border: '1px solid #C8E6D0' }}>
+                      <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>{lang === 'ar' ? 'جهة الاتصال' : 'Contact Person'}</p>
+                      <p className="text-xs" style={{ color: '#7A9080' }}>{lang === 'ar' ? 'الاسم والهاتف من خطوة المؤسسة' : 'Name & phone taken from the Institution step.'} — {data.contactName || '—'} · {data.contactPhone || '—'}</p>
+                      <div>
+                        <Label>{lang === 'ar' ? 'بريد جهة الاتصال' : 'Contact person email'}</Label>
+                        <input type="email" value={data.contactEmail} onChange={e => set('contactEmail', e.target.value)} className="input" />
+                        {errors.contactEmail && <FieldError msg={errors.contactEmail} />}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Eco-Schools */}
+                {showESDetails && (
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>{lang === 'ar' ? 'منسق برنامج المدارس البيئية' : 'Eco-Schools coordinator'}</Label>
+                        <input type="text" value={data.coordinatorName} onChange={e => set('coordinatorName', e.target.value)} className="input" />
+                        {errors.coordinatorName && <FieldError msg={errors.coordinatorName} />}
+                      </div>
+                      <div>
+                        <Label>{lang === 'ar' ? 'التواصل الاجتماعي للمدرسة' : 'School social media'}</Label>
+                        <input type="text" value={data.socialLinks} onChange={e => set('socialLinks', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>{lang === 'ar' ? 'المعلّم الأول' : 'Teacher 1'}</Label>
+                        <input type="text" value={data.teacher1} onChange={e => set('teacher1', e.target.value)} className="input" />
+                        {errors.teacher1 && <FieldError msg={errors.teacher1} />}
+                      </div>
+                      <div>
+                        <Label>{lang === 'ar' ? 'المعلّم الثاني' : 'Teacher 2'}</Label>
+                        <input type="text" value={data.teacher2} onChange={e => set('teacher2', e.target.value)} className="input" />
+                        {errors.teacher2 && <FieldError msg={errors.teacher2} />}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>{lang === 'ar' ? 'ممثل أولياء الأمور (أو غيره)' : 'Parent representative (or other)'}</Label>
+                      <input type="text" value={data.parentRep} onChange={e => set('parentRep', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                    </div>
+                    <div>
+                      <Label>{lang === 'ar' ? 'لماذا تهتم مدرستك بالمشاركة في البرنامج؟' : 'Why is your school interested in participating?'}</Label>
+                      <textarea value={data.whyInterested} onChange={e => set('whyInterested', e.target.value)} className="input resize-none" rows={3} />
+                      {errors.whyInterested && <FieldError msg={errors.whyInterested} />}
+                    </div>
+                    <div>
+                      <Label>{lang === 'ar' ? 'هل لدى مدرستك لجنة طلابية؟ ما هو تكرار اجتماعاتها؟' : 'Do you have a student committee? What is the meeting frequency?'}</Label>
+                      <textarea value={data.committeeFrequency} onChange={e => set('committeeFrequency', e.target.value)} className="input resize-none" rows={2} />
+                      {errors.committeeFrequency && <FieldError msg={errors.committeeFrequency} />}
+                    </div>
+                    <div>
+                      <Label>{lang === 'ar' ? 'أي من محاور المدارس البيئية الـ12 حققتها مدرستك أو تعمل عليها؟' : 'Which of the 12 Eco-Schools themes has your school achieved or is working on?'}</Label>
+                      <div className="grid grid-cols-2 gap-2 mt-1">
+                        {ECO_SCHOOLS_THEMES.map(t => {
+                          const on = data.themes.includes(t.en)
+                          return (
+                            <button key={t.en} type="button" onClick={() => toggleTheme(t.en)}
+                              className="flex items-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold text-left transition-all"
+                              style={on ? { background: '#40916C', color: '#fff' } : { background: '#F4F9F5', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                              <span className="w-4 h-4 rounded border flex items-center justify-center flex-shrink-0" style={on ? { background: '#fff', borderColor: '#fff' } : { borderColor: '#C8E6D0' }}>
+                                {on && <Check className="w-3 h-3" style={{ color: '#40916C' }} />}
+                              </span>
+                              {lang === 'ar' ? t.ar : t.en}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>{lang === 'ar' ? 'أسئلة / ملاحظات' : 'Questions / comments'}</Label>
+                      <textarea value={data.comments} onChange={e => set('comments', e.target.value)} className="input resize-none" rows={2} placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Declaration + signature (shared) */}
+                <div className="mt-6 rounded-2xl p-4 space-y-3" style={{ background: '#FEF9EC', border: '1px solid #FDE68A' }}>
+                  <button type="button" onClick={() => { setData(d => ({ ...d, declaration: !d.declaration })); setErrors(e => ({ ...e, declaration: '' })) }}
+                    className="flex items-start gap-3 text-left w-full">
+                    <span className="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5" style={data.declaration ? { background: '#B45309', borderColor: '#B45309' } : { borderColor: '#D6B45B' }}>
+                      {data.declaration && <Check className="w-3 h-3 text-white" />}
+                    </span>
+                    <span className="text-sm" style={{ color: '#854D0E' }}>
+                      {lang === 'ar'
+                        ? 'أقرّ بأن المعلومات المقدَّمة صحيحة وأوافق على شروط البرنامج والالتزام بمعاييره.'
+                        : 'I declare that the information provided is accurate and I accept the programme terms and commit to its criteria.'}
+                    </span>
+                  </button>
+                  {errors.declaration && <FieldError msg={errors.declaration} />}
+                  <div>
+                    <Label>{lang === 'ar' ? 'التوقيع (اكتب اسمك الكامل)' : 'Signature (type your full name)'}</Label>
+                    <input type="text" value={data.signatureName} onChange={e => set('signatureName', e.target.value)} className="input" placeholder={lang === 'ar' ? 'الاسم الكامل' : 'Full name'} />
+                    {errors.signatureName && <FieldError msg={errors.signatureName} />}
+                  </div>
+                  <p className="text-xs" style={{ color: '#92722E' }}>
+                    {lang === 'ar'
+                      ? 'سيتم رفع السياسات الموقّعة لاحقاً من صفحة الطلب.'
+                      : 'The signed policies document is uploaded later from your application page.'}
+                  </p>
+                </div>
               </div>
             )}
 
