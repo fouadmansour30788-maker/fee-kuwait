@@ -9,6 +9,8 @@ import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
+import { getApplicationTimeline } from '@/lib/db/timeline'
+import JourneyTimeline from '@/components/timeline/JourneyTimeline'
 import PreScreeningReview from '@/components/prescreening/PreScreeningReview'
 import AssignAuditor from '@/components/audit/AssignAuditor'
 import ArchiveAudit from '@/components/audit/ArchiveAudit'
@@ -34,7 +36,7 @@ export default async function ApplicationDetail({
     listApplicationDocuments(id), listAuditors(), applicationAuditor(id), listCriterionAssessments(id),
     listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id), getPreScreening(id),
   ])
-  const trail = await listAuditTrail(id)
+  const [trail, timeline] = await Promise.all([listAuditTrail(id), getApplicationTimeline(id)])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
 
@@ -78,6 +80,13 @@ export default async function ApplicationDetail({
           <CheckCircle2 className="w-4 h-4" /> Application updated.
         </div>
       )}
+
+      {/* Journey & history */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Journey &amp; history</h2>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The establishment&apos;s full lifecycle — registration, eligibility, audits, surveillance and decisions.</p>
+        <JourneyTimeline events={timeline} />
+      </div>
 
       {/* Pre-screening review (National Operator) */}
       {app.programme === 'green-key' && ps && (

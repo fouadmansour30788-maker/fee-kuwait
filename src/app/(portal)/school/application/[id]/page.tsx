@@ -9,6 +9,8 @@ import { listCriterionMessages } from '@/lib/db/messages'
 import { myEntity } from '@/lib/db/establishment'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
+import { getApplicationTimeline } from '@/lib/db/timeline'
+import JourneyTimeline from '@/components/timeline/JourneyTimeline'
 import PreScreeningBanner from '@/components/prescreening/PreScreeningBanner'
 import DocumentUpload from '@/components/documents/DocumentUpload'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
@@ -17,7 +19,7 @@ import CompliancePanel from '@/components/audit/CompliancePanel'
 export default async function SchoolApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments, messages, ent, audits, ps] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity(), listAudits(params.id), getPreScreening(params.id)])
+  const [docs, assessments, messages, ent, audits, ps, timeline] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity(), listAudits(params.id), getPreScreening(params.id), getApplicationTimeline(params.id)])
   const psApproved = preScreeningApproved(ps)
   const criteria = app.programme === 'green-key' && psApproved && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
@@ -77,6 +79,12 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
           <strong>Revision required.</strong> {ncCount} criteri{ncCount === 1 ? 'on' : 'a'} did not pass. Please update your evidence/comments for the flagged indicators{app.revision_deadline ? ` by ${new Date(app.revision_deadline).toLocaleDateString('en-GB')}` : ''}.
         </div>
       )}
+
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
+        <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Journey &amp; history</h2>
+        <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Your progress so far — registration, eligibility, audits and decisions.</p>
+        <JourneyTimeline events={timeline} />
+      </div>
 
       {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
