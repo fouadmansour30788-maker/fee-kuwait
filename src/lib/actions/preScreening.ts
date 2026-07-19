@@ -76,8 +76,14 @@ export async function reviewPreScreening(
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
-  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
-  if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Not authorised' }
+  // Authorise with the same is_staff() check the RLS policies use, rather than a
+  // hard-coded role list — the National Operator account may carry a staff role
+  // beyond admin/super_admin.
+  const { data: staff } = await supabase.rpc('is_staff')
+  if (!staff) {
+    const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+    return { error: `Not authorised (this account's role is "${me?.role ?? 'unknown'}").` }
+  }
 
   const patch: Record<string, unknown> = {
     status: decision, review_note: note || null, reviewed_by: user.id,
@@ -114,8 +120,8 @@ export async function unlockPreScreening(applicationId: string, reason: string):
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
-  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
-  if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Not authorised' }
+  const { data: staff } = await supabase.rpc('is_staff')
+  if (!staff) return { error: 'Not authorised' }
 
   const admin = createAdminClient()
   const { data: rows, error } = await admin.from('pre_screening').update({
