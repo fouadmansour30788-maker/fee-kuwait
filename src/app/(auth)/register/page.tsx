@@ -369,7 +369,6 @@ function RegisterForm() {
     return institutionType !== 'business' || !bt || !data.businessType || bt.includes(data.businessType)
   }
   const eligibleProgs = PROGRAMMES.filter(p => p.eligible.includes(institutionType) && fitsBizType(p))
-  const otherProgs = PROGRAMMES.filter(p => !(p.eligible.includes(institutionType) && fitsBizType(p)))
 
   // ── Type selector (shown when no ?type param) ──────
   if (!typeChosen) {
@@ -796,32 +795,6 @@ function RegisterForm() {
                   })}
                 </div>
 
-                {/* Other programmes */}
-                {otherProgs.length > 0 && (
-                  <>
-                    <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: '#7A9080' }}>
-                      {lang === 'ar' ? 'برامج أخرى' : 'Other programmes'}
-                    </p>
-                    <div className="space-y-2">
-                      {otherProgs.map(prog => {
-                        const Icon = prog.Icon
-                        return (
-                          <div key={prog.id} className="flex items-center gap-3 p-3 rounded-xl opacity-50"
-                            style={{ background: '#F4F9F5', border: '1px solid #C8E6D0' }}>
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                              style={{ background: `${prog.color}12` }}>
-                              <Icon className="w-4 h-4" style={{ color: prog.color }} />
-                            </div>
-                            <p className="text-sm font-medium text-forest">{lang === 'ar' ? prog.ar : prog.en}</p>
-                            <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#E8F5EC', color: '#7A9080' }}>
-                              {lang === 'ar' ? 'غير متاح لهذا النوع' : 'Not for this type'}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </>
-                )}
               </div>
             )}
 
