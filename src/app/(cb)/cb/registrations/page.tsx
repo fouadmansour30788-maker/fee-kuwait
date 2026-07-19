@@ -30,7 +30,7 @@ export default async function CbRegistrationsPage() {
             </tr>
           </thead>
           <tbody className="divide-y" style={{ borderColor: '#F8FAFC' }}>
-            {members.map((m) => {
+            {active.map((m) => {
               const st = MEMBER_STATUS_META[m.status ?? ''] ?? { label: m.status ?? '—', color: '#64748B', bg: '#F1F5F9' }
               const Icon = m.kind === 'School' ? School : Building2
               return (
@@ -46,16 +46,17 @@ export default async function CbRegistrationsPage() {
                   <td className="px-5 py-3.5" style={{ color: '#334155' }}>{m.kind}</td>
                   <td className="px-5 py-3.5" style={{ color: '#334155' }}>{m.governorate ?? '—'}</td>
                   <td className="px-5 py-3.5"><span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: st.bg, color: st.color }}>{st.label}</span></td>
-                  <td className="px-5 py-3.5"><GreenKeyCell kind={m.kind} id={m.id} number={m.green_key_number} status={m.status} /></td>
+                  <td className="px-5 py-3.5"><GreenKeyCell kind={m.kind} id={m.id} number={m.green_key_number} status={m.status} canAssign /></td>
                 </tr>
               )
             })}
           </tbody>
         </table>
-        {members.length === 0 && (
+        {active.length === 0 && (
           <div className="py-16 text-center" style={{ color: '#94A3B8' }}>
             <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
-            <p className="text-sm font-medium" style={{ color: '#475569' }}>No registrations yet</p>
+            <p className="text-sm font-medium" style={{ color: '#475569' }}>No approved registrations yet</p>
+            <p className="text-xs mt-1">Registrations appear here once the operator approves them.</p>
           </div>
         )}
       </div>

@@ -26,14 +26,15 @@ export async function setMemberStatus(kind: 'School' | 'Establishment', id: stri
   return { ok: true }
 }
 
-// Operator OR Certification Body assigns a unique Green Key number to an approved
-// registration. Idempotent — returns the existing number if one is already set.
+// The Certification Body assigns a unique Green Key number to an approved
+// registration (the operator does not — they only see the synced result).
+// Idempotent — returns the existing number if one is already set.
 export async function assignGreenKeyNumber(kind: 'School' | 'Establishment', id: string): Promise<{ ok?: true; error?: string; number?: string }> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
   const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
-  if (!me || !['admin', 'super_admin', 'certification_body'].includes(me.role)) return { error: 'Not allowed' }
+  if (!me || !['certification_body', 'super_admin'].includes(me.role)) return { error: 'Only the Certification Body can assign a Green Key number.' }
 
   const admin = createAdminClient()
   const table = kind === 'School' ? 'schools' : 'businesses'

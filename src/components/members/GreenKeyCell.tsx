@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { KeyRound, Loader2, Copy, Check } from 'lucide-react'
 import { assignGreenKeyNumber } from '@/lib/actions/members'
 
-export default function GreenKeyCell({ kind, id, number, status }: { kind: 'School' | 'Establishment'; id: string; number: string | null; status: string | null }) {
+export default function GreenKeyCell({ kind, id, number, status, canAssign = false }: { kind: 'School' | 'Establishment'; id: string; number: string | null; status: string | null; canAssign?: boolean }) {
   const [num, setNum] = useState(number)
   const [pending, start] = useTransition()
   const [error, setError] = useState('')
@@ -24,6 +24,9 @@ export default function GreenKeyCell({ kind, id, number, status }: { kind: 'Scho
     )
   }
   if (status !== 'active') return <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>
+  // Operator view: read-only. The number is assigned by the Certification Body
+  // and syncs here once issued.
+  if (!canAssign) return <span className="text-[11px] font-medium" style={{ color: '#94A3B8' }}>Awaiting CB</span>
 
   function generate() {
     setError('')
