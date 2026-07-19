@@ -26,10 +26,12 @@ export async function setMemberStatus(kind: 'School' | 'Establishment', id: stri
   return { ok: true }
 }
 
-// The Certification Body assigns a unique Green Key number to an approved
-// registration (the operator does not — they only see the synced result).
-// Idempotent — returns the existing number if one is already set.
-export async function assignGreenKeyNumber(kind: 'School' | 'Establishment', id: string): Promise<{ ok?: true; error?: string; number?: string }> {
+// The Certification Body assigns a Green Key number to an approved registration
+// by entering it manually (the operator does not — they only see the synced
+// result). The number must be unique across establishments and schools.
+export async function assignGreenKeyNumber(kind: 'School' | 'Establishment', id: string, number: string): Promise<{ ok?: true; error?: string; number?: string }> {
+  const value = number?.trim()
+  if (!value) return { error: 'Enter a Green Key number.' }
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
@@ -38,20 +40,23 @@ export async function assignGreenKeyNumber(kind: 'School' | 'Establishment', id:
 
   const admin = createAdminClient()
   const table = kind === 'School' ? 'schools' : 'businesses'
-  const { data: row } = await admin.from(table).select('green_key_number, status').eq('id', id).single()
+  const { data: row } = await admin.from(table).select('status').eq('id', id).single()
   if (!row) return { error: 'Registration not found' }
   if (row.status !== 'active') return { error: 'Approve the registration first' }
-  if (row.green_key_number) return { ok: true, number: row.green_key_number }
 
-  const [{ count: bc }, { count: sc }] = await Promise.all([
-    admin.from('businesses').select('id', { count: 'exact', head: true }).not('green_key_number', 'is', null),
-    admin.from('schools').select('id', { count: 'exact', head: true }).not('green_key_number', 'is', null),
+  // Enforce uniqueness across both entity tables (excluding this row itself).
+  const [biz, sch] = await Promise.all([
+    admin.from('businesses').select('id').eq('green_key_number', value),
+    admin.from('schools').select('id').eq('green_key_number', value),
   ])
-  const number = `GK-KW-${new Date().getFullYear()}-${String((bc ?? 0) + (sc ?? 0) + 1).padStart(4, '0')}`
-  const { error } = await admin.from(table).update({ green_key_number: number, updated_at: new Date().toISOString() }).eq('id', id)
+  const bizClash = (biz.data ?? []).some((r) => !(table === 'businesses' && r.id === id))
+  const schClash = (sch.data ?? []).some((r) => !(table === 'schools' && r.id === id))
+  if (bizClash || schClash) return { error: 'That Green Key number is already in use.' }
+
+  const { error } = await admin.from(table).update({ green_key_number: value, updated_at: new Date().toISOString() }).eq('id', id)
   if (error) return { error: error.message }
 
   revalidatePath('/members')
   revalidatePath('/cb/registrations')
-  return { ok: true, number }
+  return { ok: true, number: value }
 }

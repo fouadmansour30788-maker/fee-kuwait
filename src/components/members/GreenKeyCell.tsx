@@ -2,11 +2,12 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { KeyRound, Loader2, Copy, Check } from 'lucide-react'
+import { Loader2, Copy, Check } from 'lucide-react'
 import { assignGreenKeyNumber } from '@/lib/actions/members'
 
 export default function GreenKeyCell({ kind, id, number, status, canAssign = false }: { kind: 'School' | 'Establishment'; id: string; number: string | null; status: string | null; canAssign?: boolean }) {
   const [num, setNum] = useState(number)
+  const [draft, setDraft] = useState('')
   const [pending, start] = useTransition()
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
@@ -28,18 +29,21 @@ export default function GreenKeyCell({ kind, id, number, status, canAssign = fal
   // and syncs here once issued.
   if (!canAssign) return <span className="text-[11px] font-medium" style={{ color: '#94A3B8' }}>Awaiting CB</span>
 
-  function generate() {
+  function save() {
     setError('')
     start(async () => {
-      const r = await assignGreenKeyNumber(kind, id)
+      const r = await assignGreenKeyNumber(kind, id, draft)
       if (r.error) setError(r.error)
       else { setNum(r.number ?? null); router.refresh() }
     })
   }
   return (
-    <div className="flex items-center gap-2">
-      <button onClick={generate} disabled={pending} className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg disabled:opacity-60" style={{ background: '#ECFDF3', color: '#047857' }}>
-        {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <KeyRound className="w-3 h-3" />} Generate
+    <div className="flex items-center gap-1.5">
+      <input value={draft} onChange={(e) => setDraft(e.target.value)} disabled={pending} placeholder="Enter GK number"
+        onKeyDown={(e) => { if (e.key === 'Enter') save() }}
+        className="text-xs px-2 py-1 rounded-lg outline-none w-36" style={{ border: '1px solid #E2E8F0', color: '#1E293B' }} />
+      <button onClick={save} disabled={pending || !draft.trim()} className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg disabled:opacity-60" style={{ background: '#ECFDF3', color: '#047857' }}>
+        {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Save
       </button>
       {error && <span className="text-[11px]" style={{ color: '#E53E3E' }}>{error}</span>}
     </div>

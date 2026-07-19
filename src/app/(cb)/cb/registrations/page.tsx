@@ -17,7 +17,7 @@ export default async function CbRegistrationsPage() {
 
       <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
         <KeyRound className="w-4 h-4 mt-0.5 flex-shrink-0" />
-        <p>Generate a unique Green Key number for each approved registration. Numbers are shared with the operator.</p>
+        <p>Enter the Green Key number issued for each approved registration. Numbers must be unique and are shared with the operator.</p>
       </div>
 
       <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>

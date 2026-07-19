@@ -2,7 +2,7 @@
 
 import { Fragment, memo, useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock } from 'lucide-react'
+import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock, Link2, ExternalLink } from 'lucide-react'
 import { setInternalResult, setApplicantStatus, setCriterionResult, setCriterionNote } from '@/lib/actions/assessments'
 import { postCriterionMessage } from '@/lib/actions/messages'
 import CriterionUpload from '@/components/documents/CriterionUpload'
@@ -158,7 +158,7 @@ const Row = memo(function Row({
     <div className="flex flex-col gap-1 items-start">
       {items.map((d) => (
         <a key={d.id} href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
-          <FileText className="w-3 h-3" /> <span className="max-w-[100px] truncate">{d.name}</span> <Download className="w-3 h-3" />
+          {d.isLink ? <Link2 className="w-3 h-3" /> : <FileText className="w-3 h-3" />} <span className="max-w-[100px] truncate">{d.name}</span> {d.isLink ? <ExternalLink className="w-3 h-3" /> : <Download className="w-3 h-3" />}
         </a>
       ))}
       {canUpload ? <CriterionUpload applicationId={applicationId} criterionRef={c.ref} year={year} /> : (items.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>)}
@@ -260,6 +260,7 @@ export default function CriteriaBoard({
   const [msgs, setMsgs] = useState(messages)
   const [search, setSearch] = useState('')
   const [area, setArea] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all') // all | I (imperative) | G (guideline)
   const [auditId, setAuditId] = useState('')
   const selAudit = useMemo(() => audits.find((a) => a.id === auditId) ?? null, [audits, auditId])
   const [descOf, setDescOf] = useState<CriterionRef | null>(null)
@@ -319,7 +320,9 @@ export default function CriteriaBoard({
   const areas = useMemo(() => Array.from(new Set(criteria.map((c) => c.area))), [criteria])
   const filtered = criteria.filter((c) => {
     const q = search.toLowerCase()
-    return (!q || c.title.toLowerCase().includes(q) || c.ref.toLowerCase().includes(q)) && (area === 'all' || c.area === area)
+    return (!q || c.title.toLowerCase().includes(q) || c.ref.toLowerCase().includes(q))
+      && (area === 'all' || c.area === area)
+      && (typeFilter === 'all' || (c.type ?? '').includes(typeFilter))
   })
   const groups = useMemo(() => {
     const order: string[] = []; const map = new Map<string, CriterionRef[]>()
@@ -352,6 +355,11 @@ export default function CriteriaBoard({
         <select value={area} onChange={(e) => setArea(e.target.value)} className="text-sm px-3 py-2 rounded-xl bg-white outline-none" style={{ border: '1px solid #E2E8F0', color: '#475569' }}>
           <option value="all">All areas</option>
           {areas.map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} title="Criterion type" className="text-sm px-3 py-2 rounded-xl bg-white outline-none" style={{ border: '1px solid #E2E8F0', color: '#475569' }}>
+          <option value="all">I &amp; G</option>
+          <option value="I">Imperative (I)</option>
+          <option value="G">Guideline (G)</option>
         </select>
         <select value={year} onChange={(e) => setYear(Number(e.target.value))} title="Evidence year" className="text-sm px-3 py-2 rounded-xl bg-white outline-none" style={{ border: '1px solid #E2E8F0', color: '#475569' }}>
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
