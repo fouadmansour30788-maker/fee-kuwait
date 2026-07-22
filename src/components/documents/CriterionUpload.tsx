@@ -10,7 +10,7 @@ const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
 // Compact evidence uploader tied to a single criterion (and year). Uploads
 // straight to Storage (RLS: applicants write their own) and records the
 // criterion_ref + year.
-export default function CriterionUpload({ applicationId, criterionRef, year }: { applicationId: string; criterionRef: string; year?: number }) {
+export default function CriterionUpload({ applicationId, criterionRef, year, surveillanceId }: { applicationId: string; criterionRef: string; year?: number; surveillanceId?: string }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [linking, setLinking] = useState(false)
@@ -43,6 +43,7 @@ export default function CriterionUpload({ applicationId, criterionRef, year }: {
     const ins = await supabase.from('application_documents').insert({
       application_id: applicationId, uploaded_by: user.id, criterion_ref: criterionRef, year: yr,
       name: file.name, path, size: file.size, mime_type: file.type || null,
+      surveillance_id: surveillanceId ?? null,
     })
     if (ins.error) { setError(ins.error.message); setBusy(false); return }
 
@@ -66,6 +67,7 @@ export default function CriterionUpload({ applicationId, criterionRef, year }: {
     const ins = await supabase.from('application_documents').insert({
       application_id: applicationId, uploaded_by: user.id, criterion_ref: criterionRef, year: yr,
       name: href.replace(/^https?:\/\//i, '').slice(0, 80), link_url: href,
+      surveillance_id: surveillanceId ?? null,
     })
     if (ins.error) { setError(ins.error.message); setBusy(false); return }
 

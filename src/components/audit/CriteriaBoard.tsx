@@ -158,7 +158,9 @@ const Row = memo(function Row({
 }: RowProps) {
   const [text, setText] = useState('')
   const ev = GK_EVIDENCE[c.ref]
-  const list = docsList.filter((d) => d.year === year || d.year == null)
+  // Surveillance evidence lives under the Surveillance Activities tab, never on
+  // the main application board (the two can share a year).
+  const list = docsList.filter((d) => !d.surveillance_id && (d.year === year || d.year == null))
   const estDocs = list.filter((d) => applicantId && d.uploaded_by === applicantId)
   function send() { const b = text.trim(); if (!b) return; onPost(c.ref, b); setText('') }
 

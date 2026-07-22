@@ -24,7 +24,9 @@ export default function SurveillanceRespond({
   const [pending, start] = useTransition()
   const router = useRouter()
 
-  const docsFor = (ref: string) => docs.filter((d) => d.criterion_ref === ref && (d.year === period))
+  // Only this activity's evidence. Rows uploaded before surveillance_id existed
+  // fall back to matching on the period.
+  const docsFor = (ref: string) => docs.filter((d) => d.criterion_ref === ref && (d.surveillance_id ? d.surveillance_id === id : d.year === period))
 
   function submit() {
     setError('')
@@ -46,7 +48,7 @@ export default function SurveillanceRespond({
                   <FileText className="w-3 h-3" /> <span className="max-w-[160px] truncate">{d.name}</span> <Download className="w-3 h-3" />
                 </a>
               ))}
-              {editable && <CriterionUpload applicationId={applicationId} criterionRef={ref} year={period} />}
+              {editable && <CriterionUpload applicationId={applicationId} criterionRef={ref} year={period} surveillanceId={id} />}
               {!editable && docsFor(ref).length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>No documents</span>}
             </div>
           </div>

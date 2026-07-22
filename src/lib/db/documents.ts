@@ -13,6 +13,7 @@ export interface AppDoc {
   url: string | null
   link_url: string | null
   isLink: boolean
+  surveillance_id: string | null
 }
 
 const BUCKET = 'application-docs'
@@ -26,7 +27,7 @@ export async function listApplicationDocuments(applicationId: string): Promise<A
   const supabase = createClient()
   const { data, error } = await supabase
     .from('application_documents')
-    .select('id, name, path, size, created_at, criterion_ref, year, uploaded_by, link_url')
+    .select('id, name, path, size, created_at, criterion_ref, year, uploaded_by, link_url, surveillance_id')
     .eq('application_id', applicationId)
     .order('created_at', { ascending: false })
   if (error) { console.error('listApplicationDocuments:', error.message); return [] }
