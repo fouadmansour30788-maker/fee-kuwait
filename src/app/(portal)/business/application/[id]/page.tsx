@@ -13,6 +13,7 @@ import { getApplicationTimeline } from '@/lib/db/timeline'
 import JourneyTimeline from '@/components/timeline/JourneyTimeline'
 import PreScreeningBanner from '@/components/prescreening/PreScreeningBanner'
 import DocumentUpload from '@/components/documents/DocumentUpload'
+import DocumentRemove from '@/components/documents/DocumentRemove'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 
@@ -152,9 +153,10 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
                 </div>
                 {d.url && (
                   <a href={d.url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: '#F1F5F9', color: '#40916C' }}>
-                    <Download className="w-3.5 h-3.5" /> Download
+                    <Download className="w-3.5 h-3.5" /> {d.isLink ? 'Open' : 'Download'}
                   </a>
                 )}
+                {!locked && <DocumentRemove documentId={d.id} />}
               </div>
             ))}
           </div>

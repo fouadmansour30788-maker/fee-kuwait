@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { FileText, Download, Send, Loader2, AlertCircle } from 'lucide-react'
 import CriterionUpload from '@/components/documents/CriterionUpload'
+import DocumentRemove from '@/components/documents/DocumentRemove'
 import { submitSurveillance } from '@/lib/actions/surveillance'
 import type { AppDoc } from '@/lib/db/documents'
 
@@ -44,9 +45,12 @@ export default function SurveillanceRespond({
             </div>
             <div className="mt-2 flex flex-col gap-1 items-start">
               {docsFor(ref).map((d) => (
-                <a key={d.id} href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
-                  <FileText className="w-3 h-3" /> <span className="max-w-[160px] truncate">{d.name}</span> <Download className="w-3 h-3" />
-                </a>
+                <span key={d.id} className="inline-flex items-center gap-1">
+                  <a href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+                    <FileText className="w-3 h-3" /> <span className="max-w-[160px] truncate">{d.name}</span> <Download className="w-3 h-3" />
+                  </a>
+                  {editable && <DocumentRemove documentId={d.id} compact />}
+                </span>
               ))}
               {editable && <CriterionUpload applicationId={applicationId} criterionRef={ref} year={period} surveillanceId={id} />}
               {!editable && docsFor(ref).length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>No documents</span>}

@@ -6,6 +6,7 @@ import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock, Link2, E
 import { setInternalResult, setApplicantStatus, setCriterionResult, setCriterionNote } from '@/lib/actions/assessments'
 import { postCriterionMessage } from '@/lib/actions/messages'
 import CriterionUpload from '@/components/documents/CriterionUpload'
+import DocumentRemove from '@/components/documents/DocumentRemove'
 import type { CriterionRef } from '@/lib/criteria'
 import type { CriterionAssessment } from '@/lib/db/assessments'
 import type { AppDoc } from '@/lib/db/documents'
@@ -167,9 +168,12 @@ const Row = memo(function Row({
   const Attach = ({ items, canUpload }: { items: AppDoc[]; canUpload: boolean }) => (
     <div className="flex flex-col gap-1 items-start">
       {items.map((d) => (
-        <a key={d.id} href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
-          {d.isLink ? <Link2 className="w-3 h-3" /> : <FileText className="w-3 h-3" />} <span className="max-w-[100px] truncate">{d.name}</span> {d.isLink ? <ExternalLink className="w-3 h-3" /> : <Download className="w-3 h-3" />}
-        </a>
+        <span key={d.id} className="inline-flex items-center gap-1">
+          <a href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+            {d.isLink ? <Link2 className="w-3 h-3" /> : <FileText className="w-3 h-3" />} <span className="max-w-[100px] truncate">{d.name}</span> {d.isLink ? <ExternalLink className="w-3 h-3" /> : <Download className="w-3 h-3" />}
+          </a>
+          {canUpload && <DocumentRemove documentId={d.id} compact />}
+        </span>
       ))}
       {canUpload ? <CriterionUpload applicationId={applicationId} criterionRef={c.ref} year={year} /> : (items.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>)}
     </div>
