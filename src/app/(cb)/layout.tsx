@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Gavel, KeyRound, Menu, X, LogOut, ChevronRight, Bell, Radar } from 'lucide-react'
 import SignOutButton from '@/components/auth/SignOutButton'
+import ProfileMenu from '@/components/auth/ProfileMenu'
 import ChatWidget from '@/components/chat/ChatWidget'
 
 const NAV = [
@@ -79,13 +80,7 @@ export default function CbLayout({ children }: { children: React.ReactNode }) {
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
           </button>
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'linear-gradient(135deg, #C8A951, #E8D5A3)', color: '#2A2410' }}>
-              {initials}
-            </div>
-            <div className="hidden md:block">
-              <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Certification Body</p>
-              <p className="text-xs" style={{ color: '#94A3B8' }}>Certification Body</p>
-            </div>
+            <ProfileMenu accent="#C8A951" textColor="#2A2410" />
           </div>
         </header>
 

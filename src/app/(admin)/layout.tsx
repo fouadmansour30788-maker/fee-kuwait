@@ -10,6 +10,7 @@ import {
   MessageSquare, Paperclip, Send, RotateCcw,
 } from 'lucide-react'
 import SignOutButton from '@/components/auth/SignOutButton'
+import ProfileMenu from '@/components/auth/ProfileMenu'
 import ChatWidget from '@/components/chat/ChatWidget'
 
 const NOTIF_ICON: Record<string, typeof Bell> = {
@@ -181,13 +182,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
-              M
-            </div>
-            <div className="hidden md:block">
-              <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Mostafa Kanjo</p>
-              <p className="text-xs" style={{ color: '#94A3B8' }}>National Operator</p>
-            </div>
+            <ProfileMenu accent="#1B4332" />
           </div>
         </header>
 

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import SignOutButton from '@/components/auth/SignOutButton'
+import ProfileMenu from '@/components/auth/ProfileMenu'
 import ChatWidget from '@/components/chat/ChatWidget'
 
 // Only real (DB-backed) screens. Mock ones (Action Plan, Activities, Journey,
@@ -128,11 +129,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <Bell className="w-5 h-5" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: '#E53E3E' }} />
           </button>
-          {/* Avatar */}
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-            style={{ background: `linear-gradient(135deg, ${portalColor}, #40916C)` }}>
-            S
-          </div>
+          {/* Avatar → profile details & sign out */}
+          <ProfileMenu accent={portalColor} />
         </header>
 
         {/* Page content */}
