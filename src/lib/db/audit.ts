@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { AppRow } from './applications'
 
 export interface AuditorUser { id: string; name_en: string | null; email: string }
@@ -8,6 +9,18 @@ export async function listAuditors(): Promise<AuditorUser[]> {
   const supabase = createClient()
   const { data, error } = await supabase.from('users').select('id, name_en, email').eq('role', 'auditor').order('name_en')
   if (error) { console.error('listAuditors:', error.message); return [] }
+  return (data ?? []) as AuditorUser[]
+}
+
+// The same list for the Certification Body, which picks an auditor at the
+// CB-review stage but is not covered by the staff read policy on `users`.
+export async function listAuditorsForCb(): Promise<AuditorUser[]> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+  if (!me || !['certification_body', 'admin', 'super_admin'].includes(me.role)) return []
+  const { data } = await createAdminClient().from('users').select('id, name_en, email').eq('role', 'auditor').order('name_en')
   return (data ?? []) as AuditorUser[]
 }
 

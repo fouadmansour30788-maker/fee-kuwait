@@ -8,6 +8,8 @@ import { listAudits } from '@/lib/db/audits'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
+import { listAuditorsForCb } from '@/lib/db/audit'
+import CbReviewPanel from '@/components/audit/CbReviewPanel'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 import { recordCbDecision } from './actions'
@@ -27,7 +29,7 @@ export default async function CbApplicationDetail({
   const { id } = params
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, assessments, messages, audits, ps] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id), getPreScreening(id)])
+  const [docs, assessments, messages, audits, ps, cbAuditors] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id), getPreScreening(id), listAuditorsForCb()])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const s = statusMeta(app.status)
   const decided = !!app.cb_decision && app.cb_decision !== 'pending'
@@ -66,6 +68,9 @@ export default async function CbApplicationDetail({
           <CheckCircle2 className="w-4 h-4" /> Certification decision recorded.
         </div>
       )}
+
+      {/* CB review stage — assign an auditor or return for rectification */}
+      {app.status === 'cb_review' && <CbReviewPanel applicationId={id} auditors={cbAuditors} />}
 
       <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
         <Gavel className="w-4 h-4 mt-0.5 flex-shrink-0" />

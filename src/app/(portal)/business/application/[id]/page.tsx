@@ -77,7 +77,11 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
 
       {app.status === 'revision' && (
         <div className="rounded-2xl border px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
-          <strong>Revision required.</strong> {ncCount} criteri{ncCount === 1 ? 'on' : 'a'} did not pass. Please update your evidence/comments for the flagged indicators{app.revision_deadline ? ` by ${new Date(app.revision_deadline).toLocaleDateString('en-GB')}` : ''}.
+          <strong>Revision required.</strong>{' '}
+          {ncCount > 0
+            ? <>{ncCount} criteri{ncCount === 1 ? 'on' : 'a'} did not pass. Please update your evidence/comments for the flagged indicators</>
+            : <>{app.cb_note ? app.cb_note : 'Please update your evidence and comments'}</>}
+          {app.revision_deadline ? ` by ${new Date(app.revision_deadline).toLocaleDateString('en-GB')}` : ''}.
         </div>
       )}
 

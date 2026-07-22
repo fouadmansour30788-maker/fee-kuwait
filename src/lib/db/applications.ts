@@ -89,8 +89,10 @@ export async function listAuditTrail(applicationId: string): Promise<TrailEntry[
   }))
 }
 
-// Statuses an operator can set from the review screen.
-export const OPERATOR_STATUSES = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'approved', 'rejected']
+// Statuses an operator can set from the review screen. 'cb_review' hands the
+// application to the Certification Body — it locks for the establishment while
+// the CB decides to assign an auditor or return it for rectification.
+export const OPERATOR_STATUSES = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'cb_review', 'approved', 'rejected']
 
 // Statuses at which the auditor's per-criterion results are finalised (audit handed
 // off to the CB, or a decision recorded) and may be shown to the establishment.
