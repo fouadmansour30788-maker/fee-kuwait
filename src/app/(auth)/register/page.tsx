@@ -125,7 +125,7 @@ const PROGRAMMES = [
     id: 'eco-campus', en: 'Eco-Campus', ar: 'الحرم البيئي',
     desc_en: 'For universities and higher education institutions.',
     desc_ar: 'للجامعات ومؤسسات التعليم العالي.',
-    color: '#40916C', Icon: GraduationCap, eligible: ['business'], bizTypes: ['other'],
+    color: '#40916C', Icon: GraduationCap, eligible: ['school'],
   },
 ]
 
@@ -491,7 +491,7 @@ function RegisterForm() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           {[
-            { type: 'school' as const, Icon: School, color: '#52B788', en: 'A School', ar: 'مدرسة', subEn: 'Eco-Schools, LEAF, YRE', subAr: 'مدارس بيئية، LEAF، YRE' },
+            { type: 'school' as const, Icon: School, color: '#52B788', en: 'Educational Institute', ar: 'مؤسسة تعليمية', subEn: 'Eco-Schools, LEAF, YRE, Eco Campus', subAr: 'مدارس بيئية، LEAF، YRE، Eco Campus' },
             { type: 'business' as const, Icon: Building2, color: '#C8A951', en: 'A Hospitality Establishment', ar: 'منشأة ضيافة', subEn: 'Blue Flag, Green Key', subAr: 'علم أزرق، مفتاح أخضر' },
           ].map(({ type, Icon, color, en, ar, subEn, subAr }) => (
             <button
