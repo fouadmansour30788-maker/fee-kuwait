@@ -40,6 +40,18 @@ const ROLE_BUBBLE: Record<string, { bg: string; bd: string; fg: string }> = {
   auditor:       { bg: '#F5F3FF', bd: '#DDD6FE', fg: '#6D28D9' }, // purple
 }
 const ROLE_BUBBLE_FALLBACK = { bg: '#F1F5F9', bd: '#E2E8F0', fg: '#64748B' }
+
+// The auditor's remark, shown in the same bubble style as the comment thread so
+// it reads consistently (and long unbroken text wraps instead of overflowing).
+function AuditorNote({ text, author }: { text: string; author?: string | null }) {
+  const t = ROLE_BUBBLE.auditor
+  return (
+    <div className="mt-1.5 rounded-lg px-2 py-1.5 max-h-40 overflow-y-auto" style={{ background: t.bg, border: `1px solid ${t.bd}` }}>
+      <span className="text-[9px] font-semibold block" style={{ color: t.fg }}>Auditor{author ? ` · ${author}` : ''}</span>
+      <span className="text-xs whitespace-pre-wrap break-all" style={{ color: '#334155' }}>{text}</span>
+    </div>
+  )
+}
 const BLANK: CriterionAssessment = { applicantResult: 'pending', applicantStatus: null, internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
 const EMPTY_DOCS: AppDoc[] = []
 const EMPTY_MSGS: CriterionMessage[] = []
@@ -229,13 +241,13 @@ const Row = memo(function Row({
         </div>
       </td>
       {showExternal && (
-        <td className="px-3 py-3 min-w-[280px] w-[300px] align-top">
+        <td className="px-3 py-3 min-w-[260px] max-w-[320px] align-top">
           {selAudit ? (() => {
             const snap = selAudit.results[c.ref]
             const r = (snap?.result ?? 'pending') as Result
             return <>
               {r === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={r} />}
-              {snap?.note && <p className="text-xs mt-1 whitespace-pre-wrap break-words" style={{ color: '#64748B' }}>{snap.note}</p>}
+              {snap?.note && <AuditorNote text={snap.note} author={selAudit.auditorName} />}
             </>
           })() : <>
             {editAudit
@@ -243,7 +255,7 @@ const Row = memo(function Row({
               : (a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />)}
             {editAudit
               ? <textarea defaultValue={a.note ?? ''} rows={5} placeholder="Auditor remark…" onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.note ?? '')) onAuditNote(c.ref, e.target.value) }} className="mt-1.5 w-full text-xs px-2 py-1.5 rounded-lg outline-none resize-y min-h-[80px] leading-relaxed" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
-              : a.note && <p className="text-xs mt-1 whitespace-pre-wrap break-words" style={{ color: '#64748B' }}>{a.note}</p>}
+              : a.note && <AuditorNote text={a.note} />}
           </>}
         </td>
       )}
