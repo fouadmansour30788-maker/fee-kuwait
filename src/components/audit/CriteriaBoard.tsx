@@ -31,6 +31,14 @@ const RESULT_META: Record<Result, { label: string; color: string; bg: string }> 
   no_pass: { label: 'Not pass', color: '#DC2626', bg: '#FEE2E2' },
 }
 const ROLE_LABEL: Record<string, string> = { establishment: 'Establishment', operator: 'Operator', auditor: 'Auditor', cb: 'CB' }
+// One colour per author role so a thread is readable at a glance.
+const ROLE_BUBBLE: Record<string, { bg: string; bd: string; fg: string }> = {
+  establishment: { bg: '#ECFDF3', bd: '#A7F3D0', fg: '#047857' }, // green
+  operator:      { bg: '#EFF6FF', bd: '#BFDBFE', fg: '#1D4ED8' }, // blue
+  cb:            { bg: '#FEF9EC', bd: '#FDE68A', fg: '#B45309' }, // yellow
+  auditor:       { bg: '#F5F3FF', bd: '#DDD6FE', fg: '#6D28D9' }, // purple
+}
+const ROLE_BUBBLE_FALLBACK = { bg: '#F1F5F9', bd: '#E2E8F0', fg: '#64748B' }
 const BLANK: CriterionAssessment = { applicantResult: 'pending', applicantStatus: null, internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
 const EMPTY_DOCS: AppDoc[] = []
 const EMPTY_MSGS: CriterionMessage[] = []
@@ -194,12 +202,11 @@ const Row = memo(function Row({
             {thread.map((m) => {
               const isEst = m.author_role === 'establishment'
               const internal = m.visibility === 'auditor_internal'
-              const bg = isEst ? '#ECFDF3' : internal ? '#FEF9EC' : '#EFF6FF'
-              const bd = isEst ? '#A7F3D0' : internal ? '#FDE68A' : '#BFDBFE'
+              const tone = ROLE_BUBBLE[m.author_role ?? ''] ?? ROLE_BUBBLE_FALLBACK
               return (
                 <div key={m.id} className={isEst ? 'flex justify-start' : 'flex justify-end'}>
-                  <div className="rounded-lg px-2 py-1.5 max-w-[88%]" style={{ background: bg, border: `1px solid ${bd}` }}>
-                    <span className="text-[9px] font-semibold block" style={{ color: '#64748B' }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{internal ? ' · internal' : ''}</span>
+                  <div className="rounded-lg px-2 py-1.5 max-w-[88%]" style={{ background: tone.bg, border: `1px solid ${tone.bd}`, borderStyle: internal ? 'dashed' : 'solid' }}>
+                    <span className="text-[9px] font-semibold block" style={{ color: tone.fg }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{internal ? ' · internal' : ''}</span>
                     <span className="text-xs" style={{ color: '#334155' }}>{m.body}</span>
                   </div>
                 </div>
