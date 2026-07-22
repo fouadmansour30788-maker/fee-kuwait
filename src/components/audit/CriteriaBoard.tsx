@@ -229,21 +229,21 @@ const Row = memo(function Row({
         </div>
       </td>
       {showExternal && (
-        <td className="px-3 py-3 min-w-[150px]">
+        <td className="px-3 py-3 min-w-[280px] w-[300px] align-top">
           {selAudit ? (() => {
             const snap = selAudit.results[c.ref]
             const r = (snap?.result ?? 'pending') as Result
             return <>
               {r === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={r} />}
-              {snap?.note && <p className="text-xs mt-1" style={{ color: '#64748B' }}>{snap.note}</p>}
+              {snap?.note && <p className="text-xs mt-1 whitespace-pre-wrap break-words" style={{ color: '#64748B' }}>{snap.note}</p>}
             </>
           })() : <>
             {editAudit
               ? <Toggle value={a.external} onChange={(r) => onAudit(c.ref, r)} />
               : (a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />)}
             {editAudit
-              ? <textarea defaultValue={a.note ?? ''} rows={2} placeholder="Auditor remark…" onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.note ?? '')) onAuditNote(c.ref, e.target.value) }} className="mt-1.5 w-full text-xs px-2 py-1.5 rounded-lg outline-none resize-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
-              : a.note && <p className="text-xs mt-1" style={{ color: '#64748B' }}>{a.note}</p>}
+              ? <textarea defaultValue={a.note ?? ''} rows={5} placeholder="Auditor remark…" onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.note ?? '')) onAuditNote(c.ref, e.target.value) }} className="mt-1.5 w-full text-xs px-2 py-1.5 rounded-lg outline-none resize-y min-h-[80px] leading-relaxed" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+              : a.note && <p className="text-xs mt-1 whitespace-pre-wrap break-words" style={{ color: '#64748B' }}>{a.note}</p>}
           </>}
         </td>
       )}
