@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, AlertCircle, ChevronRight } from 'lucide-react'
+import { Loader2, AlertCircle, ChevronRight, Check } from 'lucide-react'
 import { OPERATOR_ACTIONS, CB_ACTIONS, AUDITOR_ACTIONS, type AppStatus, type Transition } from '@/lib/workflow'
 import { applyWorkflowAction, type ActionInput } from '@/lib/actions/workflow'
 
@@ -10,8 +10,12 @@ const TABLES = { operator: OPERATOR_ACTIONS, cb: CB_ACTIONS, auditor: AUDITOR_AC
 const toneBg: Record<string, string> = { primary: 'linear-gradient(135deg, #1B4332, #40916C)', danger: '#DC2626', neutral: '#475569' }
 
 // The role's available workflow actions for the current status, each expanding
-// to collect any required input (reason / deadline / clarification owner / date).
-export default function WorkflowActions({ applicationId, role, status }: { applicationId: string; role: 'operator' | 'cb' | 'auditor'; status: string }) {
+// to collect any required input (reason / deadline / clarification owner / date /
+// criteria to reopen).
+export default function WorkflowActions({ applicationId, role, status, criteria = [] }: {
+  applicationId: string; role: 'operator' | 'cb' | 'auditor'; status: string
+  criteria?: { ref: string; title: string }[]
+}) {
   const actions = TABLES[role][status as AppStatus] ?? []
   const [open, setOpen] = useState<string | null>(null)
   const [input, setInput] = useState<ActionInput>({})
@@ -58,6 +62,25 @@ export default function WorkflowActions({ applicationId, role, status }: { appli
                     <option value="auditor">Auditor</option>
                     <option value="establishment">Establishment</option>
                   </select>
+                )}
+                {req.includes('criteria') && (
+                  <div className="rounded-lg border max-h-52 overflow-y-auto divide-y" style={{ borderColor: '#E2E8F0' }}>
+                    {criteria.length === 0 && <p className="text-xs p-2" style={{ color: '#94A3B8' }}>No criteria to reopen.</p>}
+                    {criteria.map((c) => {
+                      const on = (input.criteria ?? []).includes(c.ref)
+                      return (
+                        <button key={c.ref} type="button"
+                          onClick={() => setInput((i) => ({ ...i, criteria: on ? (i.criteria ?? []).filter((x) => x !== c.ref) : [...(i.criteria ?? []), c.ref] }))}
+                          className="w-full flex items-center gap-2 px-2 py-1.5 text-left text-xs">
+                          <span className="w-4 h-4 rounded border flex items-center justify-center flex-shrink-0" style={on ? { background: '#40916C', borderColor: '#40916C' } : { borderColor: '#CBD5E1' }}>
+                            {on && <Check className="w-3 h-3 text-white" />}
+                          </span>
+                          <span className="font-mono font-semibold" style={{ color: '#64748B' }}>{c.ref}</span>
+                          <span className="truncate" style={{ color: '#1E293B' }}>{c.title}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
                 )}
                 {req.includes('date') && (
                   <input type="date" value={input.date ?? ''} onChange={(e) => setInput((i) => ({ ...i, date: e.target.value }))}

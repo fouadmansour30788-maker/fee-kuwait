@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox, Clock } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES } from '@/lib/db/applications'
-import { establishmentCanEdit } from '@/lib/workflow'
+import { establishmentCanEdit, PARTIAL_EDIT_STATUSES } from '@/lib/workflow'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listAudits } from '@/lib/db/audits'
@@ -26,6 +26,7 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
   const criteria = app.programme === 'green-key' && psApproved && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
   const locked = !establishmentCanEdit(app.status) || ent?.status !== 'active'
+  const editableCriteria = PARTIAL_EDIT_STATUSES.includes(app.status) ? (app.reopened_criteria ?? []) : null
   const generalDocs = docs.filter((d) => !d.criterion_ref)
   const reports = showExternal ? docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF) : []
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
@@ -64,6 +65,12 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
           <p className="text-sm mt-1" style={{ color: '#5B7568' }}>
             Submitted {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB') : '—'}
           </p>
+          {PARTIAL_EDIT_STATUSES.includes(app.status) && (app.reopened_criteria?.length ?? 0) > 0 && (
+            <div className="mt-4 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
+              <strong>Rectification open.</strong> Only these criteria are editable: {app.reopened_criteria!.join(', ')}
+              {app.action_deadline ? ` · due ${new Date(app.action_deadline).toLocaleDateString('en-GB')}` : ''}. {app.cb_note ?? ''}
+            </div>
+          )}
           {['rejected', 'eligibility_rejected'].includes(app.status) && app.rejection_reason && (
             <div className="mt-4 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B' }}>
               <strong>Not approved:</strong> {app.rejection_reason}
@@ -96,7 +103,7 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Attach evidence and add a comment for each indicator, and see your reviewer&apos;s feedback.</p>
-          <CriteriaBoard role="establishment" applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} audits={audits} />
+          <CriteriaBoard role="establishment" applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} audits={audits} editableCriteria={editableCriteria} />
         </div>
       )}
 

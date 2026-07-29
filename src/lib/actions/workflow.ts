@@ -14,6 +14,7 @@ export interface ActionInput {
   deadline?: string       // ISO date/datetime
   owner?: ClarifyOwner
   date?: string           // site-visit date
+  criteria?: string[]     // criterion refs to reopen
 }
 
 type Role = 'operator' | 'cb' | 'auditor'
@@ -58,6 +59,7 @@ export async function applyWorkflowAction(
   if (req.includes('deadline') && !input.deadline) return { error: 'A deadline is required.' }
   if (req.includes('owner') && !input.owner) return { error: 'Select who must respond to the clarification.' }
   if (req.includes('date') && !input.date) return { error: 'A confirmed date is required.' }
+  if (req.includes('criteria') && !(input.criteria && input.criteria.length)) return { error: 'Select at least one criterion to reopen.' }
 
   // Resolve the target status.
   let target: string
@@ -80,10 +82,13 @@ export async function applyWorkflowAction(
   }
   if (t.to === 'ORIGIN') { patch.cb_origin_status = null; patch.clarification_owner = null }
   if (req.includes('deadline')) patch.action_deadline = input.deadline
+  if (req.includes('criteria')) patch.reopened_criteria = input.criteria
   if (action === 'Confirm Site Visit Date') patch.site_visit_date = input.date
   if (action === 'Open Further Corrective Action Period') patch.rectification_round = (app.rectification_round ?? 0) + 1
   if (action === 'Reject Eligibility') patch.rejection_reason = input.reason?.trim() || null
   if (action === 'Require Rectification' || action === 'Record Not Certified Decision') patch.cb_note = input.reason?.trim() || null
+  // Reopened items lock again once the operator returns the application.
+  if (['Return to CB', 'Send to Auditor for Reassessment', 'Submit Application to CB'].includes(action)) patch.reopened_criteria = []
 
   let certificateNumber: string | null = null
   if (action === 'Approve & Issue Certificate') {
@@ -97,6 +102,24 @@ export async function applyWorkflowAction(
 
   const { error } = await admin.from('applications').update(patch).eq('id', applicationId)
   if (error) return { error: error.message }
+
+  // Freeze a version snapshot when the application is handed on.
+  const SNAPSHOT_ACTIONS: Record<string, string> = {
+    'Submit Application to CB': 'Submitted to CB',
+    'Return to CB': 'Returned to CB',
+    'Submit Audit Report': 'Audit report submitted',
+    'Submit Reassessment Report': `Reassessment round ${app.rectification_round ?? 0}`,
+    'Send to Auditor for Reassessment': 'Sent for reassessment',
+  }
+  if (SNAPSHOT_ACTIONS[action]) {
+    const { data: rows } = await admin.from('criterion_assessments')
+      .select('criterion_ref, applicant_status, applicant_result, internal_result, result, note, internal_note')
+      .eq('application_id', applicationId)
+    await admin.from('application_versions').insert({
+      application_id: applicationId, label: SNAPSHOT_ACTIONS[action], status: target,
+      snapshot: { assessments: rows ?? [], at: new Date().toISOString() }, created_by: user.id,
+    })
+  }
 
   // Traceability.
   await admin.from('audit_trail').insert({

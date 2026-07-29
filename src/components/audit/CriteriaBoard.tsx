@@ -288,7 +288,7 @@ const Row = memo(function Row({
 // Shared collaborative criteria board.
 export default function CriteriaBoard({
   applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false, auditEditable = false, applicantId,
-  audits = [], auditorName,
+  audits = [], auditorName, editableCriteria = null,
 }: {
   applicationId: string
   criteria: CriterionRef[]
@@ -302,6 +302,9 @@ export default function CriteriaBoard({
   applicantId?: string
   audits?: AuditRecord[]
   auditorName?: string | null
+  // When set, only these criterion refs are editable by the establishment
+  // (selective reopen); null means the usual all-or-nothing lock applies.
+  editableCriteria?: string[] | null
 }) {
   const [rows, setRows] = useState(assessments)
   const [msgs, setMsgs] = useState(messages)
@@ -468,7 +471,7 @@ export default function CriteriaBoard({
                   {g.rows.map((c) => (
                     <Row key={c.ref} c={c} a={rows[c.ref] ?? BLANK} docsList={docsByRef.get(c.ref) ?? EMPTY_DOCS} thread={msgsByRef.get(c.ref) ?? EMPTY_MSGS}
                       year={year} applicationId={applicationId} applicantId={applicantId}
-                      estCanEdit={estCanEdit} isOperator={isOperator} canComment={canComment} editAudit={editAudit} showExternal={showExternal} selAudit={selAudit}
+                      estCanEdit={estCanEdit && (editableCriteria === null || editableCriteria.includes(c.ref))} isOperator={isOperator} canComment={canComment} editAudit={editAudit} showExternal={showExternal} selAudit={selAudit}
                       onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onPost={onPost} onDesc={onDesc} />
                   ))}
                 </Fragment>

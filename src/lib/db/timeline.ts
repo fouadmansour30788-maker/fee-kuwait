@@ -40,11 +40,12 @@ export async function getApplicationTimeline(applicationId: string): Promise<Tim
     .single()
   if (!app) return []
 
-  const [audits, surveillance, trail, ps] = await Promise.all([
+  const [audits, surveillance, trail, ps, versions] = await Promise.all([
     listAudits(applicationId),
     listSurveillance(applicationId),
     listAuditTrail(applicationId),
     supabase.from('pre_screening').select('status, submitted_at, reviewed_at, review_note, main_category').eq('application_id', applicationId).maybeSingle(),
+    supabase.from('application_versions').select('id, label, created_at').eq('application_id', applicationId).order('created_at', { ascending: true }),
   ])
 
   // Establishment registration record (created / approved / Green Key number).
@@ -87,6 +88,11 @@ export async function getApplicationTimeline(applicationId: string): Promise<Tim
     push({ id: 'cb', at: null, tone: 'decision', title: `Certification decision: ${CB_DECISION_LABEL[app.cb_decision] ?? app.cb_decision}`, detail: app.cb_note ?? null })
   }
   if (entity?.green_key_number) push({ id: 'gk', at: entity.updated_at ?? null, tone: 'decision', title: 'Green Key number issued', detail: entity.green_key_number })
+
+  // Frozen version snapshots.
+  for (const v of versions.data ?? []) {
+    push({ id: `ver-${v.id}`, at: v.created_at, tone: 'application', title: `Version frozen — ${v.label}`, detail: 'Snapshot of the criteria at this stage' })
+  }
 
   // Manual overrides / re-opens (operator view only — RLS hides these from the applicant).
   for (const t of trail) {

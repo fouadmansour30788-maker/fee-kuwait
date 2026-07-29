@@ -120,6 +120,8 @@ export interface AppDetail {
   cb_decision: string | null
   cb_note: string | null
   revision_deadline: string | null
+  action_deadline: string | null
+  reopened_criteria: string[] | null
   applicant: { email: string | null; name_en: string | null; name_ar: string | null } | null
 }
 
@@ -127,7 +129,7 @@ export async function getApplication(id: string): Promise<AppDetail | null> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('applications')
-    .select('id, applicant_id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, cb_decision, cb_note, revision_deadline, applicant:users!applicant_id(email, name_en, name_ar)')
+    .select('id, applicant_id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, cb_decision, cb_note, revision_deadline, action_deadline, reopened_criteria, applicant:users!applicant_id(email, name_en, name_ar)')
     .eq('id', id)
     .single()
   if (error) { console.error('getApplication:', error.message); return null }

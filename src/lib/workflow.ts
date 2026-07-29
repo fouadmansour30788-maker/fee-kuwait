@@ -82,10 +82,14 @@ export interface Transition {
   action: string
   to: AppStatus | 'ORIGIN'
   // Extra input the action requires from the UI.
-  requires?: ('reason' | 'deadline' | 'owner' | 'date')[]
+  requires?: ('reason' | 'deadline' | 'owner' | 'date' | 'criteria')[]
   note?: string
   tone?: 'primary' | 'danger' | 'neutral'
 }
+
+// Statuses where only the reopened criteria are editable by the establishment
+// (the rest of the board stays locked).
+export const PARTIAL_EDIT_STATUSES = ['pre_audit_rectification_open', 'post_audit_corrective_open']
 
 // ── Operator actions ──────────────────────────────────────────────────
 export const OPERATOR_ACTIONS: Partial<Record<AppStatus, Transition[]>> = {
@@ -97,7 +101,7 @@ export const OPERATOR_ACTIONS: Partial<Record<AppStatus, Transition[]>> = {
     { action: 'Submit Application to CB', to: 'cb_pre_audit_review', tone: 'primary', note: 'Enabled when all applicable criteria are Ready; the application locks and a frozen version is created.' },
   ],
   pre_audit_rectification_required: [
-    { action: 'Open Rectification', to: 'pre_audit_rectification_open', requires: ['deadline'], tone: 'primary', note: 'Select the criteria/evidence to reopen with instructions and a deadline.' },
+    { action: 'Open Rectification', to: 'pre_audit_rectification_open', requires: ['criteria', 'deadline'], tone: 'primary', note: 'Select the criteria/evidence to reopen with instructions and a deadline.' },
   ],
   pre_audit_rectification_open: [
     { action: 'Return to CB', to: 'cb_pre_audit_re_review', tone: 'primary', note: 'After the establishment completes the reopened items and you review them.' },
@@ -109,13 +113,13 @@ export const OPERATOR_ACTIONS: Partial<Record<AppStatus, Transition[]>> = {
     { action: 'Return to CB', to: 'ORIGIN', tone: 'primary', note: 'After the establishment responds in the comments and you review it.' },
   ],
   post_audit_rectification_required: [
-    { action: 'Open Corrective Action Period', to: 'post_audit_corrective_open', requires: ['deadline'], tone: 'primary', note: 'Only the non-conforming criteria and relevant evidence fields are reopened.' },
+    { action: 'Open Corrective Action Period', to: 'post_audit_corrective_open', requires: ['criteria', 'deadline'], tone: 'primary', note: 'Only the non-conforming criteria and relevant evidence fields are reopened.' },
   ],
   post_audit_corrective_open: [
     { action: 'Send to Auditor for Reassessment', to: 'auditor_reassessment', tone: 'primary', note: 'After corrective evidence is uploaded and you review it; reopened items lock.' },
   ],
   further_corrective_required: [
-    { action: 'Open Further Corrective Action Period', to: 'post_audit_corrective_open', requires: ['deadline'], tone: 'primary', note: 'Only auditor-identified criteria are reopened; the rectification round increases.' },
+    { action: 'Open Further Corrective Action Period', to: 'post_audit_corrective_open', requires: ['criteria', 'deadline'], tone: 'primary', note: 'Only auditor-identified criteria are reopened; the rectification round increases.' },
   ],
   not_certified_recorded: [
     { action: 'Communicate Outcome', to: 'not_certified_communicated', tone: 'neutral', note: 'The final decision and reason become visible to the establishment.' },

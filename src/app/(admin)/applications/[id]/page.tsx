@@ -196,7 +196,7 @@ export default async function ApplicationDetail({
           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
         </div>
         <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Actions available to the National Operator at this stage.</p>
-        <WorkflowActions applicationId={id} role="operator" status={app.status} />
+        <WorkflowActions applicationId={id} role="operator" status={app.status} criteria={criteria.map((c) => ({ ref: c.ref, title: c.title }))} />
       </div>
 
       {/* Re-open a locked/closed application for the establishment to edit again */}
