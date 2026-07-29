@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { WF_STATUS_META } from '@/lib/workflow'
 
 export interface AppRow {
   id: string
@@ -44,7 +45,9 @@ export const PROGRAMME_LABEL: Record<string, string> = {
   'eco-campus': 'Eco-Campus',
 }
 
-// Friendly label + colour for the (many) possible statuses; falls back to the raw value.
+// Friendly label + colour for the (many) possible statuses; falls back to the raw
+// value. Legacy statuses (pre-Stage-2 data) are kept alongside the whiteboard
+// lifecycle (WF_STATUS_META) so historical rows still render.
 export const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   new:                    { label: 'New',                 color: '#2563EB', bg: '#DBEAFE' },
   under_review:           { label: 'Under Review',        color: '#7C3AED', bg: '#EDE9FE' },
@@ -58,6 +61,7 @@ export const STATUS_META: Record<string, { label: string; color: string; bg: str
   certified:              { label: 'Certified',           color: '#059669', bg: '#D1FAE5' },
   certified_rectification:{ label: 'Certified · rectification', color: '#B45309', bg: '#FEF3C7' },
   not_certified:          { label: 'Not Certified',       color: '#DC2626', bg: '#FEE2E2' },
+  ...WF_STATUS_META,
 }
 
 export function statusMeta(status: string) {
