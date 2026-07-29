@@ -7,7 +7,7 @@ import type { CriterionRef } from '@/lib/criteria'
 import type { CriterionAssessment } from '@/lib/db/assessments'
 import type { AppDoc } from '@/lib/db/documents'
 
-type Result = 'pending' | 'pass' | 'no_pass'
+type Result = 'pending' | 'pass' | 'no_pass' | 'na'
 
 function ResultChip({ r, label }: { r: Result; label: string }) {
   if (r === 'pending') return null

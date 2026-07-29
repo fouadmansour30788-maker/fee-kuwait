@@ -16,20 +16,32 @@ import { AUDIT_TYPE_META } from '@/lib/audit-types'
 import type { GKEvidence } from '@/lib/data/greenKeyEvidence'
 import { GK_EVIDENCE, UPLOAD_REQ_META } from '@/lib/data/greenKeyEvidence'
 
-type Result = 'pending' | 'pass' | 'no_pass'
+type Result = 'pending' | 'pass' | 'no_pass' | 'na'
 type PStatus = 'in_progress' | 'complete' | 'na'
 type Role = 'admin' | 'establishment' | 'auditor' | 'cb'
+type Meta = { label: string; color: string; bg: string }
 
-const STATUS_META: Record<PStatus, { label: string; color: string; bg: string }> = {
+// Est. Progress (establishment self-assessment).
+const STATUS_META: Record<PStatus, Meta> = {
   complete:    { label: 'Complete',    color: '#059669', bg: '#D1FAE5' },
-  in_progress: { label: 'In progress', color: '#B45309', bg: '#FEF3C7' },
-  na:          { label: 'N/A',         color: '#64748B', bg: '#F1F5F9' },
+  in_progress: { label: 'In Progress', color: '#B45309', bg: '#FEF3C7' },
+  na:          { label: 'N/A Req.',    color: '#64748B', bg: '#F1F5F9' },
 }
 
-const RESULT_META: Record<Result, { label: string; color: string; bg: string }> = {
-  pending: { label: 'Pending', color: '#64748B', bg: '#F1F5F9' },
-  pass: { label: 'Pass', color: '#059669', bg: '#D1FAE5' },
-  no_pass: { label: 'Not pass', color: '#DC2626', bg: '#FEE2E2' },
+// Operator Readiness Review — pending is the "Pending Review" default.
+const OP_META: Record<Result, Meta> = {
+  pending: { label: 'Pending Review', color: '#64748B', bg: '#F1F5F9' },
+  pass:    { label: 'Ready',          color: '#059669', bg: '#D1FAE5' },
+  no_pass: { label: 'Needs Action',   color: '#DC2626', bg: '#FEE2E2' },
+  na:      { label: 'N/A Confirmed',  color: '#475569', bg: '#E2E8F0' },
+}
+
+// Auditor Conformity Assessment — pending is the "Not Assessed" default.
+const AUD_META: Record<Result, Meta> = {
+  pending: { label: 'Not Assessed',   color: '#64748B', bg: '#F1F5F9' },
+  pass:    { label: 'Conforming',     color: '#059669', bg: '#D1FAE5' },
+  no_pass: { label: 'Non-Conforming', color: '#DC2626', bg: '#FEE2E2' },
+  na:      { label: 'Not Applicable', color: '#475569', bg: '#E2E8F0' },
 }
 const ROLE_LABEL: Record<string, string> = { establishment: 'Establishment', operator: 'Operator', auditor: 'Auditor', cb: 'CB' }
 // One colour per author role so a thread is readable at a glance.
@@ -105,8 +117,9 @@ function EvidenceHint({ ev }: { ev: GKEvidence }) {
   )
 }
 
-function Chip({ r }: { r: Result }) {
-  const m = RESULT_META[r]
+// A result chip using the given per-role option-set meta.
+function Chip({ r, meta }: { r: Result; meta: Record<Result, Meta> }) {
+  const m = meta[r]
   return (
     <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 whitespace-nowrap" style={{ background: m.bg, color: m.color }}>
       {r === 'pass' ? <Check className="w-3 h-3" /> : r === 'no_pass' ? <X className="w-3 h-3" /> : null}{m.label}
@@ -114,7 +127,7 @@ function Chip({ r }: { r: Result }) {
   )
 }
 function StatusChip({ s }: { s: PStatus | null }) {
-  if (!s) return <span className="text-xs" style={{ color: '#CBD5E1' }}>Not set</span>
+  if (!s) return <span className="text-xs" style={{ color: '#CBD5E1' }}>Not Started</span>
   const m = STATUS_META[s]
   return <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: m.bg, color: m.color }}>{m.label}</span>
 }
@@ -131,11 +144,20 @@ function StatusSelect({ value, onChange }: { value: PStatus | null; onChange: (s
     </div>
   )
 }
-function Toggle({ value, onChange }: { value: Result; onChange: (r: Result) => void }) {
+// Result picker for the operator / auditor columns. Renders the three actionable
+// options from the given option set (pending is the unselected default).
+function ResultSelect({ value, onChange, meta }: { value: Result; onChange: (r: Result) => void; meta: Record<Result, Meta> }) {
   return (
-    <div className="inline-flex items-center gap-1">
-      <button onClick={() => onChange('pass')} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold" style={value === 'pass' ? { background: '#059669', color: '#fff' } : { background: '#F1F5F9', color: '#059669' }}><Check className="w-3 h-3" /> Pass</button>
-      <button onClick={() => onChange('no_pass')} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold" style={value === 'no_pass' ? { background: '#DC2626', color: '#fff' } : { background: '#F1F5F9', color: '#DC2626' }}><X className="w-3 h-3" /> Not pass</button>
+    <div className="inline-flex flex-col gap-1 items-start">
+      {(['pass', 'no_pass', 'na'] as const).map((r) => {
+        const m = meta[r]; const on = value === r
+        return (
+          <button key={r} onClick={() => onChange(r)} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap"
+            style={on ? { background: m.color, color: '#fff' } : { background: '#F1F5F9', color: m.color }}>
+            {r === 'pass' ? <Check className="w-3 h-3" /> : r === 'no_pass' ? <X className="w-3 h-3" /> : null}{m.label}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -211,7 +233,7 @@ const Row = memo(function Row({
         <Attach items={estDocs} canUpload={estCanEdit} />
       </td>
       <td className="px-3 py-3">
-        {isOperator ? <Toggle value={a.internal} onChange={(r) => onOp(c.ref, r)} /> : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Awaiting</span> : <Chip r={a.internal} />)}
+        {isOperator ? <ResultSelect value={a.internal} onChange={(r) => onOp(c.ref, r)} meta={OP_META} /> : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Pending Review</span> : <Chip r={a.internal} meta={OP_META} />)}
       </td>
       <td className="px-3 py-3 min-w-[220px]">
         <div className="space-y-1.5">
@@ -246,13 +268,13 @@ const Row = memo(function Row({
             const snap = selAudit.results[c.ref]
             const r = (snap?.result ?? 'pending') as Result
             return <>
-              {r === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={r} />}
+              {r === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={r} meta={AUD_META} />}
               {snap?.note && <AuditorNote text={snap.note} author={selAudit.auditorName} />}
             </>
           })() : <>
             {editAudit
-              ? <Toggle value={a.external} onChange={(r) => onAudit(c.ref, r)} />
-              : (a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} />)}
+              ? <ResultSelect value={a.external} onChange={(r) => onAudit(c.ref, r)} meta={AUD_META} />
+              : (a.external === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span> : <Chip r={a.external} meta={AUD_META} />)}
             {editAudit
               ? <textarea defaultValue={a.note ?? ''} rows={5} placeholder="Auditor remark…" onBlur={(e) => { if ((e.target.value.trim() || '') !== (a.note ?? '')) onAuditNote(c.ref, e.target.value) }} className="mt-1.5 w-full text-xs px-2 py-1.5 rounded-lg outline-none resize-y min-h-[80px] leading-relaxed" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
               : a.note && <AuditorNote text={a.note} />}
@@ -416,7 +438,7 @@ export default function CriteriaBoard({
             {STATUS_META[k].label} <span className="font-bold">{n}</span>
           </span>
         ))}
-        <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#94A3B8' }}>Not set <span className="font-bold">{statusCounts.notset}</span></span>
+        <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#94A3B8' }}>Not Started <span className="font-bold">{statusCounts.notset}</span></span>
         <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{statusCounts.complete} / {statusCounts.total} complete</span>
       </div>
 
@@ -425,13 +447,13 @@ export default function CriteriaBoard({
           <table className="w-full text-sm" style={{ minWidth: 1280 }}>
             <thead>
               <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#94A3B8' }}>
-                <th className={th}>Indicator</th>
-                <th className={th}>Description</th>
-                <th className={th}>Status</th>
-                <th className={th}>Est. attachment</th>
-                <th className={th}>Operator feedback</th>
-                <th className={th}>Comments</th>
-                {showExternal && <th className={th}>{selAudit ? `${AUDIT_TYPE_META[selAudit.type].label} audit ${selAudit.period}` : 'Audit'}</th>}
+                <th className={th}>Criterion No.</th>
+                <th className={th}>Criterion Description &amp; Guidance</th>
+                <th className={th}>Est. Progress</th>
+                <th className={th}>Est. Evidence</th>
+                <th className={th}>Operator Readiness Review</th>
+                <th className={th}>Comments &amp; Clarifications</th>
+                {showExternal && <th className={th}>{selAudit ? `${AUDIT_TYPE_META[selAudit.type].label} audit ${selAudit.period}` : 'Auditor Conformity Assessment'}</th>}
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: '#F1F5F9' }}>

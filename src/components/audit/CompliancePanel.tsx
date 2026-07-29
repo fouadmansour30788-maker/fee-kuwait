@@ -20,10 +20,6 @@ export default function CompliancePanel({
   const [idx, setIdx] = useState(0)
   if (criteria.length === 0) return null
 
-  const impRefs = criteria.filter((c) => !!c.type && c.type.includes('I'))
-  const guideRefs = criteria.filter((c) => c.type === 'G')
-  const imperative = impRefs.length
-  const guideline = guideRefs.length
   // Effective result per criterion: prefer the auditor's final result, then the
   // operator's review, then the establishment's self-assessment — so progress is
   // calculated automatically from whatever results are recorded so far.
@@ -35,6 +31,13 @@ export default function CompliancePanel({
     if (a.applicantStatus === 'complete') return 'pass'
     return a.applicantResult ?? 'pending'
   }
+  // A criterion confirmed Not Applicable (operator/auditor 'na') drops out of the
+  // requirement entirely — excluded from both the count and the pass tally.
+  const isNA = (ref: string) => effective(ref) === 'na'
+  const impRefs = criteria.filter((c) => !!c.type && c.type.includes('I') && !isNA(c.ref))
+  const guideRefs = criteria.filter((c) => c.type === 'G' && !isNA(c.ref))
+  const imperative = impRefs.length
+  const guideline = guideRefs.length
   const passed = (ref: string) => effective(ref) === 'pass'
   const impPassed = impRefs.filter((c) => passed(c.ref)).length
   const guidePassed = guideRefs.filter((c) => passed(c.ref)).length

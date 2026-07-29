@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 
-export type CriterionResult = 'pending' | 'pass' | 'no_pass'
+export type CriterionResult = 'pending' | 'pass' | 'no_pass' | 'na'
 
 export type ApplicantStatus = 'in_progress' | 'complete' | 'na'
 

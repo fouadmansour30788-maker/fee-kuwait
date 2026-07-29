@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { ESTABLISHMENT_EDITABLE_STATUSES } from '@/lib/db/applications'
 import { revalidatePath } from 'next/cache'
 
-const RESULTS = ['pending', 'pass', 'no_pass']
+const RESULTS = ['pending', 'pass', 'no_pass', 'na']
 
 // The assigned auditor records a criterion result. RLS enforces that only the
 // assigned auditor can write; we still require a session.
