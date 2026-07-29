@@ -4,6 +4,7 @@ import {
   Gauge, Lightbulb, CheckCircle2, AlertTriangle, Info, MapPin,
 } from 'lucide-react'
 import { operatorStats, PROGRAMME_LABEL, statusMeta, STATUS_META } from '@/lib/db/applications'
+import { CERTIFIED_STATUSES, NOT_APPROVED_STATUSES, CB_STATUSES, AUDIT_STATUSES } from '@/lib/workflow'
 import { listCertificates } from '@/lib/db/certificates'
 import { listMembers } from '@/lib/db/members'
 import { LineChart, Funnel, Radar, Donut } from '@/components/dashboard/charts'
@@ -18,9 +19,13 @@ const PROGRAMME_SHORT: Record<string, string> = {
   'leaf': 'LEAF', 'yre': 'YRE', 'eco-campus': 'Campus',
 }
 
-const CERTIFIED = ['approved', 'certified', 'certified_rectification']
-const NOT_APPROVED = ['rejected', 'not_certified']
-const IN_PROGRESS = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'audit', 'cb_review']
+const CERTIFIED = [...CERTIFIED_STATUSES, 'approved']
+const NOT_APPROVED = NOT_APPROVED_STATUSES
+const IN_PROGRESS = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'audit', 'cb_review',
+  'pending_eligibility', 'in_progress', ...CB_STATUSES, ...AUDIT_STATUSES,
+  'pre_audit_rectification_required', 'pre_audit_rectification_open', 'ready_for_auditor',
+  'post_audit_rectification_required', 'post_audit_corrective_open', 'further_corrective_required',
+  'cb_clarification_operator', 'cb_clarification_auditor', 'cb_clarification_establishment']
 
 export default async function AdminDashboard() {
   const [{ apps, members }, certs, memberRows] = await Promise.all([operatorStats(), listCertificates(), listMembers()])
@@ -54,8 +59,8 @@ export default async function AdminDashboard() {
   ]
 
   // Funnel — how far applications progress through the pipeline.
-  const AUDITED_SET = ['audit', 'cb_review', ...CERTIFIED, 'not_certified']
-  const CB_SET = ['cb_review', ...CERTIFIED.filter((s) => s !== 'approved'), 'not_certified']
+  const AUDITED_SET = [...AUDIT_STATUSES, ...CB_STATUSES, ...CERTIFIED, ...NOT_APPROVED_STATUSES]
+  const CB_SET = [...CB_STATUSES, ...CERTIFIED.filter((s) => s !== 'approved'), 'not_certified']
   const reached = {
     submitted: total,
     reviewed: apps.filter((a) => a.status !== 'new').length,
@@ -145,8 +150,8 @@ export default async function AdminDashboard() {
     const days = (new Date(c.expires_at).getTime() - now.getTime()) / 86_400_000
     return days > 0 && days <= 90
   }).length
-  const awaitingAudit = apps.filter((a) => a.status === 'audit').length
-  const awaitingCb = apps.filter((a) => a.status === 'cb_review').length
+  const awaitingAudit = apps.filter((a) => AUDIT_STATUSES.includes(a.status)).length
+  const awaitingCb = apps.filter((a) => CB_STATUSES.includes(a.status)).length
   const stuckDocs = apps.filter((a) => a.status === 'documents_pending').length
   const bottleneck = [...byStatus].filter((r) => IN_PROGRESS.includes(r.st)).sort((a, b) => b.count - a.count)[0]
   const thisMonth = months[months.length - 1].submitted

@@ -100,8 +100,7 @@ export const OPERATOR_STATUSES = ['new', 'under_review', 'documents_pending', 's
 
 // Statuses at which the auditor's per-criterion results are finalised (audit handed
 // off to the CB, or a decision recorded) and may be shown to the establishment.
-// During 'audit' the grading is still a draft, so it stays hidden from the applicant.
-export const AUDIT_PUBLISHED_STATUSES = ['cb_review', 'revision', 'approved', 'certified', 'certified_rectification', 'not_certified', 'rejected']
+export { AUDIT_RESULTS_VISIBLE as AUDIT_PUBLISHED_STATUSES } from '@/lib/workflow'
 
 // While the application is with the establishment/operator (pre-audit) — or re-opened
 // for revision — the establishment can edit its board (self-assessment, evidence,

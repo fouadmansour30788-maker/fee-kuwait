@@ -18,8 +18,15 @@ export async function setMemberStatus(kind: 'School' | 'Establishment', id: stri
 
   const admin = createAdminClient()
   const table = kind === 'School' ? 'schools' : 'businesses'
-  const { error } = await admin.from(table).update({ status, updated_at: new Date().toISOString() }).eq('id', id)
-  if (error) return { error: error.message }
+  const { data: ent } = await admin.from(table).update({ status, updated_at: new Date().toISOString() }).eq('id', id).select('user_id').single()
+  if (!ent) return { error: 'Registration not found' }
+
+  // Approving a registration is the eligibility step for programmes without a
+  // pre-screening (e.g. Eco-Schools): open any pending applications.
+  if (status === 'active' && ent.user_id) {
+    await admin.from('applications').update({ status: 'in_progress', updated_at: new Date().toISOString() })
+      .eq('applicant_id', ent.user_id).eq('status', 'pending_eligibility')
+  }
 
   revalidatePath('/members')
   revalidatePath('/dashboard')

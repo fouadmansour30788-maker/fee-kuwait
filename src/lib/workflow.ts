@@ -182,3 +182,23 @@ export const CLARIFY_STATUS: Record<ClarifyOwner, AppStatus> = {
   auditor: 'cb_clarification_auditor',
   establishment: 'cb_clarification_establishment',
 }
+
+// ── Semantic status groups (tolerant of both legacy and new vocabularies) ──
+export const CERTIFIED_STATUSES = ['certified', 'certified_rectification', 'certified_active']
+export const NOT_APPROVED_STATUSES = ['rejected', 'not_certified', 'eligibility_rejected', 'not_certified_recorded', 'not_certified_communicated']
+export const CLOSED_STATUSES = [...CERTIFIED_STATUSES, ...NOT_APPROVED_STATUSES]
+// The CB currently holds the application.
+export const CB_STATUSES = ['cb_review', 'cb_pre_audit_review', 'cb_pre_audit_re_review', 'cb_final_review', 'cb_final_re_review']
+// The auditor currently holds the application.
+export const AUDIT_STATUSES = ['audit', 'auditor_assigned', 'audit_scheduled', 'audit_in_progress', 'auditor_reassessment', 'auditor_reassessment_in_progress']
+// Statuses at which the auditor's per-criterion results are shown to the applicant
+// (audit submitted to the CB or a decision recorded).
+export const AUDIT_RESULTS_VISIBLE = [
+  'cb_review', 'revision', 'approved', 'certified', 'certified_rectification', 'not_certified', 'rejected',
+  'cb_final_review', 'cb_final_re_review', 'post_audit_rectification_required', 'post_audit_corrective_open',
+  'auditor_reassessment', 'auditor_reassessment_in_progress', 'further_corrective_required',
+  'cb_clarification_operator', 'cb_clarification_auditor', 'cb_clarification_establishment',
+  'certified_active', 'not_certified_recorded', 'not_certified_communicated',
+]
+export const isCertified = (s: string) => CERTIFIED_STATUSES.includes(s)
+export const isClosed = (s: string) => CLOSED_STATUSES.includes(s)

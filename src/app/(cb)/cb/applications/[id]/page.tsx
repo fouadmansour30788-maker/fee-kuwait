@@ -9,7 +9,9 @@ import { listCriterionMessages } from '@/lib/db/messages'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { listAuditorsForCb } from '@/lib/db/audit'
+import { CB_STATUSES } from '@/lib/workflow'
 import CbReviewPanel from '@/components/audit/CbReviewPanel'
+import WorkflowActions from '@/components/audit/WorkflowActions'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 import { recordCbDecision } from './actions'
@@ -69,13 +71,24 @@ export default async function CbApplicationDetail({
         </div>
       )}
 
-      {/* CB review stage — assign an auditor or return for rectification */}
+      {/* Legacy pre-audit panel — only for old-vocabulary rows still at cb_review */}
       {app.status === 'cb_review' && <CbReviewPanel applicationId={id} auditors={cbAuditors} />}
 
       <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
         <Gavel className="w-4 h-4 mt-0.5 flex-shrink-0" />
-        <p>Review the auditor&apos;s findings and evidence below, then record the certification decision. The auditor&apos;s results are read-only — you do not conduct the audit.</p>
+        <p>Review the auditor&apos;s findings and evidence below, then take the action for this stage. The auditor&apos;s results are read-only — you do not conduct the audit.</p>
       </div>
+
+      {/* CB workflow actions (whiteboard state machine) */}
+      {CB_STATUSES.includes(app.status) && app.status !== 'cb_review' && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>CB decision</h2>
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+          </div>
+          <WorkflowActions applicationId={id} role="cb" status={app.status} />
+        </div>
+      )}
 
       {/* Criteria board (read-only) */}
       {criteria.length > 0 && (
@@ -124,8 +137,8 @@ export default async function CbApplicationDetail({
         )}
       </div>
 
-      {/* Decision */}
-      {decided ? (
+      {/* Recorded decision */}
+      {decided && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-3" style={{ color: '#0F172A' }}>Certification decision</h2>
           <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: s.bg, color: s.color }}>
@@ -133,25 +146,6 @@ export default async function CbApplicationDetail({
           </div>
           {app.cb_note && <p className="text-sm mt-3" style={{ color: '#475569' }}>{app.cb_note}</p>}
         </div>
-      ) : (
-        <form action={recordCbDecision.bind(null, id)} className="bg-white rounded-2xl border p-6 space-y-4" style={{ borderColor: '#E2E8F0' }}>
-          <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Record certification decision</h2>
-          <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: '#475569' }}>Decision</label>
-            <select name="decision" defaultValue="certified" className="w-full text-sm px-3 py-2.5 rounded-xl outline-none bg-white" style={{ border: '1px solid #E2E8F0', color: '#1E293B' }}>
-              {DECISIONS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: '#475569' }}>Note to the establishment <span className="font-normal" style={{ color: '#94A3B8' }}>(shared with the applicant)</span></label>
-            <textarea name="cb_note" rows={3} placeholder="Rationale, conditions, or points to rectify…"
-              className="w-full text-sm px-3 py-2.5 rounded-xl outline-none resize-none" style={{ border: '1px solid #E2E8F0', color: '#1E293B' }} />
-          </div>
-          <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #854D0E, #C8A951)' }}>
-            <Gavel className="w-4 h-4" /> Record decision
-          </button>
-          <p className="text-xs" style={{ color: '#94A3B8' }}>A “Certified” outcome issues the certificate and notifies the establishment automatically.</p>
-        </form>
       )}
     </div>
   )

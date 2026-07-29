@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox, Clock } from 'lucide-react'
-import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES, ESTABLISHMENT_EDITABLE_STATUSES } from '@/lib/db/applications'
+import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES } from '@/lib/db/applications'
+import { establishmentCanEdit } from '@/lib/workflow'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listAudits } from '@/lib/db/audits'
@@ -24,7 +25,7 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
   const psApproved = preScreeningApproved(ps)
   const criteria = app.programme === 'green-key' && psApproved && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
-  const locked = !ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status) || ent?.status !== 'active'
+  const locked = !establishmentCanEdit(app.status) || ent?.status !== 'active'
   const generalDocs = docs.filter((d) => !d.criterion_ref)
   const reports = showExternal ? docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF) : []
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
@@ -63,7 +64,7 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
           <p className="text-sm mt-1" style={{ color: '#5B7568' }}>
             Submitted {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB') : '—'}
           </p>
-          {app.status === 'rejected' && app.rejection_reason && (
+          {['rejected', 'eligibility_rejected'].includes(app.status) && app.rejection_reason && (
             <div className="mt-4 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B' }}>
               <strong>Not approved:</strong> {app.rejection_reason}
             </div>
@@ -75,7 +76,7 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
         <PreScreeningBanner href={`/business/pre-screening/${params.id}`} status={ps?.status ?? null} mainCategory={ps?.mainCategory ?? null} subCategories={ps?.subCategories} ineligibleReason={ps?.ineligibleReason} reviewNote={ps?.reviewNote} />
       )}
 
-      {app.status === 'revision' && (
+      {['revision', 'pre_audit_rectification_open', 'post_audit_corrective_open'].includes(app.status) && (
         <div className="rounded-2xl border px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
           <strong>Revision required.</strong>{' '}
           {ncCount > 0

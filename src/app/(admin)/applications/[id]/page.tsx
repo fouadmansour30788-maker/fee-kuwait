@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, FileText, Download, Inbox } from 'lucide-react'
-import { getApplication, PROGRAMME_LABEL, statusMeta, STATUS_META, OPERATOR_STATUSES, ESTABLISHMENT_EDITABLE_STATUSES, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
+import { getApplication, PROGRAMME_LABEL, statusMeta, STATUS_META, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listAuditors, applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
 import { listAudits } from '@/lib/db/audits'
@@ -14,13 +14,14 @@ import JourneyTimeline from '@/components/timeline/JourneyTimeline'
 import PreScreeningReview from '@/components/prescreening/PreScreeningReview'
 import AssignAuditor from '@/components/audit/AssignAuditor'
 import ArchiveAudit from '@/components/audit/ArchiveAudit'
+import { establishmentCanEdit } from '@/lib/workflow'
+import WorkflowActions from '@/components/audit/WorkflowActions'
 import ManualOverride from '@/components/admin/ManualOverride'
 import ReopenApplication from '@/components/admin/ReopenApplication'
 import AssignCb from '@/components/audit/AssignCb'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 import ReopenRevision from '@/components/audit/ReopenRevision'
-import ReviewForm from './ReviewForm'
 
 export default async function ApplicationDetail({
   params, searchParams,
@@ -188,17 +189,18 @@ export default async function ApplicationDetail({
         </div>
       )}
 
-      {/* Review / decision */}
-      <ReviewForm
-        id={id}
-        status={OPERATOR_STATUSES.includes(app.status) ? app.status : 'new'}
-        notes={app.review_notes ?? ''}
-        rejection={app.rejection_reason ?? ''}
-        statuses={OPERATOR_STATUSES.map((st) => ({ value: st, label: statusMeta(st).label }))}
-      />
+      {/* Workflow actions (whiteboard state machine) */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <div className="flex items-center gap-2 mb-1">
+          <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Workflow</h2>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+        </div>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Actions available to the National Operator at this stage.</p>
+        <WorkflowActions applicationId={id} role="operator" status={app.status} />
+      </div>
 
       {/* Re-open a locked/closed application for the establishment to edit again */}
-      {!ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status) && (
+      {!establishmentCanEdit(app.status) && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Re-open application</h2>
           <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>The application is currently locked for the establishment. Re-open it so they can edit their evidence, status and comments again.</p>

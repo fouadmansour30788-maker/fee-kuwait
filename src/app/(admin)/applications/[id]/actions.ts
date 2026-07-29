@@ -92,7 +92,7 @@ export async function assignAuditor(applicationId: string, auditorId: string) {
   await supabase.from('applications').update({
     auditor_id: auditorId || null,
     auditor_assigned_at: auditorId ? new Date().toISOString() : null,
-    status: auditorId ? 'audit' : 'under_review',
+    status: auditorId ? 'auditor_assigned' : 'ready_for_auditor',
     updated_at: new Date().toISOString(),
   }).eq('id', applicationId)
 
@@ -125,7 +125,7 @@ export async function assignCb(applicationId: string, cbId: string) {
   await supabase.from('applications').update({
     cb_id: cbId || null,
     cb_assigned_at: cbId ? new Date().toISOString() : null,
-    status: cbId ? 'cb_review' : 'audit',
+    status: cbId ? 'cb_pre_audit_review' : 'in_progress',
     updated_at: new Date().toISOString(),
   }).eq('id', applicationId)
 
@@ -139,7 +139,7 @@ export async function assignCb(applicationId: string, cbId: string) {
     const applicant = Array.isArray(appRow?.applicant) ? appRow?.applicant[0] : appRow?.applicant
     await notifyApplicant({
       email: applicant?.email, programme: appRow?.programme ?? '', entityType: appRow?.entity_type ?? null,
-      applicationId, status: 'cb_review',
+      applicationId, status: 'cb_pre_audit_review',
     })
   }
 

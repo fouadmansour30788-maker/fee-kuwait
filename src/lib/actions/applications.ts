@@ -36,7 +36,7 @@ export async function createApplication(programme: string): Promise<{ ok?: true;
     entity_type: ent?.entityType ?? null,
     entity_id: ent?.entityId ?? null,
     programme,
-    status: 'new',
+    status: 'pending_eligibility',
   })
   if (error) return { error: error.message }
 

@@ -109,12 +109,14 @@ export async function reviewPreScreening(
   // establishment's registration so the application opens right away (no separate
   // approval on the Members page).
   if (decision === 'eligible') {
-    const { data: app } = await admin.from('applications').select('applicant_id').eq('id', applicationId).single()
+    const { data: app } = await admin.from('applications').select('applicant_id, status').eq('id', applicationId).single()
     if (app?.applicant_id) {
       const now = new Date().toISOString()
       const { data: biz } = await admin.from('businesses').update({ status: 'active', updated_at: now }).eq('user_id', app.applicant_id).select('id')
       if (!biz || biz.length === 0) await admin.from('schools').update({ status: 'active', updated_at: now }).eq('user_id', app.applicant_id)
     }
+    // "Approve Eligibility → Application In Progress" — reuse the eligibility step.
+    if (app?.status === 'pending_eligibility') await admin.from('applications').update({ status: 'in_progress', updated_at: new Date().toISOString() }).eq('id', applicationId)
     revalidatePath('/members')
   }
 

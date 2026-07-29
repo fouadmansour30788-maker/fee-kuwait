@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { FileBarChart, Download, Award, FileCheck, Clock, XCircle, Inbox, Gauge, Lightbulb, CheckCircle2, AlertTriangle, Info, FileText } from 'lucide-react'
+import { CERTIFIED_STATUSES, NOT_APPROVED_STATUSES } from '@/lib/workflow'
 
 export interface AppReportRow {
   id: string
@@ -25,9 +26,10 @@ export interface CertReportRow {
   status: string
 }
 
-const CERTIFIED = ['approved', 'certified', 'certified_rectification']
-const NOT_APPROVED = ['rejected', 'not_certified']
-const IN_PROGRESS = ['new', 'under_review', 'documents_pending', 'site_visit_scheduled', 'audit', 'cb_review', 'revision']
+const CERTIFIED = [...CERTIFIED_STATUSES, 'approved']
+const NOT_APPROVED = NOT_APPROVED_STATUSES
+// Everything that is neither certified nor rejected is "in progress".
+const IN_PROGRESS = (s: string) => !CERTIFIED.includes(s) && !NOT_APPROVED.includes(s)
 
 function downloadCsv(filename: string, headers: string[], rows: (string | number)[][]) {
   const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`
@@ -65,7 +67,7 @@ export default function ReportsClient({
   // ── Aggregates ──
   const total = appRows.length
   const certified = appRows.filter((a) => CERTIFIED.includes(a.status)).length
-  const inProgress = appRows.filter((a) => IN_PROGRESS.includes(a.status)).length
+  const inProgress = appRows.filter((a) => IN_PROGRESS(a.status)).length
   const notApproved = appRows.filter((a) => NOT_APPROVED.includes(a.status)).length
   const decided = certified + notApproved
   const certRate = decided ? Math.round((certified / decided) * 100) : 0
@@ -73,7 +75,7 @@ export default function ReportsClient({
   const byProgramme = useMemo(() => programmes.map((p) => {
     const rows = appRows.filter((a) => a.programmeKey === p.key)
     const c = rows.filter((a) => CERTIFIED.includes(a.status)).length
-    const ip = rows.filter((a) => IN_PROGRESS.includes(a.status)).length
+    const ip = rows.filter((a) => IN_PROGRESS(a.status)).length
     const na = rows.filter((a) => NOT_APPROVED.includes(a.status)).length
     const dec = c + na
     return { ...p, apps: rows.length, certified: c, inProgress: ip, notApproved: na, rate: dec ? Math.round((c / dec) * 100) : 0 }
@@ -107,7 +109,7 @@ export default function ReportsClient({
   const emptyProgrammes = programmes.filter((p) => !appRows.some((a) => a.programmeKey === p.key))
   const bottleneck = useMemo(() => {
     const m = new Map<string, number>()
-    for (const a of appRows) if (IN_PROGRESS.includes(a.status)) m.set(a.statusLabel, (m.get(a.statusLabel) ?? 0) + 1)
+    for (const a of appRows) if (IN_PROGRESS(a.status)) m.set(a.statusLabel, (m.get(a.statusLabel) ?? 0) + 1)
     const top = Array.from(m.entries()).sort((x, y) => y[1] - x[1])[0]
     return top ? { label: top[0], count: top[1] } : null
   }, [appRows])

@@ -8,6 +8,7 @@ import { listAudits } from '@/lib/db/audits'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
+import WorkflowActions from '@/components/audit/WorkflowActions'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 import AuditorSubmit from '@/components/audit/AuditorSubmit'
@@ -19,7 +20,7 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const reports = docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF).map((d) => ({ id: d.id, name: d.name, url: d.url }))
   const evidence = docs.filter((d) => d.criterion_ref !== AUDIT_REPORT_REF)
-  const inProgress = app.status === 'audit'
+  const inProgress = ['audit', 'audit_in_progress', 'auditor_reassessment_in_progress'].includes(app.status)
   const s = statusMeta(app.status)
 
   return (
@@ -67,11 +68,20 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
         </div>
       )}
 
-      {/* Final report & submit */}
+      {/* Workflow actions */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-        <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Final report &amp; submission</h2>
-        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Attach your audit report and submit. Submitting locks your results and hands the application to the Certification Body.</p>
-        <AuditorSubmit applicationId={params.id} status={app.status} reports={reports} />
+        <div className="flex items-center gap-2 mb-3">
+          <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Audit workflow</h2>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+        </div>
+        <WorkflowActions applicationId={params.id} role="auditor" status={app.status} />
+      </div>
+
+      {/* Final report */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Audit report</h2>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Attach your audit report, then use “Submit Audit Report” above to lock your results and hand the application to the Certification Body.</p>
+        <AuditorSubmit applicationId={params.id} editable={inProgress} reports={reports} />
       </div>
 
       {/* Evidence documents */}

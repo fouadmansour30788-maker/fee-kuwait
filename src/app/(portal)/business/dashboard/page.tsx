@@ -2,11 +2,12 @@ import Link from 'next/link'
 import { FileText, Plus, CheckCircle2, Clock, Inbox, KeyRound } from 'lucide-react'
 import { myApplications, myEntity } from '@/lib/db/establishment'
 import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
+import { CLOSED_STATUSES, CERTIFIED_STATUSES } from '@/lib/workflow'
 
 export default async function BusinessDashboard() {
   const [apps, ent] = await Promise.all([myApplications(), myEntity()])
-  const open = apps.filter((a) => !['approved', 'certified', 'rejected', 'not_certified'].includes(a.status)).length
-  const done = apps.filter((a) => ['approved', 'certified'].includes(a.status)).length
+  const open = apps.filter((a) => !CLOSED_STATUSES.includes(a.status)).length
+  const done = apps.filter((a) => CERTIFIED_STATUSES.includes(a.status)).length
 
   const stats = [
     { label: 'Applications', value: apps.length, Icon: FileText, color: '#40916C' },

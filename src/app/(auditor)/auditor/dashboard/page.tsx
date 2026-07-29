@@ -2,11 +2,12 @@ import Link from 'next/link'
 import { ClipboardCheck, CheckCircle2, Clock, ChevronRight, Inbox } from 'lucide-react'
 import { auditorApplications } from '@/lib/db/audit'
 import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
+import { AUDIT_STATUSES, CLOSED_STATUSES } from '@/lib/workflow'
 
 export default async function AuditorDashboard() {
   const apps = await auditorApplications()
-  const active = apps.filter((a) => a.status === 'audit')
-  const done = apps.filter((a) => ['approved', 'certified', 'rejected', 'not_certified'].includes(a.status))
+  const active = apps.filter((a) => AUDIT_STATUSES.includes(a.status))
+  const done = apps.filter((a) => CLOSED_STATUSES.includes(a.status))
 
   const stats = [
     { label: 'Assigned', value: apps.length, Icon: ClipboardCheck, color: '#0891B2' },

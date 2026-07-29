@@ -2,11 +2,12 @@ import Link from 'next/link'
 import { Gavel, Clock, CheckCircle2, ChevronRight, Inbox } from 'lucide-react'
 import { cbApplications } from '@/lib/db/audit'
 import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
+import { CB_STATUSES, CLOSED_STATUSES } from '@/lib/workflow'
 
 export default async function CbDashboard() {
   const apps = await cbApplications()
-  const pending = apps.filter((a) => a.status === 'cb_review')
-  const decided = apps.filter((a) => ['certified', 'certified_rectification', 'not_certified'].includes(a.status))
+  const pending = apps.filter((a) => CB_STATUSES.includes(a.status))
+  const decided = apps.filter((a) => CLOSED_STATUSES.includes(a.status))
 
   const stats = [
     { label: 'Assigned', value: apps.length, Icon: Gavel, color: '#854D0E' },
