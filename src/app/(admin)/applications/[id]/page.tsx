@@ -46,9 +46,14 @@ export default async function ApplicationDetail({
   return (
     <div className="space-y-5">
       <div>
-        <Link href="/applications" className="inline-flex items-center gap-1.5 text-sm font-medium mb-4" style={{ color: '#64748B' }}>
-          <ArrowLeft className="w-4 h-4" /> Applications
-        </Link>
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/applications" className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: '#64748B' }}>
+            <ArrowLeft className="w-4 h-4" /> Applications
+          </Link>
+          <Link href={`/applications/${id}/records`} className="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg" style={{ background: '#F1F5F9', color: '#40916C' }}>
+            <FileText className="w-4 h-4" /> Export records (PDF)
+          </Link>
+        </div>
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div>
