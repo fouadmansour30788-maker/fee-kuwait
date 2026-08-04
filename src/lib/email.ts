@@ -60,6 +60,10 @@ export function applicationStatusEmail(opts: {
   const cta = portalUrl
     ? `<div style="margin-top:20px;"><a href="${portalUrl}" style="display:inline-block;background:#1B4332;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 20px;border-radius:10px;">Open your portal</a></div>`
     : ''
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || 'https://fee-kuwait.vercel.app').replace(/\/$/, '')
+  const certBtn = certificateNumber
+    ? `<div style="margin-top:12px;"><a href="${base}/verify/${encodeURIComponent(certificateNumber)}" style="display:inline-block;background:#C8A951;color:#2A2410;text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:10px;">Verify your certificate</a></div>`
+    : ''
 
   if (status === 'approved') {
     return {
@@ -67,7 +71,8 @@ export function applicationStatusEmail(opts: {
       html: shell(
         `${programme} — Approved`,
         `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">Congratulations! Your <strong>${programme}</strong> application has been approved.</p>
-         ${certificateNumber ? `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">Your certificate <strong>${certificateNumber}</strong> is now available in your portal.</p>` : ''}
+         ${certificateNumber ? `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">Your certificate <strong>${certificateNumber}</strong> is now available.</p>` : ''}
+         ${certBtn}
          ${cta}`,
       ),
     }
@@ -102,7 +107,8 @@ export function applicationStatusEmail(opts: {
         `${programme} — ${rectified ? 'Certified (subject to rectification)' : 'Certified'} 🎉`,
         `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">The Certification Body has <strong>certified</strong> your <strong>${programme}</strong> application${rectified ? ', subject to rectifying the points noted below' : ''}.</p>
          ${rejectionReason ? `<div style="margin:0 0 12px;padding:12px 14px;background:#FEF9EC;border:1px solid #FDE68A;border-radius:10px;font-size:14px;color:#854D0E;"><strong>Note from the Certification Body:</strong> ${rejectionReason}</div>` : ''}
-         ${certificateNumber ? `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">Your certificate <strong>${certificateNumber}</strong> is now available in your portal.</p>` : ''}
+         ${certificateNumber ? `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">Your certificate <strong>${certificateNumber}</strong> is now available.</p>` : ''}
+         ${certBtn}
          ${cta}`,
       ),
     }

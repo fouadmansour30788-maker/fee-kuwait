@@ -39,9 +39,14 @@ export default async function BusinessCertificationPage() {
                     <p style={{ color: '#1E293B' }}>{c.expires_at ? new Date(c.expires_at).toLocaleDateString('en-GB') : '—'}</p>
                   </div>
                 </div>
-                <Link href={`/certificate/${c.id}`} target="_blank" className="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold px-3.5 py-2 rounded-xl text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
-                  <Download className="w-4 h-4" /> Download certificate
-                </Link>
+                <div className="flex items-center gap-2 mt-4 flex-wrap">
+                  <Link href={`/certificate/${c.id}`} target="_blank" className="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-xl text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
+                    <Download className="w-4 h-4" /> Download certificate
+                  </Link>
+                  <Link href={`/verify/${encodeURIComponent(c.certificate_number)}`} target="_blank" className="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-xl" style={{ background: '#F1F5F9', color: '#40916C' }}>
+                    Verify page →
+                  </Link>
+                </div>
               </div>
             )
           })}

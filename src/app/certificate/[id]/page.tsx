@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getCertificate } from '@/lib/db/certificates'
 import { PROGRAMME_LABEL } from '@/lib/db/applications'
+import { qrDataUrl, siteUrl } from '@/lib/qr'
 import PrintButton from './PrintButton'
 
 export const dynamic = 'force-dynamic'
@@ -11,6 +12,8 @@ export default async function CertificatePage({ params }: { params: { id: string
   const cert = await getCertificate(params.id)
   if (!cert) notFound()
   const prog = PROGRAMME_LABEL[cert.programme] ?? cert.programme
+  const verifyUrl = `${siteUrl()}/verify/${encodeURIComponent(cert.certificate_number)}`
+  const qr = await qrDataUrl(verifyUrl)
 
   return (
     <div style={{ minHeight: '100vh', background: '#F1F5F9', padding: '24px' }}>
@@ -55,7 +58,11 @@ export default async function CertificatePage({ params }: { params: { id: string
             <div style={{ textAlign: 'left' as const }}>
               <div style={{ width: 180, borderTop: '1px solid #CBD5E1', paddingTop: 6, fontSize: 11, color: '#5B7568' }}>National Operator</div>
             </div>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', border: '2px solid #C8A951', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a6d1f', fontSize: 10, fontWeight: 700, textAlign: 'center' as const }}>FEE<br />KUWAIT</div>
+            <div style={{ textAlign: 'center' as const }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qr} alt="Scan to verify" width={72} height={72} style={{ display: 'block', margin: '0 auto' }} />
+              <div style={{ fontSize: 9, color: '#94A3B8', marginTop: 2 }}>Scan to verify</div>
+            </div>
             <div style={{ textAlign: 'right' as const }}>
               <div style={{ width: 180, borderTop: '1px solid #CBD5E1', paddingTop: 6, fontSize: 11, color: '#5B7568' }}>Certification Body</div>
             </div>

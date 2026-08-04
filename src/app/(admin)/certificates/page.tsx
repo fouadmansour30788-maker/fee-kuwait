@@ -32,7 +32,10 @@ export default async function CertificatesPage() {
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#FEF9EC' }}>
                         <Award className="w-4 h-4" style={{ color: '#C8A951' }} />
                       </div>
-                      <Link href={`/certificate/${c.id}`} target="_blank" className="font-mono font-semibold hover:underline" style={{ color: '#1D4ED8' }}>{c.certificate_number}</Link>
+                      <div>
+                        <Link href={`/certificate/${c.id}`} target="_blank" className="font-mono font-semibold hover:underline" style={{ color: '#1D4ED8' }}>{c.certificate_number}</Link>
+                        <Link href={`/verify/${encodeURIComponent(c.certificate_number)}`} target="_blank" className="block text-[11px] hover:underline" style={{ color: '#40916C' }}>Verify →</Link>
+                      </div>
                     </div>
                   </td>
                   <td className="px-5 py-3.5" style={{ color: '#334155' }}>{c.applicant?.name_en || c.applicant?.email || '—'}</td>
