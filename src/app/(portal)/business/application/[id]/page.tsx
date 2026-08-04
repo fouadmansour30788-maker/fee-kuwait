@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox, Clock } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES } from '@/lib/db/applications'
-import { establishmentCanEdit, PARTIAL_EDIT_STATUSES, ESTABLISHMENT_ACTIONS, type AppStatus } from '@/lib/workflow'
+import { establishmentCanEdit, PARTIAL_EDIT_STATUSES, ESTABLISHMENT_ACTIONS, canonicalStatus, type AppStatus } from '@/lib/workflow'
 import WorkflowActions from '@/components/audit/WorkflowActions'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
@@ -82,7 +82,7 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
         </div>
       </div>
 
-      {ESTABLISHMENT_ACTIONS[app.status as AppStatus] && (
+      {ESTABLISHMENT_ACTIONS[canonicalStatus(app.status) as AppStatus] && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
           <h2 className="text-base font-bold mb-3" style={{ color: '#0F2318' }}>Your options</h2>
           <WorkflowActions applicationId={app.id} role="establishment" status={app.status} />

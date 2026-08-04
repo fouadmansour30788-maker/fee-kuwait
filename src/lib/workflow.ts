@@ -194,6 +194,20 @@ export const AUDITOR_ACTIONS: Partial<Record<AppStatus, Transition[]>> = {
   ],
 }
 
+// Map any lingering legacy status onto its new-lifecycle equivalent, so the
+// workflow actions still resolve for applications that predate the migration.
+const LEGACY_STATUS: Record<string, AppStatus> = {
+  new: 'pending_eligibility',
+  under_review: 'in_progress', documents_pending: 'in_progress', revision: 'in_progress',
+  site_visit_scheduled: 'audit_scheduled', audit: 'audit_in_progress',
+  cb_review: 'cb_pre_audit_review', approved: 'ready_for_auditor', rejected: 'eligibility_rejected',
+  certified: 'certified_active', certified_rectification: 'certified_rectification_active',
+  not_certified: 'not_certified_communicated',
+}
+export function canonicalStatus(s: string): string {
+  return LEGACY_STATUS[s] ?? s
+}
+
 // The CB stage a clarification originated from — used to resolve `to: 'ORIGIN'`.
 export function isCbStage(s: string): boolean {
   return s === 'cb_pre_audit_review' || s === 'cb_pre_audit_re_review' || s === 'cb_final_review' || s === 'cb_final_re_review'

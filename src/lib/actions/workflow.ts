@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { issueCertificate, notifyApplicant } from '@/lib/certify'
 import { revalidatePath } from 'next/cache'
 import {
-  OPERATOR_ACTIONS, CB_ACTIONS, AUDITOR_ACTIONS, ESTABLISHMENT_ACTIONS, CLARIFY_STATUS, isCbStage,
+  OPERATOR_ACTIONS, CB_ACTIONS, AUDITOR_ACTIONS, ESTABLISHMENT_ACTIONS, CLARIFY_STATUS, isCbStage, canonicalStatus,
   type AppStatus, type ClarifyOwner, type Transition,
 } from '@/lib/workflow'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
@@ -89,7 +89,8 @@ export async function applyWorkflowAction(
   if (role === 'auditor' && !(me.role === 'auditor' && app.auditor_id === user.id) && me.role !== 'super_admin') return { error: 'Not authorised' }
   if (role === 'establishment' && app.applicant_id !== user.id) return { error: 'Not authorised' }
 
-  const transitions = tableFor(role)[app.status as AppStatus] ?? []
+  const curStatus = canonicalStatus(app.status)
+  const transitions = tableFor(role)[curStatus as AppStatus] ?? []
   const t = transitions.find((x) => x.action === action)
   if (!t) return { error: `"${action}" is not available from the current status.` }
 
@@ -120,7 +121,7 @@ export async function applyWorkflowAction(
 
   // Side effects by action.
   if (action === 'Request Clarification') {
-    patch.cb_origin_status = isCbStage(app.status) ? app.status : app.cb_origin_status
+    patch.cb_origin_status = isCbStage(curStatus) ? curStatus : app.cb_origin_status
     patch.clarification_owner = input.owner
     patch.clarification_note = input.reason?.trim() || null
   }
