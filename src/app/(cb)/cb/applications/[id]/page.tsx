@@ -9,7 +9,7 @@ import { listCriterionMessages } from '@/lib/db/messages'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { listAuditorsForCb } from '@/lib/db/audit'
-import { CB_STATUSES } from '@/lib/workflow'
+import { CB_ACTIONS, type AppStatus } from '@/lib/workflow'
 import CbReviewPanel from '@/components/audit/CbReviewPanel'
 import WorkflowActions from '@/components/audit/WorkflowActions'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
@@ -80,7 +80,7 @@ export default async function CbApplicationDetail({
       </div>
 
       {/* CB workflow actions (whiteboard state machine) */}
-      {CB_STATUSES.includes(app.status) && app.status !== 'cb_review' && (
+      {CB_ACTIONS[app.status as AppStatus] && app.status !== 'cb_review' && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <div className="flex items-center gap-2 mb-3">
             <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>CB decision</h2>

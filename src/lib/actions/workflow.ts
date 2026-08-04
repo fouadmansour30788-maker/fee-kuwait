@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { issueCertificate, notifyApplicant } from '@/lib/certify'
 import { revalidatePath } from 'next/cache'
 import {
-  OPERATOR_ACTIONS, CB_ACTIONS, AUDITOR_ACTIONS, CLARIFY_STATUS, isCbStage,
+  OPERATOR_ACTIONS, CB_ACTIONS, AUDITOR_ACTIONS, ESTABLISHMENT_ACTIONS, CLARIFY_STATUS, isCbStage,
   type AppStatus, type ClarifyOwner, type Transition,
 } from '@/lib/workflow'
 
@@ -17,10 +17,13 @@ export interface ActionInput {
   criteria?: string[]     // criterion refs to reopen
 }
 
-type Role = 'operator' | 'cb' | 'auditor'
+type Role = 'operator' | 'cb' | 'auditor' | 'establishment'
 
 function tableFor(role: Role): Partial<Record<AppStatus, Transition[]>> {
-  return role === 'operator' ? OPERATOR_ACTIONS : role === 'cb' ? CB_ACTIONS : AUDITOR_ACTIONS
+  return role === 'operator' ? OPERATOR_ACTIONS
+    : role === 'cb' ? CB_ACTIONS
+    : role === 'auditor' ? AUDITOR_ACTIONS
+    : ESTABLISHMENT_ACTIONS
 }
 
 // The single executor behind every operator / CB / auditor workflow action.
@@ -40,7 +43,7 @@ export async function applyWorkflowAction(
   const admin = createAdminClient()
   const { data: app } = await admin
     .from('applications')
-    .select('id, status, cb_origin_status, rectification_round, auditor_id, cb_id, applicant_id, entity_type, programme, applicant:users!applicant_id(email)')
+    .select('id, status, cb_origin_status, rectification_round, certification_cycle, auditor_id, cb_id, applicant_id, entity_type, programme, applicant:users!applicant_id(email)')
     .eq('id', applicationId).single()
   if (!app) return { error: 'Application not found' }
 
@@ -48,6 +51,7 @@ export async function applyWorkflowAction(
   if (role === 'operator' && !['admin', 'super_admin'].includes(me.role)) return { error: 'Not authorised' }
   if (role === 'cb' && !(me.role === 'certification_body' && app.cb_id === user.id) && me.role !== 'super_admin') return { error: 'Not authorised' }
   if (role === 'auditor' && !(me.role === 'auditor' && app.auditor_id === user.id) && me.role !== 'super_admin') return { error: 'Not authorised' }
+  if (role === 'establishment' && app.applicant_id !== user.id) return { error: 'Not authorised' }
 
   const transitions = tableFor(role)[app.status as AppStatus] ?? []
   const t = transitions.find((x) => x.action === action)
@@ -91,14 +95,21 @@ export async function applyWorkflowAction(
   if (['Return to CB', 'Send to Auditor for Reassessment', 'Submit Application to CB'].includes(action)) patch.reopened_criteria = []
 
   let certificateNumber: string | null = null
-  if (action === 'Approve & Issue Certificate') {
-    patch.cb_decision = 'certified'
+  if (action === 'Approve & Issue Certificate' || action === 'Certify — subject to rectification') {
+    patch.cb_decision = action === 'Approve & Issue Certificate' ? 'certified' : 'certified_rectification'
     patch.cb_decision_at = new Date().toISOString()
+    if (action === 'Certify — subject to rectification') patch.cb_note = input.reason?.trim() || null
     certificateNumber = await issueCertificate(admin, {
       id: applicationId, applicant_id: app.applicant_id, entity_type: app.entity_type, programme: app.programme,
     })
   }
   if (action === 'Record Not Certified Decision') { patch.cb_decision = 'not_certified'; patch.cb_decision_at = new Date().toISOString() }
+
+  // Post-certification lifecycle updates the certificate record too.
+  if (action === 'Suspend Certification') { patch.cb_note = input.reason?.trim() || null; await admin.from('certificates').update({ status: 'suspended' }).eq('application_id', applicationId) }
+  if (action === 'Reinstate Certification') await admin.from('certificates').update({ status: 'active' }).eq('application_id', applicationId)
+  if (action === 'Withdraw Certification') { patch.cb_note = input.reason?.trim() || null; await admin.from('certificates').update({ status: 'withdrawn' }).eq('application_id', applicationId) }
+  if (action === 'Start Re-certification') { patch.certification_cycle = (app.certification_cycle ?? 1) + 1; patch.cb_decision = null; patch.cb_decision_at = null }
 
   const { error } = await admin.from('applications').update(patch).eq('id', applicationId)
   if (error) return { error: error.message }

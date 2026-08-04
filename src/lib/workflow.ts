@@ -31,6 +31,9 @@ export type AppStatus =
   | 'cb_clarification_auditor'
   | 'cb_clarification_establishment'
   | 'certified_active'
+  | 'certified_rectification_active'
+  | 'certified_suspended'
+  | 'certified_withdrawn'
   | 'not_certified_recorded'
   | 'not_certified_communicated'
 
@@ -68,6 +71,9 @@ export const WF: Record<AppStatus, StatusDef> = {
   cb_clarification_auditor:         { label: 'CB Clarification Required — Auditor',       ...AMBER, stage: 'cb_final' },
   cb_clarification_establishment:   { label: 'CB Clarification Required — Establishment', ...AMBER, stage: 'cb_final', estEdit: true },
   certified_active:                 { label: 'Certified — Active',         ...GREEN, stage: 'closed' },
+  certified_rectification_active:   { label: 'Certified — Subject to Rectification', ...GREEN, stage: 'closed' },
+  certified_suspended:              { label: 'Certification Suspended',    ...AMBER, stage: 'closed' },
+  certified_withdrawn:              { label: 'Certification Withdrawn',    ...RED,   stage: 'closed' },
   not_certified_recorded:           { label: 'Not Certified — Decision Recorded',   ...RED, stage: 'closed' },
   not_certified_communicated:       { label: 'Not Certified — Outcome Communicated', ...RED, stage: 'closed' },
 }
@@ -134,15 +140,35 @@ const CB_PRE = (): Transition[] => [
 ]
 const CB_FINAL = (): Transition[] => [
   { action: 'Approve & Issue Certificate', to: 'certified_active', tone: 'primary', note: 'Records the decision, issues the certificate and locks the records.' },
+  { action: 'Certify — subject to rectification', to: 'certified_rectification_active', requires: ['reason'], tone: 'primary', note: 'Issues the certificate but records outstanding points to rectify.' },
   { action: 'Request Clarification', to: 'cb_clarification_operator', requires: ['owner'], note: 'Pick who must respond; the application remains locked.' },
   { action: 'Require Rectification', to: 'post_audit_rectification_required', requires: ['reason'], note: 'Corrective evidence is required from the establishment.' },
   { action: 'Record Not Certified Decision', to: 'not_certified_recorded', requires: ['reason'], tone: 'danger', note: 'Decision reason is mandatory.' },
+]
+// Post-certification lifecycle: suspend / reinstate / withdraw / re-certify.
+const CB_CERTIFIED = (): Transition[] => [
+  { action: 'Start Re-certification', to: 'in_progress', tone: 'primary', note: 'Opens a new certification cycle for the establishment.' },
+  { action: 'Suspend Certification', to: 'certified_suspended', requires: ['reason'], tone: 'danger', note: 'Temporarily suspends the certificate.' },
+  { action: 'Withdraw Certification', to: 'certified_withdrawn', requires: ['reason'], tone: 'danger', note: 'Permanently withdraws the certificate.' },
 ]
 export const CB_ACTIONS: Partial<Record<AppStatus, Transition[]>> = {
   cb_pre_audit_review: CB_PRE(),
   cb_pre_audit_re_review: CB_PRE(),
   cb_final_review: CB_FINAL(),
   cb_final_re_review: CB_FINAL(),
+  certified_active: CB_CERTIFIED(),
+  certified_rectification_active: CB_CERTIFIED(),
+  certified_suspended: [
+    { action: 'Reinstate Certification', to: 'certified_active', tone: 'primary', note: 'Restores the suspended certificate.' },
+    { action: 'Withdraw Certification', to: 'certified_withdrawn', requires: ['reason'], tone: 'danger', note: 'Permanently withdraws the certificate.' },
+  ],
+}
+
+// ── Establishment actions ─────────────────────────────────────────────
+export const ESTABLISHMENT_ACTIONS: Partial<Record<AppStatus, Transition[]>> = {
+  eligibility_rejected: [
+    { action: 'Request CB Re-assessment', to: 'pending_eligibility', requires: ['reason'], tone: 'primary', note: 'Ask for your eligibility to be re-assessed. It returns to the National Operator / Certification Body for review.' },
+  ],
 }
 
 // ── Auditor actions ───────────────────────────────────────────────────
@@ -188,8 +214,8 @@ export const CLARIFY_STATUS: Record<ClarifyOwner, AppStatus> = {
 }
 
 // ── Semantic status groups (tolerant of both legacy and new vocabularies) ──
-export const CERTIFIED_STATUSES = ['certified', 'certified_rectification', 'certified_active']
-export const NOT_APPROVED_STATUSES = ['rejected', 'not_certified', 'eligibility_rejected', 'not_certified_recorded', 'not_certified_communicated']
+export const CERTIFIED_STATUSES = ['certified', 'certified_rectification', 'certified_active', 'certified_rectification_active']
+export const NOT_APPROVED_STATUSES = ['rejected', 'not_certified', 'eligibility_rejected', 'not_certified_recorded', 'not_certified_communicated', 'certified_withdrawn']
 export const CLOSED_STATUSES = [...CERTIFIED_STATUSES, ...NOT_APPROVED_STATUSES]
 // The CB currently holds the application.
 export const CB_STATUSES = ['cb_review', 'cb_pre_audit_review', 'cb_pre_audit_re_review', 'cb_final_review', 'cb_final_re_review']

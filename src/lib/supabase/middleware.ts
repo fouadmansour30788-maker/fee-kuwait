@@ -24,5 +24,12 @@ export async function updateSession(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  return { response, user }
+
+  // The signed-in user's role, for role-based route protection in the middleware.
+  let role: string | null = null
+  if (user) {
+    const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
+    role = data?.role ?? null
+  }
+  return { response, user, role }
 }

@@ -3,17 +3,17 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, AlertCircle, ChevronRight, Check } from 'lucide-react'
-import { OPERATOR_ACTIONS, CB_ACTIONS, AUDITOR_ACTIONS, type AppStatus, type Transition } from '@/lib/workflow'
+import { OPERATOR_ACTIONS, CB_ACTIONS, AUDITOR_ACTIONS, ESTABLISHMENT_ACTIONS, type AppStatus, type Transition } from '@/lib/workflow'
 import { applyWorkflowAction, type ActionInput } from '@/lib/actions/workflow'
 
-const TABLES = { operator: OPERATOR_ACTIONS, cb: CB_ACTIONS, auditor: AUDITOR_ACTIONS }
+const TABLES = { operator: OPERATOR_ACTIONS, cb: CB_ACTIONS, auditor: AUDITOR_ACTIONS, establishment: ESTABLISHMENT_ACTIONS }
 const toneBg: Record<string, string> = { primary: 'linear-gradient(135deg, #1B4332, #40916C)', danger: '#DC2626', neutral: '#475569' }
 
 // The role's available workflow actions for the current status, each expanding
 // to collect any required input (reason / deadline / clarification owner / date /
 // criteria to reopen).
 export default function WorkflowActions({ applicationId, role, status, criteria = [] }: {
-  applicationId: string; role: 'operator' | 'cb' | 'auditor'; status: string
+  applicationId: string; role: 'operator' | 'cb' | 'auditor' | 'establishment'; status: string
   criteria?: { ref: string; title: string }[]
 }) {
   const actions = TABLES[role][status as AppStatus] ?? []
