@@ -8,6 +8,42 @@ import {
   OPERATOR_ACTIONS, CB_ACTIONS, AUDITOR_ACTIONS, ESTABLISHMENT_ACTIONS, CLARIFY_STATUS, isCbStage,
   type AppStatus, type ClarifyOwner, type Transition,
 } from '@/lib/workflow'
+import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
+import { listCriterionAssessments } from '@/lib/db/assessments'
+import { listApplicationDocuments } from '@/lib/db/documents'
+import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
+import { complianceStatus } from '@/lib/compliance'
+import { GK_EVIDENCE } from '@/lib/data/greenKeyEvidence'
+
+// Diagram guards (OQ-3, OQ-4, "all criteria assessed"): some transitions are only
+// allowed when the board is in the right state. Returns an error string to block.
+async function guardAction(applicationId: string, action: string, app: { programme: string; certification_cycle?: number }): Promise<string | null> {
+  const gated = ['Submit Application to CB', 'Submit Audit Report', 'Approve & Issue Certificate']
+  if (!gated.includes(action)) return null
+
+  const ps = await getPreScreening(applicationId)
+  const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
+  const assessments = await listCriterionAssessments(applicationId)
+
+  if (action === 'Submit Application to CB') {
+    const notReady = criteria.filter((c) => !['pass', 'na'].includes(assessments[c.ref]?.internal ?? 'pending'))
+    if (notReady.length) return `Submit is blocked: ${notReady.length} applicable criteri${notReady.length === 1 ? 'on is' : 'a are'} not yet marked Ready (or N/A Confirmed) by the operator.`
+    const docs = await listApplicationDocuments(applicationId)
+    const missing = criteria.filter((c) => GK_EVIDENCE[c.ref]?.required === 'Yes' && !docs.some((d) => d.criterion_ref === c.ref))
+    if (missing.length) return `Submit is blocked: required evidence is missing for ${missing.length} criteri${missing.length === 1 ? 'on' : 'a'} (${missing.slice(0, 5).map((c) => c.ref).join(', ')}${missing.length > 5 ? '…' : ''}).`
+  }
+
+  if (action === 'Submit Audit Report') {
+    const notAssessed = criteria.filter((c) => (assessments[c.ref]?.external ?? 'pending') === 'pending')
+    if (notAssessed.length) return `Cannot submit the audit report: ${notAssessed.length} applicable criteri${notAssessed.length === 1 ? 'on has' : 'a have'} not been assessed yet.`
+  }
+
+  if (action === 'Approve & Issue Certificate') {
+    const comp = complianceStatus(criteria, assessments, (app.certification_cycle ?? 1) - 1)
+    if (!comp.met) return `Certification requirement not met: imperative ${comp.imperative.got}/${comp.imperative.total} conforming, guideline ${comp.guideline.got}/${comp.guideline.need} required. Use "Certify — subject to rectification" or "Require Rectification" instead.`
+  }
+  return null
+}
 
 export interface ActionInput {
   reason?: string
@@ -64,6 +100,10 @@ export async function applyWorkflowAction(
   if (req.includes('owner') && !input.owner) return { error: 'Select who must respond to the clarification.' }
   if (req.includes('date') && !input.date) return { error: 'A confirmed date is required.' }
   if (req.includes('criteria') && !(input.criteria && input.criteria.length)) return { error: 'Select at least one criterion to reopen.' }
+
+  // Diagram guards (OQ-3, OQ-4, all-criteria-assessed).
+  const blocked = await guardAction(applicationId, action, app)
+  if (blocked) return { error: blocked }
 
   // Resolve the target status.
   let target: string
