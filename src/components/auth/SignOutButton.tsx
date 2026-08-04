@@ -1,14 +1,12 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SignOutButton({ className, style, children }: { className?: string; style?: React.CSSProperties; children: React.ReactNode }) {
-  const router = useRouter()
   async function signOut() {
-    await createClient().auth.signOut()
-    router.push('/login')
-    router.refresh()
+    try { await createClient().auth.signOut() } catch { /* ignore */ }
+    // Hard navigation guarantees the cleared session cookie is picked up server-side.
+    window.location.href = '/login'
   }
   return (
     <button onClick={signOut} className={className} style={style} type="button">

@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { LogOut, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { ROLE_LABEL } from '@/lib/roles'
@@ -14,7 +13,6 @@ export default function ProfileMenu({ accent = '#40916C', textColor = '#fff' }: 
   const [me, setMe] = useState<Me | null>(null)
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
-  const router = useRouter()
 
   useEffect(() => {
     let alive = true
@@ -35,9 +33,9 @@ export default function ProfileMenu({ accent = '#40916C', textColor = '#fff' }: 
 
   async function signOut() {
     setBusy(true)
-    await createClient().auth.signOut()
-    router.push('/login')
-    router.refresh()
+    try { await createClient().auth.signOut() } catch { /* ignore */ }
+    // Hard navigation guarantees the cleared session cookie is picked up server-side.
+    window.location.href = '/login'
   }
 
   const initial = (me?.name || me?.email || '?').charAt(0).toUpperCase()

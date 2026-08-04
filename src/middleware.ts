@@ -4,8 +4,8 @@ import { roleCanAccess, roleHome } from '@/lib/auth'
 
 // Protected areas — any unauthenticated request to these is sent to /login.
 const PROTECTED = ['/school', '/business', '/auditor', '/cb', '/dashboard',
-  '/applications', '/auditors', '/certificates', '/members', '/analytics',
-  '/content', '/reports', '/staff', '/tracker', '/resources']
+  '/applications', '/auditors', '/certificates', '/members', '/registrations',
+  '/analytics', '/content', '/reports', '/staff', '/tracker', '/resources']
 
 export async function middleware(request: NextRequest) {
   const { response, user, role } = await updateSession(request)

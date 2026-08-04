@@ -5,12 +5,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileText, Wrench,
-  Bell, Award, Leaf, Menu, X, LogOut,
+  Award, Leaf, Menu, X, LogOut,
   ChevronRight, Radar,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import SignOutButton from '@/components/auth/SignOutButton'
 import ProfileMenu from '@/components/auth/ProfileMenu'
+import NotificationBell from '@/components/notifications/NotificationBell'
 import ChatWidget from '@/components/chat/ChatWidget'
 
 // Only real (DB-backed) screens. Mock ones (Action Plan, Activities, Journey,
@@ -124,11 +125,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1" />
-          {/* Notification bell */}
-          <button className="relative p-2 rounded-xl transition-colors hover:bg-[#EDF7F1]" style={{ color: '#40916C' }}>
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: '#E53E3E' }} />
-          </button>
+          <NotificationBell accent={portalColor} />
           {/* Avatar → profile details & sign out */}
           <ProfileMenu accent={portalColor} />
         </header>

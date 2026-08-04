@@ -32,6 +32,7 @@ const ADMIN_NAV = [
   { href: '/tracker',      icon: ClipboardList,   label: 'Tracker' },
   { href: '/surveillance', icon: Radar,           label: 'Surveillance' },
   { href: '/members',      icon: Users,           label: 'Members' },
+  { href: '/registrations', icon: ClipboardList,  label: 'Registrations' },
   { href: '/certificates', icon: Award,           label: 'Certificates' },
   { href: '/reports',      icon: FileBarChart,    label: 'Reports' },
   { href: '/content',      icon: Newspaper,       label: 'Content' },

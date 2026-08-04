@@ -42,7 +42,10 @@ interface FormData {
   businessType: string
   governorate: string
   address: string
+  latitude: string
+  longitude: string
   studentsCount: string
+  numEmployees: string
   contactName: string
   contactPhone: string
   // Step 3 — Programme(s)
@@ -164,7 +167,7 @@ const EMPTY: FormData = {
   name: '', email: '', password: '', confirmPassword: '',
   institutionName: '', institutionNameAr: '',
   schoolType: '', businessType: '', governorate: '',
-  address: '', studentsCount: '', contactName: '', contactPhone: '',
+  address: '', latitude: '', longitude: '', studentsCount: '', numEmployees: '', contactName: '', contactPhone: '',
   programmes: [],
   website: '', socialLinks: '',
   numRooms: '', numGuestsYear: '', numGuestNightsYear: '',
@@ -205,6 +208,8 @@ function RegisterForm() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [locating, setLocating] = useState(false)
+  const [locError, setLocError] = useState('')
 
   // If no type param, show a type selector before step 0
   const [typeChosen, setTypeChosen] = useState(!!typeParam)
@@ -280,6 +285,16 @@ function RegisterForm() {
   function toggleTheme(t: string) {
     setData(d => ({ ...d, themes: d.themes.includes(t) ? d.themes.filter(x => x !== t) : [...d.themes, t] }))
   }
+  function detectLocation() {
+    setLocError('')
+    if (typeof navigator === 'undefined' || !navigator.geolocation) { setLocError(lang === 'ar' ? 'تحديد الموقع غير مدعوم' : 'Geolocation is not supported'); return }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setData(d => ({ ...d, latitude: pos.coords.latitude.toFixed(6), longitude: pos.coords.longitude.toFixed(6) })); setLocating(false) },
+      () => { setLocError(lang === 'ar' ? 'تعذّر تحديد الموقع' : 'Could not detect location — enter it manually'); setLocating(false) },
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }
   function toggleProgramme(id: string) {
     setData(d => ({ ...d, programmes: d.programmes.includes(id) ? d.programmes.filter(p => p !== id) : [...d.programmes, id] }))
     setErrors(e => ({ ...e, programmes: '' }))
@@ -337,6 +352,7 @@ function RegisterForm() {
         req('numRooms', lang === 'ar' ? 'عدد الغرف مطلوب' : 'Number of rooms is required')
         req('numGuestsYear', lang === 'ar' ? 'عدد الضيوف سنوياً مطلوب' : 'Guests per year is required')
         req('numGuestNightsYear', lang === 'ar' ? 'عدد ليالي الضيوف مطلوب' : 'Guest-nights per year is required')
+        req('numEmployees', lang === 'ar' ? 'عدد الموظفين مطلوب' : 'Number of employees is required')
         req('gmName', lang === 'ar' ? 'اسم المدير العام مطلوب' : 'General Manager name is required')
         req('gmEmail', lang === 'ar' ? 'بريد المدير العام مطلوب' : 'General Manager email is required')
         req('envDirName', lang === 'ar' ? 'اسم المدير البيئي مطلوب' : 'Environmental Director name is required')
@@ -402,18 +418,27 @@ function RegisterForm() {
       const declarationMeta = data.declaration
         ? { declaration: true, signatureName: data.signatureName, signedAt: new Date().toISOString() }
         : {}
+      // Location + workforce apply to every registration (not just programme details).
+      const common = {
+        latitude: data.latitude ? Number(data.latitude) : null,
+        longitude: data.longitude ? Number(data.longitude) : null,
+        numEmployees: data.numEmployees ? Number(data.numEmployees) : null,
+      }
       if (institutionType === 'school') {
-        const details = showESDetails ? {
-          socialLinks: data.socialLinks || null,
-          coordinatorName: data.coordinatorName || null,
-          teachers: [data.teacher1, data.teacher2].filter(Boolean),
-          parentRep: data.parentRep || null,
-          whyInterested: data.whyInterested || null,
-          committeeFrequency: data.committeeFrequency || null,
-          themes: data.themes,
-          comments: data.comments || null,
-          ...declarationMeta,
-        } : {}
+        const details = {
+          ...common,
+          ...(showESDetails ? {
+            socialLinks: data.socialLinks || null,
+            coordinatorName: data.coordinatorName || null,
+            teachers: [data.teacher1, data.teacher2].filter(Boolean),
+            parentRep: data.parentRep || null,
+            whyInterested: data.whyInterested || null,
+            committeeFrequency: data.committeeFrequency || null,
+            themes: data.themes,
+            comments: data.comments || null,
+            ...declarationMeta,
+          } : {}),
+        }
         const { data: row } = await supabase.from('schools').insert({
           user_id: uid, name_en: data.institutionName, name_ar: data.institutionNameAr || null,
           type: data.schoolType || null, governorate: GOV_MAP[data.governorate] ?? null,
@@ -423,17 +448,20 @@ function RegisterForm() {
         }).select('id').single()
         entityId = row?.id ?? null
       } else {
-        const details = showGKDetails ? {
-          website: data.website || null,
-          socialLinks: data.socialLinks || null,
-          numRooms: data.numRooms ? Number(data.numRooms) : null,
-          numGuestsYear: data.numGuestsYear ? Number(data.numGuestsYear) : null,
-          numGuestNightsYear: data.numGuestNightsYear ? Number(data.numGuestNightsYear) : null,
-          generalManager: { name: data.gmName || null, email: data.gmEmail || null },
-          environmentalDirector: { name: data.envDirName || null, email: data.envDirEmail || null },
-          contactPerson: { name: data.contactName || null, phone: data.contactPhone || null, email: data.contactEmail || null },
-          ...declarationMeta,
-        } : {}
+        const details = {
+          ...common,
+          ...(showGKDetails ? {
+            website: data.website || null,
+            socialLinks: data.socialLinks || null,
+            numRooms: data.numRooms ? Number(data.numRooms) : null,
+            numGuestsYear: data.numGuestsYear ? Number(data.numGuestsYear) : null,
+            numGuestNightsYear: data.numGuestNightsYear ? Number(data.numGuestNightsYear) : null,
+            generalManager: { name: data.gmName || null, email: data.gmEmail || null },
+            environmentalDirector: { name: data.envDirName || null, email: data.envDirEmail || null },
+            contactPerson: { name: data.contactName || null, phone: data.contactPhone || null, email: data.contactEmail || null },
+            ...declarationMeta,
+          } : {}),
+        }
         const { data: row } = await supabase.from('businesses').insert({
           user_id: uid, name_en: data.institutionName, name_ar: data.institutionNameAr || null,
           type: data.businessType || null, governorate: data.governorate || null, address: data.address || null,
@@ -848,6 +876,22 @@ function RegisterForm() {
                         className="input pl-10 resize-none" rows={2} placeholder={lang === 'ar' ? 'العنوان الكامل' : 'Full address'} />
                     </div>
                   </div>
+
+                  {/* Location (lat/long) with auto-detect */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <Label>{lang === 'ar' ? 'الموقع (خط العرض / الطول)' : 'Location (latitude / longitude)'}</Label>
+                      <button type="button" onClick={detectLocation}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#F4F9F5', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                        <MapPin className="w-3 h-3" /> {locating ? (lang === 'ar' ? 'جارٍ التحديد…' : 'Detecting…') : (lang === 'ar' ? 'تحديد موقعي' : 'Detect my location')}
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <input type="text" inputMode="decimal" value={data.latitude} onChange={e => set('latitude', e.target.value)} className="input" placeholder={lang === 'ar' ? 'خط العرض' : 'Latitude'} />
+                      <input type="text" inputMode="decimal" value={data.longitude} onChange={e => set('longitude', e.target.value)} className="input" placeholder={lang === 'ar' ? 'خط الطول' : 'Longitude'} />
+                    </div>
+                    {locError && <FieldError msg={locError} />}
+                  </div>
                 </div>
               </div>
             )}
@@ -944,6 +988,13 @@ function RegisterForm() {
                         <Label>{lang === 'ar' ? 'ليالي الضيوف / السنة' : 'Guest-nights / year'}</Label>
                         <input type="number" min="0" value={data.numGuestNightsYear} onChange={e => set('numGuestNightsYear', e.target.value)} className="input" placeholder="0" />
                         {errors.numGuestNightsYear && <FieldError msg={errors.numGuestNightsYear} />}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>{lang === 'ar' ? 'عدد الموظفين' : 'Number of employees'}</Label>
+                        <input type="number" min="0" value={data.numEmployees} onChange={e => set('numEmployees', e.target.value)} className="input" placeholder="0" />
+                        {errors.numEmployees && <FieldError msg={errors.numEmployees} />}
                       </div>
                     </div>
                     <div className="rounded-2xl p-4 space-y-4" style={{ background: '#F9FBF9', border: '1px solid #C8E6D0' }}>

@@ -35,7 +35,7 @@ export async function getApplicationTimeline(applicationId: string): Promise<Tim
 
   const { data: app } = await supabase
     .from('applications')
-    .select('id, entity_id, entity_type, programme, status, submitted_at, cb_decision, cb_note, created_at')
+    .select('id, entity_id, entity_type, programme, status, submitted_at, cb_decision, cb_note')
     .eq('id', applicationId)
     .single()
   if (!app) return []
