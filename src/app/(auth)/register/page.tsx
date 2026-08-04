@@ -8,7 +8,7 @@ import {
   User, Mail, Lock, Eye, EyeOff, Building2, School,
   MapPin, Phone, Users, ChevronRight, ChevronLeft,
   CheckCircle2, ArrowRight, Waves, KeyRound, Leaf,
-  Newspaper, GraduationCap, AlertCircle, Check,
+  Newspaper, GraduationCap, AlertCircle, Check, FileText,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import { createClient } from '@/lib/supabase/client'
@@ -210,6 +210,8 @@ function RegisterForm() {
   const [submitting, setSubmitting] = useState(false)
   const [locating, setLocating] = useState(false)
   const [locError, setLocError] = useState('')
+  const [signedPolicies, setSignedPolicies] = useState<File | null>(null)
+  const [policyError, setPolicyError] = useState('')
 
   // If no type param, show a type selector before step 0
   const [typeChosen, setTypeChosen] = useState(!!typeParam)
@@ -369,6 +371,10 @@ function RegisterForm() {
       }
       if (!data.declaration) e.declaration = lang === 'ar' ? 'يرجى الموافقة على الإقرار' : 'Please accept the declaration'
       req('signatureName', lang === 'ar' ? 'التوقيع (الاسم) مطلوب' : 'Signature (typed name) is required')
+      const needPolicy = showGKDetails && !signedPolicies
+      setPolicyError(needPolicy ? (lang === 'ar' ? 'يرجى رفع سياسات المفتاح الأخضر الموقّعة' : 'Please upload the signed Green Key policies') : '')
+      setErrors(e)
+      return Object.keys(e).length === 0 && !needPolicy
     }
 
     setErrors(e)
@@ -473,7 +479,7 @@ function RegisterForm() {
       if (data.programmes.length > 0) {
         const { data: createdApps } = await supabase.from('applications').insert(
           data.programmes.map((programme) => ({
-            applicant_id: uid, entity_type: institutionType, entity_id: entityId, programme, status: 'new',
+            applicant_id: uid, entity_type: institutionType, entity_id: entityId, programme, status: 'pending_eligibility',
           }))
         ).select('id, programme')
 
@@ -485,6 +491,19 @@ function RegisterForm() {
             main_category: psResult.mainCategory, sub_categories: psResult.subCategories, flags: psResult.flags,
             status: 'submitted', submitted_at: new Date().toISOString(),
           })
+        }
+
+        // Upload the signed Green Key policies against the Green Key application.
+        if (gk && signedPolicies) {
+          const safe = signedPolicies.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+          const path = `${gk.id}/policies/${Date.now()}-${safe}`
+          const up = await supabase.storage.from('application-docs').upload(path, signedPolicies)
+          if (!up.error) {
+            await supabase.from('application_documents').insert({
+              application_id: gk.id, uploaded_by: uid,
+              name: `Signed GK Policies — ${signedPolicies.name}`, path, size: signedPolicies.size, mime_type: signedPolicies.type || null,
+            })
+          }
         }
       }
     }
@@ -1036,6 +1055,26 @@ function RegisterForm() {
                         {errors.contactEmail && <FieldError msg={errors.contactEmail} />}
                       </div>
                     </div>
+
+                    {/* Green Key policies — download, sign, re-upload */}
+                    <div className="rounded-2xl p-4 space-y-3" style={{ background: '#F4F9F5', border: '1px solid #C8E6D0' }}>
+                      <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#40916C' }}>{lang === 'ar' ? 'سياسات المفتاح الأخضر' : 'Green Key policies'}</p>
+                      <p className="text-xs" style={{ color: '#5A6672' }}>
+                        {lang === 'ar'
+                          ? 'يرجى مراجعة سياسات المفتاح الأخضر (الشروط والأحكام)، ثم توقيعها ورفع النسخة الموقّعة.'
+                          : 'Please review the Green Key policies (terms & conditions), sign them, and upload the signed copy.'}
+                      </p>
+                      <a href="/gk-policies.pdf" target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl" style={{ background: '#fff', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                        <FileText className="w-4 h-4" /> {lang === 'ar' ? 'تنزيل سياسات المفتاح الأخضر (PDF)' : 'Download GK Policies (PDF)'}
+                      </a>
+                      <div>
+                        <Label>{lang === 'ar' ? 'رفع السياسات الموقّعة *' : 'Upload the signed policies *'}</Label>
+                        <input type="file" accept="application/pdf,image/*" onChange={e => { setSignedPolicies(e.target.files?.[0] ?? null); setPolicyError('') }}
+                          className="block w-full text-sm" style={{ color: '#5A6672' }} />
+                        {signedPolicies && <p className="text-xs mt-1" style={{ color: '#40916C' }}>{signedPolicies.name}</p>}
+                        {policyError && <FieldError msg={policyError} />}
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -1123,11 +1162,6 @@ function RegisterForm() {
                     <input type="text" value={data.signatureName} onChange={e => set('signatureName', e.target.value)} className="input" placeholder={lang === 'ar' ? 'الاسم الكامل' : 'Full name'} />
                     {errors.signatureName && <FieldError msg={errors.signatureName} />}
                   </div>
-                  <p className="text-xs" style={{ color: '#92722E' }}>
-                    {lang === 'ar'
-                      ? 'سيتم رفع السياسات الموقّعة لاحقاً من صفحة الطلب.'
-                      : 'The signed policies document is uploaded later from your application page.'}
-                  </p>
                 </div>
               </div>
             )}
