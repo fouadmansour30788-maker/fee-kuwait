@@ -33,6 +33,10 @@ export default function PreScreeningForm({
     const cur = Array.isArray(answers.q_services) ? answers.q_services : []
     set('q_services', cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v])
   }
+  function toggleMulti(id: string, v: string) {
+    const cur = Array.isArray(answers[id]) ? (answers[id] as string[]) : []
+    set(id, cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v])
+  }
 
   function save() { start(async () => { const r = await savePreScreening(applicationId, answers); if (r.error) setError(r.error); else { setMsg('Draft saved.'); router.refresh() } }) }
   function submit() { start(async () => { const r = await submitPreScreening(applicationId, answers); if (r.error) setError(r.error); else router.refresh() }) }
@@ -68,6 +72,19 @@ export default function PreScreeningForm({
           {PS_SERVICES.map((s) => (
             <label key={s.value} className="inline-flex items-center gap-2 cursor-pointer text-sm" style={{ color: '#334155' }}>
               <input type="checkbox" disabled={locked} checked={cur.includes(s.value)} onChange={() => toggleService(s.value)} className="w-4 h-4 accent-green-700" />
+              {s.label}
+            </label>
+          ))}
+        </div>
+      )
+    }
+    if (q.field === 'multi') {
+      const cur = Array.isArray(answers[q.id]) ? (answers[q.id] as string[]) : []
+      return (
+        <div className="flex flex-col gap-1.5">
+          {(q.options ?? []).map((s) => (
+            <label key={s.value} className="inline-flex items-center gap-2 cursor-pointer text-sm" style={{ color: '#334155' }}>
+              <input type="checkbox" disabled={locked} checked={cur.includes(s.value)} onChange={() => toggleMulti(q.id, s.value)} className="w-4 h-4 accent-green-700" />
               {s.label}
             </label>
           ))}

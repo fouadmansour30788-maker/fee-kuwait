@@ -144,7 +144,7 @@ const STEP_LABELS: Record<string, { en: string; ar: string }> = {
 }
 // Pre-screening sections shown in the wizard (General information is collected by
 // the Account/Institution steps, so it is omitted here).
-const PS_WIZARD_SECTIONS = ['Eligibility', 'Main category', 'Scope & sub-categories', 'Operational filters', 'Declarations']
+const PS_WIZARD_SECTIONS = ['Eligibility', 'Main category', 'Units & scope', 'Scope & sub-categories', 'Operational filters', 'Declarations']
 const catLabel = (c: string) => ESTABLISHMENT_CATEGORIES.find((x) => x.code === c)?.label ?? c
 
 // The 12 Eco-Schools themes (official list) — shown as a checklist for schools.
@@ -234,13 +234,17 @@ function RegisterForm() {
   const psComplete = psVisible.every((q) => {
     const v = ps[q.id]
     if (q.field === 'checkbox') return v === true
-    if (q.field === 'multiservice') return true
+    if (q.field === 'multiservice' || q.field === 'multi') return true
     return v !== undefined && v !== '' && v !== null
   }) && psResult.eligible !== false
   const setPsAnswer = (id: string, v: string | string[] | boolean) => { setPs((p) => ({ ...p, [id]: v })); setErrors((e) => ({ ...e, general: '' })) }
   const togglePsService = (val: string) => {
     const cur = Array.isArray(ps.q_services) ? ps.q_services : []
     setPsAnswer('q_services', cur.includes(val) ? cur.filter((x) => x !== val) : [...cur, val])
+  }
+  const togglePsMulti = (id: string, val: string) => {
+    const cur = Array.isArray(ps[id]) ? (ps[id] as string[]) : []
+    setPsAnswer(id, cur.includes(val) ? cur.filter((x) => x !== val) : [...cur, val])
   }
 
   function PsField({ q }: { q: PSQuestion }) {
@@ -270,6 +274,18 @@ function RegisterForm() {
           {PS_SERVICES.map((s) => (
             <label key={s.value} className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: '#334155' }}>
               <input type="checkbox" checked={cur.includes(s.value)} onChange={() => togglePsService(s.value)} className="w-4 h-4 accent-green-700" />{s.label}
+            </label>
+          ))}
+        </div>
+      )
+    }
+    if (q.field === 'multi') {
+      const cur = Array.isArray(ps[q.id]) ? (ps[q.id] as string[]) : []
+      return (
+        <div className="flex flex-col gap-1.5">
+          {(q.options ?? []).map((s) => (
+            <label key={s.value} className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: '#334155' }}>
+              <input type="checkbox" checked={cur.includes(s.value)} onChange={() => togglePsMulti(q.id, s.value)} className="w-4 h-4 accent-green-700" />{s.label}
             </label>
           ))}
         </div>
