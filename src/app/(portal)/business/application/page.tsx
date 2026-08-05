@@ -23,7 +23,7 @@ export default async function BusinessApplicationPage() {
       </div>
 
       {approved ? (
-        <NewApplicationForm programmes={['green-key', 'blue-flag', 'eco-campus']} appliedProgrammes={apps.map((a) => a.programme)} />
+        <NewApplicationForm programmes={['green-key', 'blue-flag']} appliedProgrammes={apps.map((a) => a.programme)} />
       ) : (
         <div className="rounded-2xl border p-5 flex items-start gap-3" style={{ borderColor: '#FDE68A', background: '#FEF9EC' }}>
           <Clock className="w-5 h-5 flex-shrink-0" style={{ color: '#B45309' }} />
