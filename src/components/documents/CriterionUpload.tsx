@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Paperclip, Loader2, Link2, Check, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { recordDocument } from '@/lib/actions/documents'
 
 const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
 
@@ -40,12 +41,10 @@ export default function CriterionUpload({ applicationId, criterionRef, year, sur
     const up = await supabase.storage.from('application-docs').upload(path, file)
     if (up.error) { setError(up.error.message); setBusy(false); return }
 
-    const ins = await supabase.from('application_documents').insert({
-      application_id: applicationId, uploaded_by: user.id, criterion_ref: criterionRef, year: yr,
-      name: file.name, path, size: file.size, mime_type: file.type || null,
-      surveillance_id: surveillanceId ?? null,
+    const ins = await recordDocument({
+      applicationId, criterionRef, year: yr, name: file.name, path, size: file.size, mimeType: file.type || null, surveillanceId,
     })
-    if (ins.error) { setError(ins.error.message); setBusy(false); return }
+    if (ins.error) { setError(ins.error); setBusy(false); return }
 
     setBusy(false)
     if (inputRef.current) inputRef.current.value = ''
@@ -59,17 +58,11 @@ export default function CriterionUpload({ applicationId, criterionRef, year, sur
     try { new URL(href) } catch { setError('Enter a valid link.'); return }
     setBusy(true); setError('')
 
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setError('Not signed in'); setBusy(false); return }
-
     const yr = year ?? new Date().getFullYear()
-    const ins = await supabase.from('application_documents').insert({
-      application_id: applicationId, uploaded_by: user.id, criterion_ref: criterionRef, year: yr,
-      name: href.replace(/^https?:\/\//i, '').slice(0, 80), link_url: href,
-      surveillance_id: surveillanceId ?? null,
+    const ins = await recordDocument({
+      applicationId, criterionRef, year: yr, name: href.replace(/^https?:\/\//i, '').slice(0, 80), linkUrl: href, surveillanceId,
     })
-    if (ins.error) { setError(ins.error.message); setBusy(false); return }
+    if (ins.error) { setError(ins.error); setBusy(false); return }
 
     setBusy(false); setLinking(false); setUrl('')
     router.refresh()

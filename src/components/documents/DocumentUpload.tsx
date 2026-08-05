@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Upload, Loader2, AlertCircle, Link2, Check, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { recordDocument } from '@/lib/actions/documents'
 
 const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
 
@@ -35,11 +36,8 @@ export default function DocumentUpload({ applicationId }: { applicationId: strin
     const up = await supabase.storage.from('application-docs').upload(path, file)
     if (up.error) { setError(up.error.message); setBusy(false); return }
 
-    const ins = await supabase.from('application_documents').insert({
-      application_id: applicationId, uploaded_by: user.id,
-      name: file.name, path, size: file.size, mime_type: file.type || null,
-    })
-    if (ins.error) { setError(ins.error.message); setBusy(false); return }
+    const ins = await recordDocument({ applicationId, name: file.name, path, size: file.size, mimeType: file.type || null })
+    if (ins.error) { setError(ins.error); setBusy(false); return }
 
     setBusy(false)
     if (inputRef.current) inputRef.current.value = ''
@@ -53,15 +51,8 @@ export default function DocumentUpload({ applicationId }: { applicationId: strin
     try { new URL(href) } catch { setError('Enter a valid link.'); return }
     setBusy(true); setError('')
 
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setError('Not signed in'); setBusy(false); return }
-
-    const ins = await supabase.from('application_documents').insert({
-      application_id: applicationId, uploaded_by: user.id,
-      name: href.replace(/^https?:\/\//i, '').slice(0, 80), link_url: href,
-    })
-    if (ins.error) { setError(ins.error.message); setBusy(false); return }
+    const ins = await recordDocument({ applicationId, name: href.replace(/^https?:\/\//i, '').slice(0, 80), linkUrl: href })
+    if (ins.error) { setError(ins.error); setBusy(false); return }
 
     setBusy(false); setLinking(false); setUrl('')
     router.refresh()

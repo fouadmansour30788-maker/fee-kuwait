@@ -7,6 +7,46 @@ import { revalidatePath } from 'next/cache'
 
 const BUCKET = 'application-docs'
 
+// Record an attached document (file already uploaded to storage, or a link).
+// Written with the service role after an ownership/staff check so it never trips
+// row-level security (the applicant, or any staff member, may attach).
+export async function recordDocument(input: {
+  applicationId: string
+  name: string
+  path?: string | null
+  linkUrl?: string | null
+  size?: number | null
+  mimeType?: string | null
+  criterionRef?: string | null
+  year?: number | null
+  surveillanceId?: string | null
+}): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+
+  const admin = createAdminClient()
+  const { data: app } = await admin.from('applications').select('applicant_id').eq('id', input.applicationId).single()
+  if (!app) return { error: 'Application not found' }
+  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+  const isStaff = !!me && ['admin', 'super_admin', 'auditor', 'certification_body'].includes(me.role)
+  if (app.applicant_id !== user.id && !isStaff) return { error: 'Not allowed' }
+
+  const { error } = await admin.from('application_documents').insert({
+    application_id: input.applicationId, uploaded_by: user.id,
+    name: input.name, path: input.path ?? null, link_url: input.linkUrl ?? null,
+    size: input.size ?? null, mime_type: input.mimeType ?? null,
+    criterion_ref: input.criterionRef ?? null, year: input.year ?? null,
+    surveillance_id: input.surveillanceId ?? null,
+  })
+  if (error) return { error: error.message }
+
+  revalidatePath(`/business/application/${input.applicationId}`)
+  revalidatePath(`/school/application/${input.applicationId}`)
+  revalidatePath(`/applications/${input.applicationId}`)
+  return { ok: true }
+}
+
 // Remove an attached document (file or link). The establishment may remove its
 // own evidence while the application is still editable — re-attaching a new file
 // is how a document gets replaced. Staff may always remove.
