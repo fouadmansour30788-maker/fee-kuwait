@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { ESTABLISHMENT_EDITABLE_STATUSES } from '@/lib/db/applications'
+import { establishmentCanEdit } from '@/lib/workflow'
 import { revalidatePath } from 'next/cache'
 
 const BUCKET = 'application-docs'
@@ -71,7 +71,7 @@ export async function deleteDocument(documentId: string): Promise<{ ok?: true; e
     const { data: app } = await admin.from('applications').select('applicant_id, status').eq('id', doc.application_id).single()
     if (!app || app.applicant_id !== user.id) return { error: 'Not allowed' }
     if (doc.uploaded_by !== user.id) return { error: 'You can only remove documents you uploaded.' }
-    if (!ESTABLISHMENT_EDITABLE_STATUSES.includes(app.status)) return { error: 'The application is locked — documents can no longer be changed.' }
+    if (!establishmentCanEdit(app.status)) return { error: 'The application is locked — documents can no longer be changed.' }
   }
 
   // Links have no storage object.
