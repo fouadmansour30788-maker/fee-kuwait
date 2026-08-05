@@ -62,6 +62,7 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl font-bold" style={{ color: '#0F2318' }}>{PROGRAMME_LABEL[app.programme] ?? app.programme}</h1>
             <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+            {app.green_key_number && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>{app.green_key_number}</span>}
           </div>
           <p className="text-sm mt-1" style={{ color: '#5B7568' }}>
             Submitted {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB') : '—'}

@@ -122,6 +122,8 @@ export interface AppDetail {
   revision_deadline: string | null
   action_deadline: string | null
   reopened_criteria: string[] | null
+  entity_id: string | null
+  green_key_number: string | null
   applicant: { email: string | null; name_en: string | null; name_ar: string | null } | null
 }
 
@@ -129,11 +131,20 @@ export async function getApplication(id: string): Promise<AppDetail | null> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('applications')
-    .select('id, applicant_id, programme, status, entity_type, submitted_at, review_deadline, review_notes, rejection_reason, cb_decision, cb_note, revision_deadline, action_deadline, reopened_criteria, applicant:users!applicant_id(email, name_en, name_ar)')
+    .select('id, applicant_id, programme, status, entity_type, entity_id, submitted_at, review_deadline, review_notes, rejection_reason, cb_decision, cb_note, revision_deadline, action_deadline, reopened_criteria, applicant:users!applicant_id(email, name_en, name_ar)')
     .eq('id', id)
     .single()
   if (error) { console.error('getApplication:', error.message); return null }
-  return data as unknown as AppDetail
+  const app = data as unknown as AppDetail
+
+  // The Green Key number lives on the establishment record (assigned by the CB).
+  if (app.entity_id && app.entity_type) {
+    const { data: ent } = await supabase
+      .from(app.entity_type === 'school' ? 'schools' : 'businesses')
+      .select('green_key_number').eq('id', app.entity_id).maybeSingle()
+    app.green_key_number = ent?.green_key_number ?? null
+  }
+  return app
 }
 
 // Human labels for the CB decision.
