@@ -51,10 +51,27 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
         </div>
       </div>
 
+      {/* Workflow actions (Confirm site visit → Start audit → Submit report) */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Audit workflow</h2>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+        </div>
+        <WorkflowActions applicationId={params.id} role="auditor" status={app.status} />
+      </div>
+
       {/* Criteria board */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
         <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
-        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>{inProgress ? 'Grade the Audit column (Pass / Not pass) and add remarks/comments per indicator. Your comments stay hidden from the establishment. Saved automatically.' : 'This audit has been submitted — results are locked.'}</p>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>
+          {inProgress
+            ? 'Grade the Auditor Conformity Assessment column and add remarks/comments per indicator. Your comments stay hidden from the establishment. Saved automatically.'
+            : ['auditor_assigned', 'audit_scheduled'].includes(app.status)
+              ? 'Grading is not open yet — use the Audit workflow above to Confirm the site visit date, then Start Audit to begin grading.'
+              : app.status === 'auditor_reassessment'
+                ? 'Use the Audit workflow above to Start Reassessment, then grade the reopened criteria.'
+                : 'This audit has been submitted — results are locked.'}
+        </p>
         {criteria.length > 0
           ? <CriteriaBoard role="auditor" applicationId={params.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
@@ -67,15 +84,6 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
           <CompliancePanel criteria={criteria} assessments={assessments} showProgress />
         </div>
       )}
-
-      {/* Workflow actions */}
-      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-        <div className="flex items-center gap-2 mb-3">
-          <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Audit workflow</h2>
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
-        </div>
-        <WorkflowActions applicationId={params.id} role="auditor" status={app.status} />
-      </div>
 
       {/* Final report */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
