@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Gavel, KeyRound, Menu, X, LogOut, ChevronRight, Bell, Radar } from 'lucide-react'
 import SignOutButton from '@/components/auth/SignOutButton'
 import ProfileMenu from '@/components/auth/ProfileMenu'
+import NotificationBell from '@/components/notifications/NotificationBell'
 import ChatWidget from '@/components/chat/ChatWidget'
 
 const NAV = [
@@ -75,10 +76,7 @@ export default function CbLayout({ children }: { children: React.ReactNode }) {
             <Gavel className="w-3.5 h-3.5" /> Certification Decisions
           </div>
           <div className="flex-1" />
-          <button className="relative p-2 rounded-xl transition-colors hover:bg-slate-100">
-            <Bell className="w-5 h-5" style={{ color: '#64748B' }} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
-          </button>
+          <NotificationBell accent="#C8A951" />
           <div className="flex items-center gap-2.5">
             <ProfileMenu accent="#C8A951" textColor="#2A2410" />
           </div>

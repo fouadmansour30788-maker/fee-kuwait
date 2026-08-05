@@ -180,19 +180,42 @@ export async function applyWorkflowAction(
     user_id: user.id, user_name: me.name_en || me.email, user_role: me.role,
   })
 
-  // Notify the party who now has the ball.
+  // Notify the party who now has the ball. In-app notification rows go to the
+  // relevant user(s); the applicant also gets an email.
   const applicant = Array.isArray(app.applicant) ? app.applicant[0] : app.applicant
+  const label = target.replace(/_/g, ' ')
+  const notify = async (userId: string | null | undefined, title: string, message: string, url: string) => {
+    if (!userId) return
+    await admin.from('notifications').insert({ user_id: userId, type: 'application', title_en: title, message_en: message, action_url: url })
+  }
   const notifyStaff = async (title: string, message: string) => {
     const { data: staff } = await admin.from('users').select('id').in('role', ['admin', 'super_admin'])
     if (staff?.length) await admin.from('notifications').insert(staff.map((s) => ({
       user_id: s.id, type: 'application', title_en: title, message_en: message, action_url: `/applications/${applicationId}`,
     })))
   }
-  if (['Approve Eligibility', 'Reject Eligibility', 'Communicate Outcome', 'Approve & Issue Certificate', 'Record Not Certified Decision'].includes(action)) {
+
+  // Actions the establishment should hear about (in-app + email).
+  const APPLICANT_ACTIONS = [
+    'Approve Eligibility', 'Reject Eligibility', 'Communicate Outcome', 'Approve & Issue Certificate',
+    'Certify — subject to rectification', 'Record Not Certified Decision', 'Require Rectification',
+    'Open Rectification', 'Open Corrective Action Period', 'Open Further Corrective Action Period',
+    'Suspend Certification', 'Reinstate Certification', 'Withdraw Certification',
+  ]
+  if (APPLICANT_ACTIONS.includes(action) || target === 'cb_clarification_establishment') {
+    await notify(app.applicant_id, `Your application: ${action}`, `Now: ${label}${input.reason ? ` — ${input.reason}` : ''}`,
+      app.entity_type === 'school' ? `/school/application/${applicationId}` : `/business/application/${applicationId}`)
     await notifyApplicant({ email: applicant?.email, programme: app.programme, entityType: app.entity_type, applicationId, status: target, note: input.reason ?? null, certificateNumber })
   }
+
+  // Actions the assigned auditor should hear about.
+  if (target === 'auditor_reassessment' || target === 'cb_clarification_auditor' || action === 'Approve for Audit') {
+    await notify(app.auditor_id, `Audit update: ${action}`, `Now: ${label}${input.reason ? ` — ${input.reason}` : ''}`, `/auditor/applications/${applicationId}`)
+  }
+
+  // Actions the operator should hear about.
   if (['Approve for Audit', 'Require Rectification', 'Request Further Evidence', 'Submit Audit Report', 'Submit Reassessment Report'].includes(action)) {
-    await notifyStaff(`Application update: ${action}`, `Now: ${target.replace(/_/g, ' ')}`)
+    await notifyStaff(`Application update: ${action}`, `Now: ${label}`)
   }
 
   revalidatePath(`/applications/${applicationId}`)

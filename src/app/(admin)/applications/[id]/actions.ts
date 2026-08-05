@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { OPERATOR_STATUSES } from '@/lib/db/applications'
 import { issueCertificate, notifyApplicant } from '@/lib/certify'
 import { revalidatePath } from 'next/cache'
@@ -96,8 +97,13 @@ export async function assignAuditor(applicationId: string, auditorId: string) {
     updated_at: new Date().toISOString(),
   }).eq('id', applicationId)
 
-  // Let the applicant know their application has moved into audit.
+  // Notify the assigned auditor (in-app) and the applicant (email).
   if (auditorId) {
+    const admin = createAdminClient()
+    await admin.from('notifications').insert({
+      user_id: auditorId, type: 'application', title_en: 'You have been assigned an audit',
+      message_en: 'An application has been assigned to you for audit.', action_url: `/auditor/applications/${applicationId}`,
+    })
     const { data: appRow } = await supabase
       .from('applications')
       .select('entity_type, programme, applicant:users!applicant_id(email)')

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import SignOutButton from '@/components/auth/SignOutButton'
 import ProfileMenu from '@/components/auth/ProfileMenu'
+import NotificationBell from '@/components/notifications/NotificationBell'
 import ChatWidget from '@/components/chat/ChatWidget'
 
 const NAV = [
@@ -93,10 +94,7 @@ export default function AuditorLayout({ children }: { children: React.ReactNode 
 
           <div className="flex-1" />
 
-          <button className="relative p-2 rounded-xl transition-colors hover:bg-slate-100">
-            <Bell className="w-5 h-5" style={{ color: '#64748B' }} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
-          </button>
+          <NotificationBell accent="#1B4332" />
 
           <div className="flex items-center gap-2.5">
             <ProfileMenu accent="#1B4332" />
