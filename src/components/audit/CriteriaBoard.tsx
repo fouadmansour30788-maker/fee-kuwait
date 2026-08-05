@@ -131,13 +131,14 @@ function StatusChip({ s }: { s: PStatus | null }) {
   const m = STATUS_META[s]
   return <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: m.bg, color: m.color }}>{m.label}</span>
 }
-function StatusSelect({ value, onChange }: { value: PStatus | null; onChange: (s: PStatus) => void }) {
+function StatusSelect({ value, onChange }: { value: PStatus | null; onChange: (s: PStatus | null) => void }) {
   return (
     <div className="inline-flex flex-col gap-1 items-start">
       {(['complete', 'in_progress', 'na'] as const).map((s) => {
         const m = STATUS_META[s]; const on = value === s
         return (
-          <button key={s} onClick={() => onChange(s)} className="px-2 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap"
+          <button key={s} onClick={() => onChange(on ? null : s)} title={on ? 'Click to clear' : undefined}
+            className="px-2 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap"
             style={on ? { background: m.color, color: '#fff' } : { background: '#F1F5F9', color: m.color }}>{m.label}</button>
         )
       })}
@@ -145,14 +146,15 @@ function StatusSelect({ value, onChange }: { value: PStatus | null; onChange: (s
   )
 }
 // Result picker for the operator / auditor columns. Renders the three actionable
-// options from the given option set (pending is the unselected default).
+// options; clicking the selected one again clears it back to pending.
 function ResultSelect({ value, onChange, meta }: { value: Result; onChange: (r: Result) => void; meta: Record<Result, Meta> }) {
   return (
     <div className="inline-flex flex-col gap-1 items-start">
       {(['pass', 'no_pass', 'na'] as const).map((r) => {
         const m = meta[r]; const on = value === r
         return (
-          <button key={r} onClick={() => onChange(r)} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap"
+          <button key={r} onClick={() => onChange(on ? 'pending' : r)} title={on ? 'Click to clear' : undefined}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap"
             style={on ? { background: m.color, color: '#fff' } : { background: '#F1F5F9', color: m.color }}>
             {r === 'pass' ? <Check className="w-3 h-3" /> : r === 'no_pass' ? <X className="w-3 h-3" /> : null}{m.label}
           </button>
@@ -176,7 +178,7 @@ interface RowProps {
   editAudit: boolean
   showExternal: boolean
   selAudit: AuditRecord | null
-  onStatus: (ref: string, s: PStatus) => void
+  onStatus: (ref: string, s: PStatus | null) => void
   onOp: (ref: string, r: Result) => void
   onAudit: (ref: string, r: Result) => void
   onAuditNote: (ref: string, note: string) => void
@@ -345,9 +347,9 @@ export default function CriteriaBoard({
   }, [docs, currentYear])
 
   const bump = useCallback((res: { error?: string } | undefined) => { if (res?.error) setError(res.error) }, [])
-  const onStatus = useCallback((ref: string, s: PStatus) => {
+  const onStatus = useCallback((ref: string, s: PStatus | null) => {
     setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), applicantStatus: s } })); setError('')
-    start(async () => bump(await setApplicantStatus(applicationId, ref, s)))
+    start(async () => bump(await setApplicantStatus(applicationId, ref, s ?? 'not_started')))
   }, [applicationId, bump])
   const onOp = useCallback((ref: string, r: Result) => {
     setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), internal: r } })); setError('')

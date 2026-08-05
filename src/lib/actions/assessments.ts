@@ -127,11 +127,11 @@ export async function setApplicantResult(applicationId: string, criterionRef: st
   return { ok: true }
 }
 
-const STATUSES = ['in_progress', 'complete', 'na']
+const STATUSES = ['in_progress', 'complete', 'na', 'not_started']
 
 // The establishment sets its progress status for a criterion (In progress /
-// Complete / N/A). Written via the service role after an ownership check. When
-// marked Complete, the operator(s) are notified to check it.
+// Complete / N/A, or 'not_started' to clear it). Written via the service role
+// after an ownership check. When marked Complete, the operator(s) are notified.
 export async function setApplicantStatus(applicationId: string, criterionRef: string, status: string): Promise<{ ok?: true; error?: string }> {
   if (!STATUSES.includes(status)) return { error: 'Invalid status' }
   const supabase = createClient()
@@ -145,7 +145,7 @@ export async function setApplicantStatus(applicationId: string, criterionRef: st
   const { error } = await admin.from('criterion_assessments').upsert({
     application_id: applicationId,
     criterion_ref: criterionRef,
-    applicant_status: status,
+    applicant_status: status === 'not_started' ? null : status,
     updated_by: user.id,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'application_id,criterion_ref' })
