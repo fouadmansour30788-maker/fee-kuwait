@@ -30,6 +30,8 @@ export interface CertificateDetail {
   expires_at: string | null
   status: string
   holder: string | null
+  address: string | null
+  governorate: string | null
 }
 
 // A single certificate (RLS: holder sees own, staff see all).
@@ -37,15 +39,26 @@ export async function getCertificate(id: string): Promise<CertificateDetail | nu
   const supabase = createClient()
   const { data, error } = await supabase
     .from('certificates')
-    .select('id, programme, certificate_number, issued_at, expires_at, status, applicant:users!applicant_id(name_en, email)')
+    .select('id, programme, certificate_number, issued_at, expires_at, status, application_id, applicant:users!applicant_id(name_en, email)')
     .eq('id', id)
     .single()
   if (error) { console.error('getCertificate:', error.message); return null }
   const applicant = Array.isArray(data.applicant) ? data.applicant[0] : data.applicant
+
+  // The establishment's registered name + address (for the certificate face).
+  let holder: string | null = applicant?.name_en || applicant?.email || null
+  let address: string | null = null
+  let governorate: string | null = null
+  const { data: app } = await supabase.from('applications').select('entity_type, entity_id').eq('id', data.application_id).maybeSingle()
+  if (app?.entity_id && app.entity_type) {
+    const { data: ent } = await supabase.from(app.entity_type === 'school' ? 'schools' : 'businesses').select('name_en, address, governorate').eq('id', app.entity_id).maybeSingle()
+    if (ent) { holder = ent.name_en ?? holder; address = ent.address ?? null; governorate = ent.governorate ?? null }
+  }
+
   return {
     id: data.id, programme: data.programme, certificate_number: data.certificate_number,
     issued_at: data.issued_at, expires_at: data.expires_at, status: data.status,
-    holder: applicant?.name_en || applicant?.email || null,
+    holder, address, governorate,
   }
 }
 
