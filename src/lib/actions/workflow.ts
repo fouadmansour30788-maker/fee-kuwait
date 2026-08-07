@@ -47,8 +47,19 @@ async function guardAction(applicationId: string, action: string, app: { program
   }
 
   if (action === 'Submit Audit Report') {
-    const notAssessed = criteria.filter((c) => (assessments[c.ref]?.external ?? 'pending') === 'pending')
-    if (notAssessed.length) return `Cannot submit the audit report: ${notAssessed.length} applicable criteri${notAssessed.length === 1 ? 'on has' : 'a have'} not been assessed yet.`
+    // Same rule as Submit-to-CB: every imperative criterion must be assessed
+    // (Conforming / Non-Conforming), plus the certification period's guideline
+    // share. Not Applicable is excluded; remaining guidelines don't block.
+    const na = (ref: string) => assessments[ref]?.external === 'na'
+    const assessed = (ref: string) => assessments[ref]?.external === 'pass' || assessments[ref]?.external === 'no_pass'
+    const impRefs = criteria.filter((c) => !!c.type && c.type.includes('I') && !na(c.ref))
+    const guideRefs = criteria.filter((c) => c.type === 'G' && !na(c.ref))
+    const impAssessed = impRefs.filter((c) => assessed(c.ref)).length
+    const guideAssessed = guideRefs.filter((c) => assessed(c.ref)).length
+    const cyc = GUIDELINE_CYCLE[Math.min(Math.max((app.certification_cycle ?? 1) - 1, 0), GUIDELINE_CYCLE.length - 1)]
+    const guideNeed = Math.ceil((guideRefs.length * cyc.guideline) / 100)
+    if (impAssessed < impRefs.length) return `Cannot submit the audit report: all imperative criteria must be assessed — ${impAssessed}/${impRefs.length} assessed.`
+    if (guideAssessed < guideNeed) return `Cannot submit the audit report: this certification period needs ${guideNeed} guideline criteria assessed — ${guideAssessed}/${guideNeed} assessed.`
   }
 
   if (action === 'Approve & Issue Certificate') {
