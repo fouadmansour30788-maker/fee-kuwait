@@ -388,6 +388,13 @@ export default function CriteriaBoard({
     return { complete, inprog, na, total: criteria.length, notset: criteria.length - complete - inprog - na }
   }, [rows, criteria])
 
+  // Auditor conformity summary — shown to operator/auditor/CB, hidden from the establishment.
+  const conformityCounts = useMemo(() => {
+    let conforming = 0, nonconforming = 0, na = 0
+    for (const c of criteria) { const r = rows[c.ref]?.external; if (r === 'pass') conforming++; else if (r === 'no_pass') nonconforming++; else if (r === 'na') na++ }
+    return { conforming, nonconforming, na, total: criteria.length, notassessed: criteria.length - conforming - nonconforming - na }
+  }, [rows, criteria])
+
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
   const cols = 6 + (showExternal ? 1 : 0)
 
@@ -446,6 +453,20 @@ export default function CriteriaBoard({
         <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#94A3B8' }}>Not Started <span className="font-bold">{statusCounts.notset}</span></span>
         <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{statusCounts.complete} / {statusCounts.total} complete</span>
       </div>
+
+      {/* Auditor conformity summary — operator / auditor / CB only (hidden from the establishment) */}
+      {!isEstablishment && (
+        <div className="flex items-center gap-2 flex-wrap rounded-xl border px-4 py-2.5" style={{ borderColor: '#DDD6FE', background: '#F5F3FF' }}>
+          <span className="text-xs font-semibold" style={{ color: '#6D28D9' }}>Auditor conformity:</span>
+          {([['pass', conformityCounts.conforming], ['no_pass', conformityCounts.nonconforming], ['na', conformityCounts.na]] as const).map(([k, n]) => (
+            <span key={k} className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: AUD_META[k].bg, color: AUD_META[k].color }}>
+              {AUD_META[k].label} <span className="font-bold">{n}</span>
+            </span>
+          ))}
+          <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#94A3B8' }}>Not Assessed <span className="font-bold">{conformityCounts.notassessed}</span></span>
+          <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{conformityCounts.conforming} / {conformityCounts.total} conforming</span>
+        </div>
+      )}
 
       <div className="rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
         <div className="overflow-x-auto">
