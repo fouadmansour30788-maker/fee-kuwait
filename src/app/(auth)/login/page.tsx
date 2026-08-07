@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
@@ -20,6 +20,9 @@ function LoginForm() {
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  // Create the Supabase browser client once on mount so its init cost isn't paid
+  // inside the click handler (keeps interaction latency / INP low).
+  const supabase = useMemo(() => createClient(), [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -31,7 +34,8 @@ function LoginForm() {
     }
 
     setLoading(true)
-    const supabase = createClient()
+    // Yield a frame so the loading state paints before the sign-in work runs.
+    await new Promise((r) => requestAnimationFrame(() => r(null)))
     const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
     if (signInError || !data.user) {
       setError(lang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : (signInError?.message ?? 'Invalid email or password.'))
