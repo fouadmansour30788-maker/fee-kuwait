@@ -4,6 +4,9 @@ export type CriterionResult = 'pending' | 'pass' | 'no_pass' | 'na'
 
 export type ApplicantStatus = 'in_progress' | 'complete' | 'na'
 
+export type CbPreResult = 'pending' | 'approved_audit' | 'clarification' | 'rectification'
+export type CbFinalResult = 'pending' | 'conforming' | 'non_conforming' | 'req_clarification' | 'req_rectification'
+
 export interface CriterionAssessment {
   applicantResult: CriterionResult
   applicantStatus: ApplicantStatus | null
@@ -12,6 +15,8 @@ export interface CriterionAssessment {
   external: CriterionResult
   note: string | null
   applicantNote: string | null
+  cbPre: CbPreResult
+  cbFinal: CbFinalResult
 }
 
 // Map of criterion_ref -> external result for an application (RLS decides visibility).
@@ -32,7 +37,7 @@ export async function listCriterionAssessments(applicationId: string): Promise<R
   const supabase = createClient()
   const { data, error } = await supabase
     .from('criterion_assessments')
-    .select('criterion_ref, result, internal_result, note, internal_note, applicant_note, applicant_result, applicant_status')
+    .select('criterion_ref, result, internal_result, note, internal_note, applicant_note, applicant_result, applicant_status, cb_pre_result, cb_final_result')
     .eq('application_id', applicationId)
   if (error) { console.error('listCriterionAssessments:', error.message); return {} }
   const map: Record<string, CriterionAssessment> = {}
@@ -45,6 +50,8 @@ export async function listCriterionAssessments(applicationId: string): Promise<R
       external: (r.result ?? 'pending') as CriterionResult,
       note: r.note ?? null,
       applicantNote: r.applicant_note ?? null,
+      cbPre: (r.cb_pre_result ?? 'pending') as CbPreResult,
+      cbFinal: (r.cb_final_result ?? 'pending') as CbFinalResult,
     }
   }
   return map

@@ -6,6 +6,38 @@ import { establishmentCanEdit } from '@/lib/workflow'
 import { revalidatePath } from 'next/cache'
 
 const RESULTS = ['pending', 'pass', 'no_pass', 'na']
+const CB_PRE = ['pending', 'approved_audit', 'clarification', 'rectification']
+const CB_FINAL = ['pending', 'conforming', 'non_conforming', 'req_clarification', 'req_rectification']
+
+// The Certification Body records its per-criterion pre-audit / final review.
+// Written with the service role after a role check (the assigned CB, or super_admin).
+async function cbWrite(applicationId: string, criterionRef: string, column: 'cb_pre_result' | 'cb_final_result', value: string): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const admin = createAdminClient()
+  const { data: app } = await admin.from('applications').select('cb_id').eq('id', applicationId).single()
+  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+  const ok = me?.role === 'super_admin' || (me?.role === 'certification_body' && app?.cb_id === user.id)
+  if (!ok) return { error: 'Only the assigned Certification Body can record this.' }
+
+  const { error } = await admin.from('criterion_assessments').upsert({
+    application_id: applicationId, criterion_ref: criterionRef, [column]: value === 'pending' ? null : value,
+    updated_by: user.id, updated_at: new Date().toISOString(),
+  }, { onConflict: 'application_id,criterion_ref' })
+  if (error) return { error: error.message }
+  revalidatePath(`/cb/applications/${applicationId}`)
+  revalidatePath(`/applications/${applicationId}`)
+  return { ok: true }
+}
+export async function setCbPreResult(applicationId: string, criterionRef: string, value: string): Promise<{ ok?: true; error?: string }> {
+  if (!CB_PRE.includes(value)) return { error: 'Invalid value' }
+  return cbWrite(applicationId, criterionRef, 'cb_pre_result', value)
+}
+export async function setCbFinalResult(applicationId: string, criterionRef: string, value: string): Promise<{ ok?: true; error?: string }> {
+  if (!CB_FINAL.includes(value)) return { error: 'Invalid value' }
+  return cbWrite(applicationId, criterionRef, 'cb_final_result', value)
+}
 
 // The assigned auditor records a criterion result. RLS enforces that only the
 // assigned auditor can write; we still require a session.

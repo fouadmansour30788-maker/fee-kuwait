@@ -3,7 +3,7 @@
 import { Fragment, memo, useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock, Link2, ExternalLink } from 'lucide-react'
-import { setInternalResult, setApplicantStatus, setCriterionResult, setCriterionNote } from '@/lib/actions/assessments'
+import { setInternalResult, setApplicantStatus, setCriterionResult, setCriterionNote, setCbPreResult, setCbFinalResult } from '@/lib/actions/assessments'
 import { postCriterionMessage } from '@/lib/actions/messages'
 import CriterionUpload from '@/components/documents/CriterionUpload'
 import DocumentRemove from '@/components/documents/DocumentRemove'
@@ -43,6 +43,24 @@ const AUD_META: Record<Result, Meta> = {
   no_pass: { label: 'Non-Conforming', color: '#DC2626', bg: '#FEE2E2' },
   na:      { label: 'Not Applicable', color: '#475569', bg: '#E2E8F0' },
 }
+// CB Pre-Audit Review options.
+type CbPre = 'pending' | 'approved_audit' | 'clarification' | 'rectification'
+const CB_PRE_META: Record<CbPre, Meta> = {
+  pending:        { label: 'Pending',            color: '#64748B', bg: '#F1F5F9' },
+  approved_audit: { label: 'Approved for Audit', color: '#059669', bg: '#D1FAE5' },
+  clarification:  { label: 'Clarification Required', color: '#B45309', bg: '#FEF3C7' },
+  rectification:  { label: 'Rectification Required', color: '#DC2626', bg: '#FEE2E2' },
+}
+// CB Final Review options.
+type CbFinal = 'pending' | 'conforming' | 'non_conforming' | 'req_clarification' | 'req_rectification'
+const CB_FINAL_META: Record<CbFinal, Meta> = {
+  pending:          { label: 'Pending',             color: '#64748B', bg: '#F1F5F9' },
+  conforming:       { label: 'Conforming',          color: '#059669', bg: '#D1FAE5' },
+  non_conforming:   { label: 'Non-Conforming',      color: '#DC2626', bg: '#FEE2E2' },
+  req_clarification:{ label: 'Request Clarification', color: '#B45309', bg: '#FEF3C7' },
+  req_rectification:{ label: 'Request Rectification', color: '#C2410C', bg: '#FFEDD5' },
+}
+
 const ROLE_LABEL: Record<string, string> = { establishment: 'Establishment', operator: 'Operator', auditor: 'Auditor', cb: 'CB' }
 // One colour per author role so a thread is readable at a glance.
 const ROLE_BUBBLE: Record<string, { bg: string; bd: string; fg: string }> = {
@@ -64,7 +82,7 @@ function AuditorNote({ text, author }: { text: string; author?: string | null })
     </div>
   )
 }
-const BLANK: CriterionAssessment = { applicantResult: 'pending', applicantStatus: null, internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null }
+const BLANK: CriterionAssessment = { applicantResult: 'pending', applicantStatus: null, internal: 'pending', internalNote: null, external: 'pending', note: null, applicantNote: null, cbPre: 'pending', cbFinal: 'pending' }
 const EMPTY_DOCS: AppDoc[] = []
 const EMPTY_MSGS: CriterionMessage[] = []
 
@@ -163,6 +181,60 @@ function ResultSelect({ value, onChange, meta }: { value: Result; onChange: (r: 
     </div>
   )
 }
+// Generic option picker (CB pre/final): toggles the selected option back to pending.
+function OptionSelect({ value, options, meta, onChange }: { value: string; options: string[]; meta: Record<string, Meta>; onChange: (v: string) => void }) {
+  return (
+    <div className="inline-flex flex-col gap-1 items-start">
+      {options.map((o) => {
+        const m = meta[o]; const on = value === o
+        return (
+          <button key={o} onClick={() => onChange(on ? 'pending' : o)} title={on ? 'Click to clear' : undefined}
+            className="px-2 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap text-left"
+            style={on ? { background: m.color, color: '#fff' } : { background: '#F1F5F9', color: m.color }}>{m.label}</button>
+        )
+      })}
+    </div>
+  )
+}
+function OptionChip({ value, meta }: { value: string; meta: Record<string, Meta> }) {
+  if (!value || value === 'pending') return <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>
+  const m = meta[value]
+  return <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: m.bg, color: m.color }}>{m.label}</span>
+}
+
+// A per-criterion comment thread with its own input (used for the pre- and
+// post-auditor comment columns).
+function CommentThread({ messages, canComment, onSend }: { messages: CriterionMessage[]; canComment: boolean; onSend: (body: string) => void }) {
+  const [text, setText] = useState('')
+  function send() { const b = text.trim(); if (!b) return; onSend(b); setText('') }
+  return (
+    <div className="space-y-1.5">
+      <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
+        {messages.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>No comments yet</span>}
+        {messages.map((m) => {
+          const isEst = m.author_role === 'establishment'
+          const internal = m.visibility === 'auditor_internal'
+          const tone = ROLE_BUBBLE[m.author_role ?? ''] ?? ROLE_BUBBLE_FALLBACK
+          return (
+            <div key={m.id} className={isEst ? 'flex justify-start' : 'flex justify-end'}>
+              <div className="rounded-lg px-2 py-1.5 max-w-[88%]" style={{ background: tone.bg, border: `1px solid ${tone.bd}`, borderStyle: internal ? 'dashed' : 'solid' }}>
+                <span className="text-[9px] font-semibold block" style={{ color: tone.fg }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{internal ? ' · internal' : ''}</span>
+                <span className="text-xs" style={{ color: '#334155' }}>{m.body}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      {canComment && (
+        <div className="flex items-center gap-1">
+          <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') send() }} placeholder="Message…"
+            className="flex-1 min-w-[110px] text-xs px-2 py-1.5 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
+          <button onClick={send} disabled={!text.trim()} className="p-1.5 rounded-lg text-white disabled:opacity-50" style={{ background: '#40916C' }}><Send className="w-3 h-3" /></button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface RowProps {
   c: CriterionRef
@@ -176,13 +248,17 @@ interface RowProps {
   isOperator: boolean
   canComment: boolean
   editAudit: boolean
+  cbPreEditable: boolean
+  cbFinalEditable: boolean
   showExternal: boolean
   selAudit: AuditRecord | null
   onStatus: (ref: string, s: PStatus | null) => void
   onOp: (ref: string, r: Result) => void
   onAudit: (ref: string, r: Result) => void
   onAuditNote: (ref: string, note: string) => void
-  onPost: (ref: string, body: string) => void
+  onCbPre: (ref: string, v: string) => void
+  onCbFinal: (ref: string, v: string) => void
+  onPost: (ref: string, body: string, phase: 'pre_audit' | 'post_audit') => void
   onDesc: (c: CriterionRef) => void
 }
 
@@ -190,16 +266,16 @@ interface RowProps {
 // The comment input keeps its text in local state, so typing never re-renders the
 // rest of the (139-row) table.
 const Row = memo(function Row({
-  c, a, docsList, thread, year, applicationId, applicantId, estCanEdit, isOperator, canComment, editAudit, showExternal, selAudit,
-  onStatus, onOp, onAudit, onAuditNote, onPost, onDesc,
+  c, a, docsList, thread, year, applicationId, applicantId, estCanEdit, isOperator, canComment, editAudit, cbPreEditable, cbFinalEditable, showExternal, selAudit,
+  onStatus, onOp, onAudit, onAuditNote, onCbPre, onCbFinal, onPost, onDesc,
 }: RowProps) {
-  const [text, setText] = useState('')
   const ev = GK_EVIDENCE[c.ref]
   // Surveillance evidence lives under the Surveillance Activities tab, never on
   // the main application board (the two can share a year).
   const list = docsList.filter((d) => !d.surveillance_id && (d.year === year || d.year == null))
   const estDocs = list.filter((d) => applicantId && d.uploaded_by === applicantId)
-  function send() { const b = text.trim(); if (!b) return; onPost(c.ref, b); setText('') }
+  const preThread = thread.filter((m) => (m.phase ?? 'pre_audit') !== 'post_audit')
+  const postThread = thread.filter((m) => m.phase === 'post_audit')
 
   const Attach = ({ items, canUpload }: { items: AppDoc[]; canUpload: boolean }) => (
     <div className="flex flex-col gap-1 items-start">
@@ -237,32 +313,13 @@ const Row = memo(function Row({
       <td className="px-3 py-3">
         {isOperator ? <ResultSelect value={a.internal} onChange={(r) => onOp(c.ref, r)} meta={OP_META} /> : (a.internal === 'pending' ? <span className="text-xs" style={{ color: '#CBD5E1' }}>Pending Review</span> : <Chip r={a.internal} meta={OP_META} />)}
       </td>
+      {/* CB Pre-Audit Review */}
+      <td className="px-3 py-3">
+        {cbPreEditable ? <OptionSelect value={a.cbPre} options={['approved_audit', 'clarification', 'rectification']} meta={CB_PRE_META} onChange={(v) => onCbPre(c.ref, v)} /> : <OptionChip value={a.cbPre} meta={CB_PRE_META} />}
+      </td>
+      {/* Comments & Clarifications — Pre auditor review */}
       <td className="px-3 py-3 min-w-[220px]">
-        <div className="space-y-1.5">
-          <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
-            {thread.length === 0 && <span className="text-xs" style={{ color: '#CBD5E1' }}>No comments yet</span>}
-            {thread.map((m) => {
-              const isEst = m.author_role === 'establishment'
-              const internal = m.visibility === 'auditor_internal'
-              const tone = ROLE_BUBBLE[m.author_role ?? ''] ?? ROLE_BUBBLE_FALLBACK
-              return (
-                <div key={m.id} className={isEst ? 'flex justify-start' : 'flex justify-end'}>
-                  <div className="rounded-lg px-2 py-1.5 max-w-[88%]" style={{ background: tone.bg, border: `1px solid ${tone.bd}`, borderStyle: internal ? 'dashed' : 'solid' }}>
-                    <span className="text-[9px] font-semibold block" style={{ color: tone.fg }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{internal ? ' · internal' : ''}</span>
-                    <span className="text-xs" style={{ color: '#334155' }}>{m.body}</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-          {canComment && (
-            <div className="flex items-center gap-1">
-              <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') send() }} placeholder="Message…"
-                className="flex-1 min-w-[110px] text-xs px-2 py-1.5 rounded-lg outline-none" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#1E293B' }} />
-              <button onClick={send} disabled={!text.trim()} className="p-1.5 rounded-lg text-white disabled:opacity-50" style={{ background: '#40916C' }}><Send className="w-3 h-3" /></button>
-            </div>
-          )}
-        </div>
+        <CommentThread messages={preThread} canComment={canComment} onSend={(b) => onPost(c.ref, b, 'pre_audit')} />
       </td>
       {showExternal && (
         <td className="px-3 py-3 min-w-[260px] max-w-[320px] align-top">
@@ -283,6 +340,17 @@ const Row = memo(function Row({
           </>}
         </td>
       )}
+      {/* CB Final Review + post-auditor comments (audit stage) */}
+      {showExternal && (
+        <td className="px-3 py-3">
+          {cbFinalEditable ? <OptionSelect value={a.cbFinal} options={['conforming', 'non_conforming', 'req_clarification', 'req_rectification']} meta={CB_FINAL_META} onChange={(v) => onCbFinal(c.ref, v)} /> : <OptionChip value={a.cbFinal} meta={CB_FINAL_META} />}
+        </td>
+      )}
+      {showExternal && (
+        <td className="px-3 py-3 min-w-[220px]">
+          <CommentThread messages={postThread} canComment={canComment} onSend={(b) => onPost(c.ref, b, 'post_audit')} />
+        </td>
+      )}
     </tr>
   )
 })
@@ -290,7 +358,7 @@ const Row = memo(function Row({
 // Shared collaborative criteria board.
 export default function CriteriaBoard({
   applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false, auditEditable = false, applicantId,
-  audits = [], auditorName, editableCriteria = null,
+  audits = [], auditorName, editableCriteria = null, cbPreEditable = false, cbFinalEditable = false,
 }: {
   applicationId: string
   criteria: CriterionRef[]
@@ -307,6 +375,8 @@ export default function CriteriaBoard({
   // When set, only these criterion refs are editable by the establishment
   // (selective reopen); null means the usual all-or-nothing lock applies.
   editableCriteria?: string[] | null
+  cbPreEditable?: boolean   // CB may edit the pre-audit review column
+  cbFinalEditable?: boolean // CB may edit the final review column
 }) {
   const [rows, setRows] = useState(assessments)
   const [msgs, setMsgs] = useState(messages)
@@ -363,10 +433,18 @@ export default function CriteriaBoard({
     setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), note } })); setError('')
     start(async () => bump(await setCriterionNote(applicationId, ref, note)))
   }, [applicationId, bump])
-  const onPost = useCallback((ref: string, body: string) => {
-    setMsgs((p) => ({ ...p, [ref]: [...(p[ref] ?? []), { id: `tmp-${Date.now()}`, criterion_ref: ref, author_role: myRole, body, visibility: isAuditor ? 'auditor_internal' : 'shared', created_at: new Date().toISOString() }] }))
+  const onCbPre = useCallback((ref: string, v: string) => {
+    setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), cbPre: v as CriterionAssessment['cbPre'] } })); setError('')
+    start(async () => bump(await setCbPreResult(applicationId, ref, v)))
+  }, [applicationId, bump])
+  const onCbFinal = useCallback((ref: string, v: string) => {
+    setRows((p) => ({ ...p, [ref]: { ...(p[ref] ?? BLANK), cbFinal: v as CriterionAssessment['cbFinal'] } })); setError('')
+    start(async () => bump(await setCbFinalResult(applicationId, ref, v)))
+  }, [applicationId, bump])
+  const onPost = useCallback((ref: string, body: string, phase: 'pre_audit' | 'post_audit') => {
+    setMsgs((p) => ({ ...p, [ref]: [...(p[ref] ?? []), { id: `tmp-${Date.now()}`, criterion_ref: ref, author_role: myRole, body, visibility: isAuditor ? 'auditor_internal' : 'shared', phase, created_at: new Date().toISOString() }] }))
     setError('')
-    start(async () => { const r = await postCriterionMessage(applicationId, ref, body); if (r.error) setError(r.error); else router.refresh() })
+    start(async () => { const r = await postCriterionMessage(applicationId, ref, body, phase); if (r.error) setError(r.error); else router.refresh() })
   }, [applicationId, myRole, isAuditor, router])
 
   const areas = useMemo(() => Array.from(new Set(criteria.map((c) => c.area))), [criteria])
@@ -396,7 +474,7 @@ export default function CriteriaBoard({
   }, [rows, criteria])
 
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
-  const cols = 6 + (showExternal ? 1 : 0)
+  const cols = 7 + (showExternal ? 3 : 0)
 
   return (
     <div className="space-y-3">
@@ -478,8 +556,11 @@ export default function CriteriaBoard({
                 <th className={th}>Est. Progress</th>
                 <th className={th}>Est. Evidence</th>
                 <th className={th}>Operator Readiness Review</th>
-                <th className={th}>Comments &amp; Clarifications</th>
+                <th className={th}>CB Pre-Audit Review</th>
+                <th className={th}>Comments &amp; Clarifications — Pre auditor review</th>
                 {showExternal && <th className={th}>{selAudit ? `${AUDIT_TYPE_META[selAudit.type].label} audit ${selAudit.period}` : 'Auditor Conformity Assessment'}</th>}
+                {showExternal && <th className={th}>CB Final Review</th>}
+                {showExternal && <th className={th}>Comments &amp; Clarifications — Post auditor review</th>}
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: '#F1F5F9' }}>
@@ -494,8 +575,9 @@ export default function CriteriaBoard({
                   {g.rows.map((c) => (
                     <Row key={c.ref} c={c} a={rows[c.ref] ?? BLANK} docsList={docsByRef.get(c.ref) ?? EMPTY_DOCS} thread={msgsByRef.get(c.ref) ?? EMPTY_MSGS}
                       year={year} applicationId={applicationId} applicantId={applicantId}
-                      estCanEdit={estCanEdit && (editableCriteria === null || editableCriteria.includes(c.ref))} isOperator={isOperator} canComment={canComment} editAudit={editAudit} showExternal={showExternal} selAudit={selAudit}
-                      onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onPost={onPost} onDesc={onDesc} />
+                      estCanEdit={estCanEdit && (editableCriteria === null || editableCriteria.includes(c.ref))} isOperator={isOperator} canComment={canComment} editAudit={editAudit}
+                      cbPreEditable={cbPreEditable} cbFinalEditable={cbFinalEditable} showExternal={showExternal} selAudit={selAudit}
+                      onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onCbPre={onCbPre} onCbFinal={onCbFinal} onPost={onPost} onDesc={onDesc} />
                   ))}
                 </Fragment>
               ))}

@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache'
 // Post a message to a criterion's thread. The author role is derived from the
 // signed-in user; auditor messages are marked auditor_internal so RLS keeps them
 // hidden from the establishment until the audit is published.
-export async function postCriterionMessage(applicationId: string, criterionRef: string, body: string): Promise<{ ok?: true; error?: string }> {
+export async function postCriterionMessage(applicationId: string, criterionRef: string, body: string, phase: 'pre_audit' | 'post_audit' = 'pre_audit'): Promise<{ ok?: true; error?: string }> {
   const text = body.trim()
   if (!text) return { error: 'Empty message' }
   const supabase = createClient()
@@ -36,6 +36,7 @@ export async function postCriterionMessage(applicationId: string, criterionRef: 
     author_role: authorRole,
     body: text.slice(0, 4000),
     visibility,
+    phase,
   })
   if (error) return { error: error.message }
 

@@ -6,6 +6,7 @@ export interface CriterionMessage {
   author_role: string | null
   body: string
   visibility: string
+  phase: string           // 'pre_audit' | 'post_audit'
   created_at: string
 }
 
@@ -15,7 +16,7 @@ export async function listCriterionMessages(applicationId: string): Promise<Reco
   const supabase = createClient()
   const { data, error } = await supabase
     .from('criterion_messages')
-    .select('id, criterion_ref, author_role, body, visibility, created_at')
+    .select('id, criterion_ref, author_role, body, visibility, phase, created_at')
     .eq('application_id', applicationId)
     .order('created_at', { ascending: true })
   if (error) { console.error('listCriterionMessages:', error.message); return {} }
