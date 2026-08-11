@@ -1,11 +1,19 @@
 import { notFound } from 'next/navigation'
+import { Lato } from 'next/font/google'
 import { getCertificate } from '@/lib/db/certificates'
 import { qrDataUrl, siteUrl } from '@/lib/qr'
 import PrintButton from './PrintButton'
 
 export const dynamic = 'force-dynamic'
 
-const GK_GREEN = '#00AA58'
+// Lato — the official FEE brand typeface (Branding Guidelines, p.25).
+const lato = Lato({ subsets: ['latin'], weight: ['400', '700', '900'] })
+
+// Green Key brand green (FEE Branding Guidelines logo colour, RGB 0 169 93).
+const GK_GREEN = '#00A95D'
+
+// The National Operator that issues Green Key in Kuwait.
+const OPERATOR_NAME = 'academics'
 
 const fmtIssued = (d: string) => new Date(d).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', day: '2-digit', month: 'long', year: 'numeric' })
 const validMonth = (d: string | null) => (d ? new Date(d).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', month: 'long' }).toUpperCase() : '—')
@@ -20,7 +28,7 @@ export default async function CertificatePage({ params }: { params: { id: string
   const qr = await qrDataUrl(verifyUrl)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#EEF2F5', padding: 24, fontFamily: "'Lato', 'Segoe UI', system-ui, sans-serif" }}>
+    <div className={lato.className} style={{ minHeight: '100vh', background: '#EEF2F5', padding: 24 }}>
       <style>{`@media print { .no-print { display: none !important } body { background: #fff } #cert { box-shadow: none !important; margin: 0 !important } @page { size: A4 portrait; margin: 12mm } }`}</style>
 
       <div className="no-print" style={{ maxWidth: 760, margin: '0 auto 16px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -41,15 +49,15 @@ export default async function CertificatePage({ params }: { params: { id: string
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/cert/gk-image1.png" alt="Green Key" width={80} height={98} style={{ objectFit: 'contain' }} />
             <div style={{ fontSize: 12, lineHeight: 1.6, color: '#2D3748', paddingTop: 4 }}>
-              <div style={{ fontWeight: 700 }}>FEE Kuwait</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/cert/academics-logo.png" alt={OPERATOR_NAME} width={132} height={54} style={{ objectFit: 'contain', display: 'block', marginBottom: 4 }} />
               <div>National Green Key Operator</div>
               <div>Kuwait</div>
-              <div>info@fee-kuwait.org</div>
             </div>
           </div>
           <div style={{ textAlign: 'right', fontSize: 12, fontWeight: 700, lineHeight: 1.7, color: '#1A202C', paddingTop: 40 }}>
             <div style={{ borderTop: '1px solid #A0AEC0', paddingTop: 6, minWidth: 190 }}>Signature</div>
-            <div>Name of national operator</div>
+            <div style={{ textTransform: 'capitalize' }}>{OPERATOR_NAME}</div>
             <div>National Green Key operator</div>
           </div>
         </div>
