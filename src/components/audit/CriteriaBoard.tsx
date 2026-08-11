@@ -473,6 +473,13 @@ export default function CriteriaBoard({
     return { conforming, nonconforming, na, total: criteria.length, notassessed: criteria.length - conforming - nonconforming - na }
   }, [rows, criteria])
 
+  // Operator readiness summary — shown to all users.
+  const readinessCounts = useMemo(() => {
+    let ready = 0, needs = 0, na = 0
+    for (const c of criteria) { const r = rows[c.ref]?.internal; if (r === 'pass') ready++; else if (r === 'no_pass') needs++; else if (r === 'na') na++ }
+    return { ready, needs, na, total: criteria.length, pending: criteria.length - ready - needs - na }
+  }, [rows, criteria])
+
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
   const cols = 7 + (showExternal ? 3 : 0)
 
@@ -530,6 +537,18 @@ export default function CriteriaBoard({
         ))}
         <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#94A3B8' }}>Not Started <span className="font-bold">{statusCounts.notset}</span></span>
         <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{statusCounts.complete} / {statusCounts.total} complete</span>
+      </div>
+
+      {/* Operator readiness summary — shown to all users */}
+      <div className="flex items-center gap-2 flex-wrap rounded-xl border px-4 py-2.5" style={{ borderColor: '#BFDBFE', background: '#EFF6FF' }}>
+        <span className="text-xs font-semibold" style={{ color: '#1D4ED8' }}>Operator readiness:</span>
+        {([['pass', readinessCounts.ready], ['no_pass', readinessCounts.needs], ['na', readinessCounts.na]] as const).map(([k, n]) => (
+          <span key={k} className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: OP_META[k].bg, color: OP_META[k].color }}>
+            {OP_META[k].label} <span className="font-bold">{n}</span>
+          </span>
+        ))}
+        <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#94A3B8' }}>Pending Review <span className="font-bold">{readinessCounts.pending}</span></span>
+        <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{readinessCounts.ready} / {readinessCounts.total} ready</span>
       </div>
 
       {/* Auditor conformity summary — operator / auditor / CB only (hidden from the establishment) */}
