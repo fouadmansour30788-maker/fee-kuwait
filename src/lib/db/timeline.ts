@@ -35,7 +35,7 @@ export async function getApplicationTimeline(applicationId: string): Promise<Tim
 
   const { data: app } = await supabase
     .from('applications')
-    .select('id, entity_id, entity_type, programme, status, submitted_at, cb_decision, cb_note')
+    .select('id, entity_id, entity_type, programme, status, submitted_at, cb_decision, cb_note, site_visit_date')
     .eq('id', applicationId)
     .single()
   if (!app) return []
@@ -72,6 +72,9 @@ export async function getApplicationTimeline(applicationId: string): Promise<Tim
   }
 
   if (app.submitted_at) push({ id: 'app-sub', at: app.submitted_at, tone: 'application', title: 'Application submitted', detail: PROGRAMME_LABEL[app.programme] ?? app.programme })
+
+  // Auditor confirmed a site-visit date (visible to all — read from the app row).
+  if (app.site_visit_date) push({ id: 'site-visit', at: app.site_visit_date, tone: 'audit', title: 'Site visit scheduled', detail: 'Auditor confirmed the site-visit date' })
 
   for (const a of audits) {
     const meta = AUDIT_TYPE_META[a.type]
