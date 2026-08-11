@@ -529,7 +529,7 @@ export default function CriteriaBoard({
 
       {/* Establishment progress summary */}
       <div className="flex items-center gap-2 flex-wrap rounded-xl border px-4 py-2.5" style={{ borderColor: '#E2E8F0', background: '#F8FAFC' }}>
-        <span className="text-xs font-semibold" style={{ color: '#475569' }}>Progress:</span>
+        <span className="text-xs font-semibold" style={{ color: '#475569' }}>Establishment Progress:</span>
         {([['complete', statusCounts.complete], ['in_progress', statusCounts.inprog], ['na', statusCounts.na]] as const).map(([k, n]) => (
           <span key={k} className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: STATUS_META[k].bg, color: STATUS_META[k].color }}>
             {STATUS_META[k].label} <span className="font-bold">{n}</span>
@@ -541,7 +541,7 @@ export default function CriteriaBoard({
 
       {/* Operator readiness summary — shown to all users */}
       <div className="flex items-center gap-2 flex-wrap rounded-xl border px-4 py-2.5" style={{ borderColor: '#BFDBFE', background: '#EFF6FF' }}>
-        <span className="text-xs font-semibold" style={{ color: '#1D4ED8' }}>Operator readiness:</span>
+        <span className="text-xs font-semibold" style={{ color: '#1D4ED8' }}>Operator Readiness Review:</span>
         {([['pass', readinessCounts.ready], ['no_pass', readinessCounts.needs], ['na', readinessCounts.na]] as const).map(([k, n]) => (
           <span key={k} className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: OP_META[k].bg, color: OP_META[k].color }}>
             {OP_META[k].label} <span className="font-bold">{n}</span>
@@ -554,7 +554,7 @@ export default function CriteriaBoard({
       {/* Auditor conformity summary — operator / auditor / CB only (hidden from the establishment) */}
       {!isEstablishment && (
         <div className="flex items-center gap-2 flex-wrap rounded-xl border px-4 py-2.5" style={{ borderColor: '#DDD6FE', background: '#F5F3FF' }}>
-          <span className="text-xs font-semibold" style={{ color: '#6D28D9' }}>Auditor conformity:</span>
+          <span className="text-xs font-semibold" style={{ color: '#6D28D9' }}>Auditor Conformity:</span>
           {([['pass', conformityCounts.conforming], ['no_pass', conformityCounts.nonconforming], ['na', conformityCounts.na]] as const).map(([k, n]) => (
             <span key={k} className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: AUD_META[k].bg, color: AUD_META[k].color }}>
               {AUD_META[k].label} <span className="font-bold">{n}</span>
