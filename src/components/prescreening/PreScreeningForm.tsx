@@ -80,9 +80,10 @@ export default function PreScreeningForm({
     }
     if (q.field === 'multi') {
       const cur = Array.isArray(answers[q.id]) ? (answers[q.id] as string[]) : []
+      const opts = q.optionsFn ? q.optionsFn(answers) : (q.options ?? [])
       return (
         <div className="flex flex-col gap-1.5">
-          {(q.options ?? []).map((s) => (
+          {opts.map((s) => (
             <label key={s.value} className="inline-flex items-center gap-2 cursor-pointer text-sm" style={{ color: '#334155' }}>
               <input type="checkbox" disabled={locked} checked={cur.includes(s.value)} onChange={() => toggleMulti(q.id, s.value)} className="w-4 h-4 accent-green-700" />
               {s.label}

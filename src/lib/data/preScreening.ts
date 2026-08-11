@@ -52,6 +52,26 @@ const SERVICE_CATEGORY: Record<string, EstablishmentCategory> = {
   attraction: 'A',
 }
 
+// Sub-category service options (Q26/Q27) — a subset of PS_SERVICES without
+// "attraction" (attractions are a main category only).
+const PS_SUB_SERVICES = PS_SERVICES.filter((s) => s.value !== 'attraction')
+
+// Per the form, only services NOT already part of the selected main category are
+// offered as sub-category options (Q26/Q27).
+const SUBCATEGORY_SERVICE_OPTIONS: Record<EstablishmentCategory, string[]> = {
+  HH:  ['fnb', 'conference', 'exhibition'],
+  SA:  ['fnb', 'conference', 'exhibition'],
+  CHP: ['fnb', 'conference', 'exhibition'],
+  R:   ['accommodation', 'conference', 'exhibition'],
+  CC:  ['accommodation', 'fnb', 'exhibition'],
+  A:   ['accommodation', 'fnb', 'conference'],
+}
+function subServiceOptions(a: PSAnswers): { value: string; label: string }[] {
+  const main = mainCategoryOf(a)
+  const allowed = main ? SUBCATEGORY_SERVICE_OPTIONS[main] : []
+  return PS_SUB_SERVICES.filter((s) => allowed.includes(s.value))
+}
+
 export interface PSResult {
   eligible: boolean | null            // null = not yet determined
   ineligibleReason: string | null
@@ -76,7 +96,8 @@ export interface PSQuestion {
   text: string
   field: PSField
   help?: string
-  options?: { value: string; label: string }[]  // for 'multi'
+  options?: { value: string; label: string }[]        // static options for 'multi'
+  optionsFn?: (a: PSAnswers) => { value: string; label: string }[]  // dynamic options for 'multi'
   showIf?: (a: PSAnswers) => boolean
 }
 
@@ -121,8 +142,8 @@ export const PS_QUESTIONS: PSQuestion[] = [
   { id: 'q_unit_services', section: 'Units & scope', text: 'Are standard hospitality services (reception, cleaning, guest assistance) available throughout the entire guest stay, regardless of rental duration?', field: 'yesno', help: 'Units are included in the certified scope only if you can access them and hospitality services are provided throughout.', showIf: (a) => yes(a, 'q_mixed_use') && yes(a, 'q_unit_access') },
 
   // Scope & sub-categories
-  { id: 'q_services', section: 'Scope & sub-categories', text: 'Which additional services does your establishment offer that are internally managed (by you, or under a contract you control)? (Select all that apply.)', field: 'multiservice', help: 'Only services not already part of your main category pull in extra criteria.', showIf: (a) => !!mainCategoryOf(a) },
-  { id: 'q_ext_services', section: 'Scope & sub-categories', text: 'Which additional services are externally managed (owned/operated by a separate entity with no oversight by you)? (Select all that apply.)', field: 'multi', options: PS_SERVICES, showIf: (a) => !!mainCategoryOf(a) },
+  { id: 'q_services', section: 'Scope & sub-categories', text: 'Which additional services does your establishment offer that are internally managed (by you, or under a contract you control)? (Select all that apply.)', field: 'multi', optionsFn: subServiceOptions, help: 'Only services not already part of your main category are shown.', showIf: (a) => !!mainCategoryOf(a) },
+  { id: 'q_ext_services', section: 'Scope & sub-categories', text: 'Which additional services are externally managed (owned/operated by a separate entity with no oversight by you)? (Select all that apply.)', field: 'multi', optionsFn: subServiceOptions, showIf: (a) => !!mainCategoryOf(a) },
   { id: 'q_ext_fnb', section: 'Scope & sub-categories', text: 'Does the externally managed F&B service form a core part of your offer (e.g. breakfast, half-board in an externally managed restaurant)?', field: 'yesno', showIf: (a) => Array.isArray(a.q_ext_services) && a.q_ext_services.includes('fnb') },
   { id: 'q_add_services', section: 'Scope & sub-categories', text: 'Which of these other services does your establishment offer that are internally managed? (Select all that apply — optional.)', field: 'multi', options: PS_ADDITIONAL_SERVICES, showIf: (a) => !!mainCategoryOf(a) },
   { id: 'q_add_ext_services', section: 'Scope & sub-categories', text: 'Which of these other services are externally managed? (Select all that apply — optional.)', field: 'multi', options: PS_ADDITIONAL_SERVICES, showIf: (a) => !!mainCategoryOf(a) },

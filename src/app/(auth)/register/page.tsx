@@ -281,9 +281,10 @@ function RegisterForm() {
     }
     if (q.field === 'multi') {
       const cur = Array.isArray(ps[q.id]) ? (ps[q.id] as string[]) : []
+      const opts = q.optionsFn ? q.optionsFn(ps) : (q.options ?? [])
       return (
         <div className="flex flex-col gap-1.5">
-          {(q.options ?? []).map((s) => (
+          {opts.map((s) => (
             <label key={s.value} className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: '#334155' }}>
               <input type="checkbox" checked={cur.includes(s.value)} onChange={() => togglePsMulti(q.id, s.value)} className="w-4 h-4 accent-green-700" />{s.label}
             </label>
