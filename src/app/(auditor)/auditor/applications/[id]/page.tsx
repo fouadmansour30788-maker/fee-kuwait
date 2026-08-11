@@ -8,6 +8,8 @@ import { listAudits } from '@/lib/db/audits'
 import { listCriterionMessages } from '@/lib/db/messages'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
+import { getApplicationTimeline } from '@/lib/db/timeline'
+import JourneyTimeline from '@/components/timeline/JourneyTimeline'
 import WorkflowActions from '@/components/audit/WorkflowActions'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
@@ -16,7 +18,7 @@ import AuditorSubmit from '@/components/audit/AuditorSubmit'
 export default async function AuditorApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments, messages, audits, ps] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), listAudits(params.id), getPreScreening(params.id)])
+  const [docs, assessments, messages, audits, ps, timeline] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), listAudits(params.id), getPreScreening(params.id), getApplicationTimeline(params.id)])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const reports = docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF).map((d) => ({ id: d.id, name: d.name, url: d.url }))
   const evidence = docs.filter((d) => d.criterion_ref !== AUDIT_REPORT_REF)
@@ -58,6 +60,13 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
         </div>
         <WorkflowActions applicationId={params.id} role="auditor" status={app.status} />
+      </div>
+
+      {/* Journey & history */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Journey &amp; history</h2>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The establishment&apos;s lifecycle — registration, eligibility, audits, surveillance and decisions.</p>
+        <JourneyTimeline events={timeline} />
       </div>
 
       {/* Criteria board */}
