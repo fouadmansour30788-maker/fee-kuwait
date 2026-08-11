@@ -19,7 +19,7 @@ export default function ReopenRevision({ applicationId, ncCount, deadline }: { a
   return (
     <div className="space-y-2">
       {deadline && (
-        <p className="text-xs" style={{ color: '#B45309' }}>Currently in revision — due {new Date(deadline).toLocaleDateString('en-GB')}.</p>
+        <p className="text-xs" style={{ color: '#B45309' }}>Currently in revision — due {new Date(deadline).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}.</p>
       )}
       <p className="text-xs" style={{ color: '#64748B' }}>
         <span className="font-semibold" style={{ color: '#B91C1C' }}>{ncCount}</span> non-conformity{ncCount === 1 ? '' : 'ies'} — re-opening gives the establishment <strong>{window}</strong> to revise the flagged criteria.

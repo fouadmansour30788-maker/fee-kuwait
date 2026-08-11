@@ -35,7 +35,7 @@ export default async function ContentPage() {
                   <td className="px-5 py-3.5"><Link href={`/content/${a.id}`} className="font-medium line-clamp-1" style={{ color: '#1E293B' }}>{a.title_en}</Link></td>
                   <td className="px-5 py-3.5"><span className="text-xs px-2 py-0.5 rounded-full font-medium capitalize" style={{ background: '#F1F5F9', color: '#475569' }}>{a.programme || '—'}</span></td>
                   <td className="px-5 py-3.5"><span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: st.bg, color: st.color }}>{st.label}</span></td>
-                  <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>{new Date(a.updated_at).toLocaleDateString('en-GB')}</td>
+                  <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>{new Date(a.updated_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}</td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
                       <Link href={`/content/${a.id}`} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors" style={{ color: '#64748B' }} title="Edit"><Edit2 className="w-3.5 h-3.5" /></Link>

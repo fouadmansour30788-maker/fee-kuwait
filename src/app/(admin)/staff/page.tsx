@@ -55,7 +55,7 @@ export default async function StaffPage() {
                       <RemoveMember userId={u.id} name={u.name_en || u.email} disabled={isMe} />
                     </div>
                   </td>
-                  <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>{new Date(u.created_at).toLocaleDateString('en-GB')}</td>
+                  <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>{new Date(u.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}</td>
                 </tr>
               )
             })}

@@ -11,7 +11,7 @@ import { AUDIT_TYPE_META } from '@/lib/audit-types'
 const EST = { complete: 'Complete', in_progress: 'In Progress', na: 'N/A Req.' } as Record<string, string>
 const OP = { pass: 'Ready', no_pass: 'Needs Action', na: 'N/A Confirmed', pending: '—' } as Record<string, string>
 const AU = { pass: 'Conforming', no_pass: 'Non-Conforming', na: 'Not Applicable', pending: '—' } as Record<string, string>
-const fmt = (s: string | null | undefined) => (s ? new Date(s).toLocaleDateString('en-GB') : '—')
+const fmt = (s: string | null | undefined) => (s ? new Date(s).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—')
 
 // A print-friendly dossier of an application's final records: summary, criteria
 // results, audit report(s), surveillance, certification decision and version
@@ -37,7 +37,7 @@ export default async function ApplicationDossier({ id }: { id: string }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: '#1B4332' }}>Green Key — Certification Records</h1>
-          <p style={{ color: '#64748B', fontSize: 12 }}>{PROGRAMME_LABEL[app.programme] ?? app.programme} · Generated {new Date().toLocaleString('en-GB')}</p>
+          <p style={{ color: '#64748B', fontSize: 12 }}>{PROGRAMME_LABEL[app.programme] ?? app.programme} · Generated {new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuwait' })}</p>
         </div>
         <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: s.bg, color: s.color }}>{s.label}</span>
       </div>
@@ -96,7 +96,7 @@ export default async function ApplicationDossier({ id }: { id: string }) {
       <H>Version history</H>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead><tr>{['Snapshot', 'Status', 'Date'].map((h) => <th key={h} style={{ ...cell, background: '#F8FAFC', fontWeight: 700 }}>{h}</th>)}</tr></thead>
-        <tbody>{(versions ?? []).length === 0 ? <tr><td style={cell} colSpan={3}>No frozen versions yet.</td></tr> : (versions ?? []).map((v, i) => <tr key={i}><td style={cell}>{v.label}</td><td style={cell}>{statusMeta(v.status ?? '').label}</td><td style={cell}>{new Date(v.created_at).toLocaleString('en-GB')}</td></tr>)}</tbody>
+        <tbody>{(versions ?? []).length === 0 ? <tr><td style={cell} colSpan={3}>No frozen versions yet.</td></tr> : (versions ?? []).map((v, i) => <tr key={i}><td style={cell}>{v.label}</td><td style={cell}>{statusMeta(v.status ?? '').label}</td><td style={cell}>{new Date(v.created_at).toLocaleString('en-GB', { timeZone: 'Asia/Kuwait' })}</td></tr>)}</tbody>
       </table>
 
       <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 24, borderTop: '1px solid #E2E8F0', paddingTop: 8 }}>

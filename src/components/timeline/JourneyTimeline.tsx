@@ -4,7 +4,7 @@ import { TIMELINE_TONE, type TimelineEvent } from '@/lib/db/timeline'
 const fmt = (at: string | null) => {
   if (!at) return '—'
   const d = new Date(at)
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', day: '2-digit', month: 'short', year: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit' })
 }
 
 // The establishment's journey & history as a vertical, table-like timeline

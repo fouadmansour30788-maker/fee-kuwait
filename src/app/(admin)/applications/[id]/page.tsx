@@ -73,7 +73,7 @@ export default async function ApplicationDetail({
             {[
               { Icon: Building2, label: 'Type', value: app.entity_type ?? '—' },
               { Icon: Mail, label: 'Applicant', value: app.applicant?.email ?? '—' },
-              { Icon: Calendar, label: 'Submitted', value: app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB') : '—' },
+              { Icon: Calendar, label: 'Submitted', value: app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—' },
             ].map(({ Icon, label, value }) => (
               <div key={label} className="min-w-0">
                 <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: '#94A3B8' }}>
@@ -155,7 +155,7 @@ export default async function ApplicationDetail({
                       ? <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ background: '#FEF3C7', color: '#92400E' }}>Audit report</span>
                       : d.criterion_ref && <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>{d.criterion_ref}</span>}
                   </div>
-                  <p className="text-xs" style={{ color: '#94A3B8' }}>{formatBytes(d.size)} · {new Date(d.created_at).toLocaleDateString('en-GB')}</p>
+                  <p className="text-xs" style={{ color: '#94A3B8' }}>{formatBytes(d.size)} · {new Date(d.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}</p>
                 </div>
                 {d.url && (
                   <a href={d.url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: '#F1F5F9', color: '#40916C' }}>
@@ -231,7 +231,7 @@ export default async function ApplicationDetail({
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold" style={{ color: '#1E293B' }}>{t.field}</span>
                   <span className="text-xs" style={{ color: '#94A3B8' }}>{statusMeta(t.previousValue ?? '').label} → {t.newValue}</span>
-                  <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{t.userName} · {t.userRole} · {new Date(t.createdAt).toLocaleString('en-GB')}</span>
+                  <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{t.userName} · {t.userRole} · {new Date(t.createdAt).toLocaleString('en-GB', { timeZone: 'Asia/Kuwait' })}</span>
                 </div>
               </div>
             ))}

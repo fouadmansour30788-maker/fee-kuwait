@@ -67,7 +67,7 @@ export default function NotificationBell({ accent = '#40916C' }: { accent?: stri
                   <div className={n.read ? 'pl-4' : ''}>
                     <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>{n.title}</p>
                     {n.message && <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>{n.message}</p>}
-                    <p className="text-[11px] mt-0.5" style={{ color: '#94A3B8' }}>{new Date(n.created_at).toLocaleString('en-GB')}</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: '#94A3B8' }}>{new Date(n.created_at).toLocaleString('en-GB', { timeZone: 'Asia/Kuwait' })}</p>
                   </div>
                 </button>
               ))}

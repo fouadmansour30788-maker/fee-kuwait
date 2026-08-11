@@ -87,7 +87,7 @@ export default async function AdminDashboard() {
   const now = new Date()
   const months = Array.from({ length: 8 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - 7 + i, 1)
-    return { key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('en-GB', { month: 'short' }), submitted: 0, certified: 0 }
+    return { key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', month: 'short' }), submitted: 0, certified: 0 }
   })
   const bucket = (dateStr: string | null | undefined) => {
     if (!dateStr) return undefined
@@ -191,7 +191,7 @@ export default async function AdminDashboard() {
   }
 
   const recent = apps.slice(0, 6)
-  const today = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const today = now.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
   return (
     <div className="space-y-6">

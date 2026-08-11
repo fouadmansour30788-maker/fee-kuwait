@@ -55,7 +55,7 @@ export default async function RegistrationsPage() {
               </div>
               <div className="min-w-0">
                 <p className="font-bold" style={{ color: '#0F172A' }}>{r.name}{r.nameAr ? ` · ${r.nameAr}` : ''}</p>
-                {r.createdAt && <p className="text-xs" style={{ color: '#94A3B8' }}>Registered {new Date(r.createdAt).toLocaleDateString('en-GB')}</p>}
+                {r.createdAt && <p className="text-xs" style={{ color: '#94A3B8' }}>Registered {new Date(r.createdAt).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}</p>}
               </div>
               <span className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: st.bg, color: st.color }}>{st.label}</span>
               {(r.details.latitude != null && r.details.longitude != null) && (

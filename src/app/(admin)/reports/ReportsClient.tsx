@@ -94,7 +94,7 @@ export default function ReportsClient({
     const now = new Date()
     const arr = Array.from({ length: 8 }, (_, i) => {
       const d = new Date(now.getFullYear(), now.getMonth() - 7 + i, 1)
-      return { key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }), submitted: 0, certified: 0 }
+      return { key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', month: 'short', year: '2-digit' }), submitted: 0, certified: 0 }
     })
     for (const a of appRows) { const m = arr.find((x) => x.key === monthKey(a.submitted)); if (m) m.submitted++ }
     for (const c of certRows) { const m = arr.find((x) => x.key === monthKey(c.issued)); if (m) m.certified++ }
@@ -115,7 +115,7 @@ export default function ReportsClient({
   }, [appRows])
 
   // ── Narrative ──
-  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const today = new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', day: 'numeric', month: 'long', year: 'numeric' })
   const narrative = total === 0
     ? 'No applications have been submitted yet. This report will populate automatically as schools and establishments apply.'
     : [

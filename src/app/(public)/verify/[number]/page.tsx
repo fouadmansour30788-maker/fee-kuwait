@@ -5,7 +5,7 @@ import { PROGRAMME_LABEL } from '@/lib/db/applications'
 
 export const dynamic = 'force-dynamic'
 
-const fmt = (s: string | null) => (s ? new Date(s).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '—')
+const fmt = (s: string | null) => (s ? new Date(s).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', day: '2-digit', month: 'long', year: 'numeric' }) : '—')
 
 export default async function VerifyPage({ params }: { params: { number: string } }) {
   const cert = await getPublicCertificate(decodeURIComponent(params.number))

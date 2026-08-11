@@ -48,7 +48,7 @@ export default async function ApplicationsPage() {
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: s.bg, color: s.color }}>{s.label}</span>
                   </td>
                   <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>
-                    {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB') : '—'}
+                    {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <Link href={`/applications/${a.id}`} className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: '#40916C' }}>

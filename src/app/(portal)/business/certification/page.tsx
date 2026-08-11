@@ -32,11 +32,11 @@ export default async function BusinessCertificationPage() {
                 <div className="mt-4 pt-4 border-t grid grid-cols-2 gap-3 text-sm" style={{ borderColor: '#EEF5F0' }}>
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: '#94A3B8' }}>Issued</p>
-                    <p style={{ color: '#1E293B' }}>{c.issued_at ? new Date(c.issued_at).toLocaleDateString('en-GB') : '—'}</p>
+                    <p style={{ color: '#1E293B' }}>{c.issued_at ? new Date(c.issued_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}</p>
                   </div>
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: '#94A3B8' }}>Expires</p>
-                    <p style={{ color: '#1E293B' }}>{c.expires_at ? new Date(c.expires_at).toLocaleDateString('en-GB') : '—'}</p>
+                    <p style={{ color: '#1E293B' }}>{c.expires_at ? new Date(c.expires_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-4 flex-wrap">

@@ -49,7 +49,7 @@ export default async function SchoolApplicationPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>{PROGRAMME_LABEL[a.programme] ?? a.programme}</p>
                       <p className="text-xs" style={{ color: '#94A3B8' }}>
-                        Submitted {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB') : '—'}
+                        Submitted {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}
                       </p>
                     </div>
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: s.bg, color: s.color }}>{s.label}</span>

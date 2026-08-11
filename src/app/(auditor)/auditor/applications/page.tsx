@@ -22,7 +22,7 @@ export default async function AuditorApplications() {
                 <Link key={a.id} href={`/auditor/applications/${a.id}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>{a.applicant?.name_en || a.applicant?.email || '—'}</p>
-                    <p className="text-xs" style={{ color: '#94A3B8' }}>{PROGRAMME_LABEL[a.programme] ?? a.programme} · submitted {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB') : '—'}</p>
+                    <p className="text-xs" style={{ color: '#94A3B8' }}>{PROGRAMME_LABEL[a.programme] ?? a.programme} · submitted {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}</p>
                   </div>
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: s.bg, color: s.color }}>{s.label}</span>
                   <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: '#94A3B8' }} />

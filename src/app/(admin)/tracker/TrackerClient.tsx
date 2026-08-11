@@ -16,7 +16,7 @@ function downloadCsv(filename: string, headers: string[], rows: (string | number
   URL.revokeObjectURL(url)
 }
 
-const iso = (d: string | null) => (d ? new Date(d).toLocaleDateString('en-GB') : '')
+const iso = (d: string | null) => (d ? new Date(d).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '')
 
 export default function TrackerClient({
   rows, statusMeta, programmeLabel, cbDecisionLabel,

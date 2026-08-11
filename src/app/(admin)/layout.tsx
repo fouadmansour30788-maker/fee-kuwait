@@ -52,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     supabase.from('notifications').select('id, type, message_en, action_url, read, created_at')
       .order('created_at', { ascending: false }).limit(30)
       .then(({ data }) => {
-        if (data) setNotifs(data.map(n => ({ id: n.id, message: n.message_en ?? '', actionUrl: n.action_url, read: !!n.read, kind: n.type, at: new Date(n.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) })))
+        if (data) setNotifs(data.map(n => ({ id: n.id, message: n.message_en ?? '', actionUrl: n.action_url, read: !!n.read, kind: n.type, at: new Date(n.created_at).toLocaleString('en-GB', { timeZone: 'Asia/Kuwait', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) })))
       })
   }, [])
 

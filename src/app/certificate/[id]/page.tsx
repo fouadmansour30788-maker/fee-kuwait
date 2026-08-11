@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic'
 
 const GK_GREEN = '#00AA58'
 
-const fmtIssued = (d: string) => new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
-const validMonth = (d: string | null) => (d ? new Date(d).toLocaleDateString('en-GB', { month: 'long' }).toUpperCase() : '—')
+const fmtIssued = (d: string) => new Date(d).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', day: '2-digit', month: 'long', year: 'numeric' })
+const validMonth = (d: string | null) => (d ? new Date(d).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', month: 'long' }).toUpperCase() : '—')
 const validYear = (d: string | null) => (d ? new Date(d).getFullYear() : '')
 
 const GK_DESCRIPTION = 'The Green Key certificate is a leading standard for excellence in the field of environmental responsibility and sustainable operation within the tourism industry. This prestigious certificate represents a commitment by businesses that their establishment adheres to the strict criteria set by the Foundation for Environmental Education and highlights the establishments’ efforts to develop a sustainable and responsible business.'

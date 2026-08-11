@@ -40,8 +40,8 @@ export default async function CertificatesPage() {
                   </td>
                   <td className="px-5 py-3.5" style={{ color: '#334155' }}>{c.applicant?.name_en || c.applicant?.email || '—'}</td>
                   <td className="px-5 py-3.5" style={{ color: '#334155' }}>{PROGRAMME_LABEL[c.programme] ?? c.programme}</td>
-                  <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>{c.issued_at ? new Date(c.issued_at).toLocaleDateString('en-GB') : '—'}</td>
-                  <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>{c.expires_at ? new Date(c.expires_at).toLocaleDateString('en-GB') : '—'}</td>
+                  <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>{c.issued_at ? new Date(c.issued_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}</td>
+                  <td className="px-5 py-3.5 text-xs" style={{ color: '#94A3B8' }}>{c.expires_at ? new Date(c.expires_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}</td>
                   <td className="px-5 py-3.5"><span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: st.bg, color: st.color }}>{st.label}</span></td>
                 </tr>
               )

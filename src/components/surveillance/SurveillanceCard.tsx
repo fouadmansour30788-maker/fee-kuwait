@@ -12,7 +12,7 @@ export default function SurveillanceCard({
   children?: React.ReactNode
 }) {
   const meta = SURVEILLANCE_STATUS_META[activity.status]
-  const date = new Date(activity.requestedAt).toLocaleDateString('en-GB')
+  const date = new Date(activity.requestedAt).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })
   return (
     <div className="relative pl-8">
       <div className="absolute left-0 top-2 w-3.5 h-3.5 rounded-full" style={{ background: meta.color, boxShadow: '0 0 0 3px #fff' }} />

@@ -40,7 +40,7 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
             {[
               { Icon: Building2, label: 'Applicant', value: app.applicant?.name_en || app.applicant?.email || '—' },
               { Icon: Mail, label: 'Email', value: app.applicant?.email ?? '—' },
-              { Icon: Calendar, label: 'Submitted', value: app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB') : '—' },
+              { Icon: Calendar, label: 'Submitted', value: app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—' },
             ].map(({ Icon, label, value }) => (
               <div key={label} className="min-w-0">
                 <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: '#94A3B8' }}>
@@ -113,7 +113,7 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: '#1E293B' }}>{d.name}</p>
-                  <p className="text-xs" style={{ color: '#94A3B8' }}>{formatBytes(d.size)} · {new Date(d.created_at).toLocaleDateString('en-GB')}</p>
+                  <p className="text-xs" style={{ color: '#94A3B8' }}>{formatBytes(d.size)} · {new Date(d.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}</p>
                 </div>
                 {d.url && (
                   <a href={d.url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: '#F1F5F9', color: '#40916C' }}>

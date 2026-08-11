@@ -67,12 +67,12 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
             {app.green_key_number && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>{app.green_key_number}</span>}
           </div>
           <p className="text-sm mt-1" style={{ color: '#5B7568' }}>
-            Submitted {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB') : '—'}
+            Submitted {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}
           </p>
           {PARTIAL_EDIT_STATUSES.includes(app.status) && (app.reopened_criteria?.length ?? 0) > 0 && (
             <div className="mt-4 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
               <strong>Rectification open.</strong> Only these criteria are editable: {app.reopened_criteria!.join(', ')}
-              {app.action_deadline ? ` · due ${new Date(app.action_deadline).toLocaleDateString('en-GB')}` : ''}. {app.cb_note ?? ''}
+              {app.action_deadline ? ` · due ${new Date(app.action_deadline).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}` : ''}. {app.cb_note ?? ''}
             </div>
           )}
           {['rejected', 'eligibility_rejected'].includes(app.status) && app.rejection_reason && (
@@ -100,7 +100,7 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
           {ncCount > 0
             ? <>{ncCount} criteri{ncCount === 1 ? 'on' : 'a'} did not pass. Please update your evidence/comments for the flagged indicators</>
             : <>{app.cb_note ? app.cb_note : 'Please update your evidence and comments'}</>}
-          {app.revision_deadline ? ` by ${new Date(app.revision_deadline).toLocaleDateString('en-GB')}` : ''}.
+          {app.revision_deadline ? ` by ${new Date(app.revision_deadline).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}` : ''}.
         </div>
       )}
 
@@ -172,7 +172,7 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: '#1E293B' }}>{d.name}</p>
-                  <p className="text-xs" style={{ color: '#94A3B8' }}>{formatBytes(d.size)} · {new Date(d.created_at).toLocaleDateString('en-GB')}</p>
+                  <p className="text-xs" style={{ color: '#94A3B8' }}>{formatBytes(d.size)} · {new Date(d.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}</p>
                 </div>
                 {d.url && (
                   <a href={d.url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: '#F1F5F9', color: '#40916C' }}>
