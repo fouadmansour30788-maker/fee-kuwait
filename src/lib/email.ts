@@ -47,6 +47,30 @@ function shell(title: string, body: string): string {
   </div>`
 }
 
+// Re-certification reminder — sent ~3 months before a certificate expires so the
+// establishment has time to renew before it lapses.
+export function renewalReminderEmail(opts: {
+  programme: string
+  certificateNumber: string
+  expiresAt: string
+  portalUrl?: string
+}): { subject: string; html: string } {
+  const { programme, certificateNumber, expiresAt, portalUrl } = opts
+  const expLabel = new Date(expiresAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Asia/Kuwait' })
+  const cta = portalUrl
+    ? `<div style="margin-top:20px;"><a href="${portalUrl}" style="display:inline-block;background:#1B4332;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 20px;border-radius:10px;">Start re-certification</a></div>`
+    : ''
+  return {
+    subject: `Your ${programme} certificate expires on ${expLabel} — time to renew`,
+    html: shell(
+      `${programme} — Re-certification due`,
+      `<p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">Your <strong>${programme}</strong> certificate <strong>${certificateNumber}</strong> is valid until <strong>${expLabel}</strong>— about three months from now.</p>
+       <p style="margin:0 0 12px;font-size:14px;color:#334155;line-height:1.6;">To keep your certification without a gap, please begin the re-certification process now. Sign in to your portal to review your criteria and submit for the next audit.</p>
+       ${cta}`,
+    ),
+  }
+}
+
 // Compose the applicant-facing status-change email. Returns null when the status
 // isn't one the applicant should be notified about.
 export function applicationStatusEmail(opts: {
