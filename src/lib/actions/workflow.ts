@@ -197,10 +197,11 @@ export async function applyWorkflowAction(
     })
   }
 
-  // Traceability.
+  // Traceability. For "Confirm Site Visit Date" record the chosen date.
+  const trailNew = action === 'Confirm Site Visit Date' && input.date ? `Site visit confirmed for ${input.date}` : target
   await admin.from('audit_trail').insert({
     application_id: applicationId, entity: 'application', field: action,
-    previous_value: app.status, new_value: target,
+    previous_value: app.status, new_value: trailNew,
     user_id: user.id, user_name: me.name_en || me.email, user_role: me.role,
   })
 
