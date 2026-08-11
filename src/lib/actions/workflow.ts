@@ -152,7 +152,13 @@ export async function applyWorkflowAction(
   if (t.to === 'ORIGIN') { patch.cb_origin_status = null; patch.clarification_owner = null }
   if (req.includes('deadline')) patch.action_deadline = input.deadline
   if (req.includes('criteria')) patch.reopened_criteria = input.criteria
-  if (action === 'Confirm Site Visit Date') patch.site_visit_date = input.date
+  if (action === 'Confirm Site Visit Date') {
+    // The datetime-local value is a Kuwait wall-clock time (UTC+3, no DST).
+    // Anchor it to +03:00 so it's stored as the correct instant and displays back
+    // as the same time. Fall back to a bare date for legacy date-only input.
+    const raw = input.date
+    patch.site_visit_date = raw && raw.includes('T') ? new Date(`${raw}:00+03:00`).toISOString() : raw
+  }
   if (action === 'Open Further Corrective Action Period') patch.rectification_round = (app.rectification_round ?? 0) + 1
   if (action === 'Reject Eligibility') patch.rejection_reason = input.reason?.trim() || null
   if (action === 'Require Rectification' || action === 'Record Not Certified Decision') patch.cb_note = input.reason?.trim() || null

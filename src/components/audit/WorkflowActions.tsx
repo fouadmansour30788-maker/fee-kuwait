@@ -83,8 +83,11 @@ export default function WorkflowActions({ applicationId, role, status, criteria 
                   </div>
                 )}
                 {req.includes('date') && (
-                  <input type="date" value={input.date ?? ''} onChange={(e) => setInput((i) => ({ ...i, date: e.target.value }))}
-                    className="w-full text-sm px-3 py-2 rounded-lg outline-none" style={field} />
+                  <div>
+                    <label className="block text-[11px] font-semibold mb-1" style={{ color: '#475569' }}>Site visit date &amp; time (Kuwait)</label>
+                    <input type="datetime-local" value={input.date ?? ''} onChange={(e) => setInput((i) => ({ ...i, date: e.target.value }))}
+                      className="w-full text-sm px-3 py-2 rounded-lg outline-none" style={field} />
+                  </div>
                 )}
                 {req.includes('deadline') && (
                   <div>
