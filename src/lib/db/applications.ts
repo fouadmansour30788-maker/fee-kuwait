@@ -8,6 +8,7 @@ export interface AppRow {
   entity_type: string | null
   submitted_at: string
   review_deadline: string | null
+  site_visit_date?: string | null
   applicant: { email: string | null; name_en: string | null } | null
 }
 

@@ -29,7 +29,7 @@ export async function auditorApplications(): Promise<AppRow[]> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('applications')
-    .select('id, programme, status, entity_type, submitted_at, review_deadline, applicant:users!applicant_id(email, name_en)')
+    .select('id, programme, status, entity_type, submitted_at, review_deadline, site_visit_date, applicant:users!applicant_id(email, name_en)')
     .order('submitted_at', { ascending: false })
   if (error) { console.error('auditorApplications:', error.message); return [] }
   return (data ?? []) as unknown as AppRow[]
@@ -59,7 +59,7 @@ export async function cbApplications(): Promise<AppRow[]> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('applications')
-    .select('id, programme, status, entity_type, submitted_at, review_deadline, applicant:users!applicant_id(email, name_en)')
+    .select('id, programme, status, entity_type, submitted_at, review_deadline, site_visit_date, applicant:users!applicant_id(email, name_en)')
     .order('submitted_at', { ascending: false })
   if (error) { console.error('cbApplications:', error.message); return [] }
   return (data ?? []) as unknown as AppRow[]
