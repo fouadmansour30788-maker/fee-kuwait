@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans, Cairo } from 'next/font/google'
+import { cookies } from 'next/headers'
 import './globals.css'
 import Providers from '@/components/ui/Providers'
+import type { Lang } from '@/i18n'
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -42,10 +44,12 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = (cookies().get('lang')?.value === 'ar' ? 'ar' : 'en') as Lang
+  const dir = lang === 'ar' ? 'rtl' : 'ltr'
   return (
-    <html lang="en" className={`${jakarta.variable} ${cairo.variable}`}>
-      <body className="antialiased">
-        <Providers>
+    <html lang={lang} dir={dir} className={`${jakarta.variable} ${cairo.variable}`}>
+      <body className="antialiased" style={lang === 'ar' ? { fontFamily: 'var(--font-cairo)' } : undefined}>
+        <Providers initialLang={lang}>
           {children}
         </Providers>
       </body>

@@ -2,11 +2,12 @@
 
 import { Toaster } from 'sonner'
 import { LangProvider } from '@/context/LangContext'
+import type { Lang } from '@/i18n'
 import ErrorBoundary from './ErrorBoundary'
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children, initialLang = 'en' }: { children: React.ReactNode; initialLang?: Lang }) {
   return (
     <ErrorBoundary>
-      <LangProvider>
+      <LangProvider initial={initialLang}>
         {children}
         <Toaster
           position="top-right"
