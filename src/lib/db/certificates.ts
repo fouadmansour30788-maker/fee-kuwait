@@ -81,6 +81,75 @@ export interface PublicCertificate {
   valid: boolean
 }
 
+export interface PublicCertifiedEntry {
+  number: string
+  name: string | null
+  governorate: string | null
+  govKey: string
+  category: string | null
+  programme: string
+  issuedAt: string
+  expiresAt: string | null
+}
+
+// Canonicalise any governorate string to Kuwait's six ADM1 keys (+ 'other').
+export function canonGovKey(raw: string | null): string {
+  const n = (raw ?? '').toLowerCase().replace(/[^a-z]/g, '')
+  if (n.includes('asimah') || n.includes('capital') || n.includes('kuwaitcity') || n === 'alkuwait' || n === 'kuwait') return 'capital'
+  if (n.includes('hawalli')) return 'hawalli'
+  if (n.includes('farwani')) return 'farwaniyah'
+  if (n.includes('mubarak')) return 'mubarak'
+  if (n.includes('ahmadi')) return 'ahmadi'
+  if (n.includes('jahra')) return 'jahra'
+  return 'other'
+}
+
+// Public directory of currently-certified establishments (service role, only
+// non-sensitive fields). Powers the public "Green Key in Kuwait" map & listing.
+// Bulk-fetches to avoid N+1: certs → applications → businesses/schools.
+export async function getPublicCertifiedDirectory(): Promise<PublicCertifiedEntry[]> {
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const admin = createAdminClient()
+  const now = Date.now()
+
+  const { data: certs } = await admin
+    .from('certificates')
+    .select('certificate_number, programme, issued_at, expires_at, status, application_id')
+    .eq('status', 'active')
+  if (!certs?.length) return []
+
+  const notExpired = certs.filter((c) => !c.expires_at || new Date(c.expires_at).getTime() >= now)
+  const appIds = Array.from(new Set(notExpired.map((c) => c.application_id)))
+  const { data: apps } = await admin.from('applications').select('id, entity_type, entity_id').in('id', appIds)
+  const appById = new Map((apps ?? []).map((a) => [a.id, a]))
+
+  const bizIds = (apps ?? []).filter((a) => a.entity_type !== 'school' && a.entity_id).map((a) => a.entity_id)
+  const schoolIds = (apps ?? []).filter((a) => a.entity_type === 'school' && a.entity_id).map((a) => a.entity_id)
+  const [{ data: biz }, { data: sch }] = await Promise.all([
+    bizIds.length ? admin.from('businesses').select('id, name_en, governorate, type').in('id', bizIds) : Promise.resolve({ data: [] as { id: string; name_en: string | null; governorate: string | null; type: string | null }[] }),
+    schoolIds.length ? admin.from('schools').select('id, name_en, governorate').in('id', schoolIds) : Promise.resolve({ data: [] as { id: string; name_en: string | null; governorate: string | null }[] }),
+  ])
+  const bizById = new Map((biz ?? []).map((b) => [b.id, b]))
+  const schById = new Map((sch ?? []).map((s) => [s.id, s]))
+
+  return notExpired.map((c) => {
+    const app = appById.get(c.application_id)
+    const isSchool = app?.entity_type === 'school'
+    const ent = isSchool ? schById.get(app?.entity_id ?? '') : bizById.get(app?.entity_id ?? '')
+    const governorate = ent?.governorate ?? null
+    return {
+      number: c.certificate_number,
+      name: ent?.name_en ?? null,
+      governorate,
+      govKey: canonGovKey(governorate),
+      category: isSchool ? 'School' : ((ent as { type?: string | null })?.type ?? null),
+      programme: c.programme,
+      issuedAt: c.issued_at,
+      expiresAt: c.expires_at,
+    }
+  }).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+}
+
 // Public verification lookup by certificate number — no auth (service role), and
 // returns only non-sensitive fields. Used by the /verify and /certificate pages.
 export async function getPublicCertificate(number: string): Promise<PublicCertificate | null> {

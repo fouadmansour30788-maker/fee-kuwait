@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { ShieldCheck, ShieldX, Leaf, Award } from 'lucide-react'
 import { getPublicCertificate, CERT_STATUS_META } from '@/lib/db/certificates'
 import { PROGRAMME_LABEL } from '@/lib/db/applications'
+import { siteUrl } from '@/lib/qr'
+import ShareBadge from '@/components/public/ShareBadge'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,8 +51,17 @@ export default async function VerifyPage({ params }: { params: { number: string 
           )}
         </div>
 
+        {cert?.valid && (
+          <ShareBadge
+            number={cert.number}
+            name={cert.holder ?? 'This establishment'}
+            verifyUrl={`${siteUrl()}/verify/${encodeURIComponent(cert.number)}`}
+            badgeUrl={`${siteUrl()}/api/badge/${encodeURIComponent(cert.number)}`}
+          />
+        )}
+
         <p className="text-center text-xs mt-6" style={{ color: 'rgba(255,255,255,0.5)' }}>
-          Verified against the FEE Kuwait certification registry · <Link href="/" className="underline">fee-kuwait</Link>
+          Verified against the FEE Kuwait certification registry · <Link href="/certified" className="underline">all certified establishments</Link>
         </p>
       </div>
     </div>
