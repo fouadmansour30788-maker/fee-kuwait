@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileText, Wrench,
   Award, Leaf, Menu, X, LogOut,
-  ChevronRight, Radar,
+  ChevronRight, Radar, BarChart3, Sprout,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import SignOutButton from '@/components/auth/SignOutButton'
@@ -31,6 +31,8 @@ const BUSINESS_NAV = [
   { href: '/business/application',  icon: FileText,        en: 'Application',  ar: 'الطلب' },
   { href: '/business/surveillance', icon: Radar,           en: 'Surveillance', ar: 'المراقبة' },
   { href: '/business/certification',icon: Award,           en: 'Certification', ar: 'الشهادة' },
+  { href: '/business/benchmarking', icon: BarChart3,       en: 'Benchmarking', ar: 'المقارنة المرجعية' },
+  { href: '/business/impact',       icon: Sprout,          en: 'Impact', ar: 'الأثر' },
   { href: '/business/resources',    icon: Wrench,          en: 'Resources', ar: 'الأدوات' },
 ]
 

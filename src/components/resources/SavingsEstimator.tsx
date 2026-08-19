@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Droplets, Zap, Trash2 } from 'lucide-react'
+import { Droplets, Zap, Trash2, Leaf, TreePine, Car } from 'lucide-react'
 
 function NumberField({ label, value, onChange, suffix }: { label: string; value: string; onChange: (v: string) => void; suffix?: string }) {
   return (
@@ -68,8 +68,28 @@ export default function SavingsEstimator() {
     },
   ]
 
+  // Total annual CO₂ avoided across all three streams (rough factors: grid 0.45
+  // kg/kWh, water pumping/heating ~0.003 kg/L, recycling benefit ~0.5 kg/kg).
+  const totalCo2 = co2 + waterSaved * 0.003 + diverted * 0.5
+  const trees = totalCo2 / 21      // one mature tree absorbs ~21 kg CO₂/yr
+  const cars = totalCo2 / 4600     // avg car emits ~4.6 t CO₂/yr
+
   return (
-    <div className="grid md:grid-cols-3 gap-4">
+    <div className="space-y-4">
+      {/* Impact headline */}
+      <div className="rounded-2xl p-5 text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
+        <div className="flex items-center gap-2 mb-1">
+          <Leaf className="w-4 h-4" style={{ color: '#B7E4C7' }} />
+          <span className="text-xs font-semibold" style={{ color: '#D8F3DC' }}>Estimated annual impact</span>
+        </div>
+        <p className="text-3xl font-bold">{fmt(totalCo2)} kg CO₂ <span className="text-lg font-semibold" style={{ color: '#D8F3DC' }}>avoided / year</span></p>
+        <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-sm" style={{ color: '#D8F3DC' }}>
+          <span className="inline-flex items-center gap-1.5"><TreePine className="w-4 h-4" /> ≈ {fmt(trees)} trees planted</span>
+          <span className="inline-flex items-center gap-1.5"><Car className="w-4 h-4" /> ≈ {cars.toFixed(1)} cars off the road</span>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-4">
       {cards.map((c) => (
         <div key={c.title} className="rounded-xl border p-4" style={{ borderColor: '#E2E8F0' }}>
           <div className="flex items-center gap-2 mb-3">
@@ -85,6 +105,7 @@ export default function SavingsEstimator() {
           </div>
         </div>
       ))}
+      </div>
     </div>
   )
 }
