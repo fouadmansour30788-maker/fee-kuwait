@@ -200,8 +200,13 @@ export default async function AdminDashboard() {
           <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Operations dashboard</h1>
           <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>{today} — live figures, trends &amp; recommendations</p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium" style={{ background: '#D1FAE5', color: '#065F46' }}>
-          <Activity className="w-3.5 h-3.5" /> System operational
+        <div className="flex items-center gap-2">
+          <a href="/api/operator/report" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold" style={{ background: '#1B4332', color: '#fff' }}>
+            <FileText className="w-3.5 h-3.5" /> Export report
+          </a>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium" style={{ background: '#D1FAE5', color: '#065F46' }}>
+            <Activity className="w-3.5 h-3.5" /> System operational
+          </div>
         </div>
       </div>
 

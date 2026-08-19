@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { Lato } from 'next/font/google'
 import { getCertificate } from '@/lib/db/certificates'
 import { qrDataUrl, siteUrl } from '@/lib/qr'
+import { certAuthCode } from '@/lib/certAuth'
 import PrintButton from './PrintButton'
 
 export const dynamic = 'force-dynamic'
@@ -28,6 +29,7 @@ export default async function CertificatePage({ params }: { params: { id: string
   if (!cert) notFound()
   const verifyUrl = `${siteUrl()}/verify/${encodeURIComponent(cert.certificate_number)}`
   const qr = await qrDataUrl(verifyUrl)
+  const authCode = certAuthCode({ number: cert.certificate_number, holder: cert.holder, issuedAt: cert.issued_at, expiresAt: cert.expires_at })
 
   return (
     <div className={lato.className} style={{ minHeight: '100vh', background: '#EEF2F5', padding: 24 }}>
@@ -101,6 +103,7 @@ export default async function CertificatePage({ params }: { params: { id: string
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={qr} alt="Scan to verify" width={58} height={58} style={{ display: 'block' }} />
             <div style={{ fontSize: 8, color: '#94A3B8', marginTop: 1 }}>Scan to verify</div>
+            <div style={{ fontSize: 7.5, color: '#94A3B8', marginTop: 1, fontFamily: 'monospace' }}>Auth {authCode}</div>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { ShieldCheck, ShieldX, Leaf, Award } from 'lucide-react'
 import { getPublicCertificate, CERT_STATUS_META } from '@/lib/db/certificates'
 import { PROGRAMME_LABEL } from '@/lib/db/applications'
 import { siteUrl } from '@/lib/qr'
+import { certAuthCode } from '@/lib/certAuth'
 import ShareBadge from '@/components/public/ShareBadge'
 
 export const dynamic = 'force-dynamic'
@@ -46,6 +47,7 @@ export default async function VerifyPage({ params }: { params: { number: string 
                 <Row label="Certificate №" value={cert.number} mono />
                 <Row label="Issued" value={fmt(cert.issuedAt)} />
                 <Row label="Valid until" value={fmt(cert.expiresAt)} />
+                <Row label="Authenticity code" value={certAuthCode({ number: cert.number, holder: cert.holder, issuedAt: cert.issuedAt, expiresAt: cert.expiresAt })} mono />
               </div>
             </>
           )}

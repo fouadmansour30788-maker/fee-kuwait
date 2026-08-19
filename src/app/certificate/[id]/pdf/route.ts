@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage } from 'pdf-lib'
 import { getCertificate } from '@/lib/db/certificates'
 import { siteUrl } from '@/lib/qr'
+import { certAuthCode } from '@/lib/certAuth'
 
 export const dynamic = 'force-dynamic'
 
@@ -101,8 +102,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   rt('academics', bottomY, bold, 10)
   rt('National Green Key operator', bottomY - 14, bold, 10)
 
-  // Footer
+  // Footer + authenticity code
   center('www.greenkey.global', M + 22, font, 11, GRvALUE)
+  const authCode = certAuthCode({ number: cert.certificate_number, holder: cert.holder, issuedAt: cert.issued_at, expiresAt: cert.expires_at })
+  const authText = `Authenticity code ${authCode}`
+  page.drawText(authText, { x: W - M - 6 - font.widthOfTextAtSize(authText, 8), y: M + 8, size: 8, font, color: rgb(0.58, 0.64, 0.72) })
 
   const bytes = await doc.save()
   const safe = cert.certificate_number.replace(/[^\w-]/g, '_')
