@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, FileText, Download, Inbox, Mail, Building2, Calendar } from 'lucide-react'
+import { ArrowLeft, FileText, Download, Inbox, Mail, Building2, Calendar, Smartphone } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
@@ -81,6 +81,12 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
                 ? 'Use the Audit workflow above to Start Reassessment, then grade the reopened criteria.'
                 : 'This audit has been submitted — results are locked.'}
         </p>
+        {criteria.length > 0 && (
+          <Link href={`/auditor/applications/${params.id}/checklist`}
+            className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #0E7490, #0891B2)' }}>
+            <Smartphone className="w-4 h-4" /> Site-visit mode
+          </Link>
+        )}
         {criteria.length > 0
           ? <CriteriaBoard role="auditor" applicationId={params.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
