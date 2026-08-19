@@ -11,6 +11,7 @@ import {
 } from '@/lib/workflow'
 import { Donut } from '@/components/dashboard/charts'
 import { Kpi, Card, Insights, type Tone } from '@/components/dashboard/blocks'
+import RenewalButton from '@/components/portal/RenewalButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -176,9 +177,14 @@ export default async function BusinessDashboard() {
                     {certDays === null ? '—' : certDays > 0 ? `${certDays} days` : 'Expired'}
                   </p>
                 </div>
-                <Link href="/business/certification" className="ml-auto inline-flex items-center gap-1 text-sm font-semibold" style={{ color: GREEN }}>
-                  View certificate <ChevronRight className="w-4 h-4" />
-                </Link>
+                <div className="ml-auto flex flex-col items-end gap-2">
+                  <Link href="/business/certification" className="inline-flex items-center gap-1 text-sm font-semibold" style={{ color: GREEN }}>
+                    View certificate <ChevronRight className="w-4 h-4" />
+                  </Link>
+                  {certDays !== null && certDays <= 120 && liveCert.status === 'active' && (
+                    <RenewalButton applicationId={liveCert.application_id} />
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-3 py-4">
