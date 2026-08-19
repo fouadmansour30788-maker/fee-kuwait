@@ -33,7 +33,11 @@ export default async function CertificatePage({ params }: { params: { id: string
     <div className={lato.className} style={{ minHeight: '100vh', background: '#EEF2F5', padding: 24 }}>
       <style>{`@media print { .no-print { display: none !important } body { background: #fff } #cert { box-shadow: none !important; margin: 0 !important } @page { size: A4 portrait; margin: 10mm } }`}</style>
 
-      <div className="no-print" style={{ maxWidth: 720, margin: '0 auto 16px', display: 'flex', justifyContent: 'flex-end' }}>
+      <div className="no-print" style={{ maxWidth: 720, margin: '0 auto 16px', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+        <a href={`/certificate/${params.id}/pdf`}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, padding: '8px 16px', borderRadius: 10, background: '#fff', color: '#334155', border: '1px solid #E2E8F0', textDecoration: 'none' }}>
+          ⬇ Download PDF
+        </a>
         <PrintButton />
       </div>
 
