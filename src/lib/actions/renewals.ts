@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { renewalReminderEmail, sendEmail } from '@/lib/email'
+import { sendWhatsApp } from '@/lib/whatsapp'
 import { PROGRAMME_LABEL } from '@/lib/db/applications'
 
 // How far ahead of expiry we reach out to begin re-certification.
@@ -53,12 +54,13 @@ export async function runRenewalReminders(): Promise<RenewalSweepResult> {
         action_url: portalUrl ? `/${c.entity_type === 'school' ? 'school' : 'business'}/application/${c.application_id}` : null,
       })
 
-      // Email (best-effort — needs the applicant's address).
-      const { data: user } = await admin.from('users').select('email').eq('id', c.applicant_id).maybeSingle()
+      // Email + WhatsApp (both best-effort — need the applicant's contact details).
+      const { data: user } = await admin.from('users').select('email, phone').eq('id', c.applicant_id).maybeSingle()
       if (user?.email) {
         const mail = renewalReminderEmail({ programme: label, certificateNumber: c.certificate_number, expiresAt: c.expires_at as string, portalUrl })
         await sendEmail({ to: user.email, subject: mail.subject, html: mail.html })
       }
+      await sendWhatsApp({ to: user?.phone, body: `Your ${label} certificate ${c.certificate_number} expires on ${new Date(c.expires_at as string).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', day: '2-digit', month: 'long', year: 'numeric' })}. Start re-certification to avoid a gap.` })
 
       await admin.from('certificates').update({ renewal_reminded_at: now.toISOString() }).eq('id', c.id)
       reminded++

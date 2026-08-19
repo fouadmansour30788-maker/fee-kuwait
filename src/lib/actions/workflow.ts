@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { issueCertificate, notifyApplicant } from '@/lib/certify'
+import { sendWhatsApp } from '@/lib/whatsapp'
 import { revalidatePath } from 'next/cache'
 import {
   OPERATOR_ACTIONS, CB_ACTIONS, AUDITOR_ACTIONS, ESTABLISHMENT_ACTIONS, CLARIFY_STATUS, isCbStage, canonicalStatus,
@@ -103,7 +104,7 @@ export async function applyWorkflowAction(
   const admin = createAdminClient()
   const { data: app } = await admin
     .from('applications')
-    .select('id, status, cb_origin_status, rectification_round, certification_cycle, auditor_id, cb_id, applicant_id, entity_type, programme, applicant:users!applicant_id(email)')
+    .select('id, status, cb_origin_status, rectification_round, certification_cycle, auditor_id, cb_id, applicant_id, entity_type, programme, applicant:users!applicant_id(email, phone)')
     .eq('id', applicationId).single()
   if (!app) return { error: 'Application not found' }
 
@@ -237,6 +238,7 @@ export async function applyWorkflowAction(
     await notify(app.applicant_id, `Your application: ${action}`, `Now: ${label}${input.reason ? ` — ${input.reason}` : ''}`,
       app.entity_type === 'school' ? `/school/application/${applicationId}` : `/business/application/${applicationId}`)
     await notifyApplicant({ email: applicant?.email, programme: app.programme, entityType: app.entity_type, applicationId, status: target, note: input.reason ?? null, certificateNumber })
+    await sendWhatsApp({ to: (applicant as { phone?: string | null })?.phone, body: `Update on your application: ${label}.${input.reason ? ` ${input.reason}` : ''}${certificateNumber ? ` Certificate ${certificateNumber}.` : ''}` })
   }
 
   // Actions the assigned auditor should hear about.
