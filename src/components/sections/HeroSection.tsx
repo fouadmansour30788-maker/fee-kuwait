@@ -110,8 +110,11 @@ export default function HeroSection() {
               </span>
             </motion.div>
 
-            {/* Headline */}
+            {/* Headline — keyed by lang so the -webkit-background-clip:text span
+                remounts on a language switch, avoiding WebKit's repaint bug that
+                paints the gradient word as a solid box on dir flip. */}
             <motion.h1
+              key={lang}
               variants={fadeUpText}
               className="font-bold text-white leading-[1.04] tracking-[-0.03em] mb-6"
               style={{ fontSize: 'clamp(2.8rem, 6.5vw, 5rem)' }}
