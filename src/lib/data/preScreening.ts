@@ -104,6 +104,13 @@ export interface PSQuestion {
 const yes = (a: PSAnswers, id: string) => a[id] === 'yes'
 const no = (a: PSAnswers, id: string) => a[id] === 'no'
 
+// Whether a sub-category service is selected as internally OR externally managed.
+const svcSelected = (a: PSAnswers, svc: string) => {
+  const i = Array.isArray(a.q_services) ? a.q_services : []
+  const e = Array.isArray(a.q_ext_services) ? a.q_ext_services : []
+  return i.includes(svc) || e.includes(svc)
+}
+
 export const PS_SECTIONS = ['General information', 'Eligibility', 'Main category', 'Units & scope', 'Scope & sub-categories', 'Operational filters', 'Declarations'] as const
 
 export const PS_QUESTIONS: PSQuestion[] = [
@@ -144,6 +151,10 @@ export const PS_QUESTIONS: PSQuestion[] = [
   // Scope & sub-categories
   { id: 'q_services', section: 'Scope & sub-categories', text: 'Which additional services does your establishment offer that are internally managed (by you, or under a contract you control)? (Select all that apply.)', field: 'multi', optionsFn: subServiceOptions, help: 'Only services not already part of your main category are shown.', showIf: (a) => !!mainCategoryOf(a) },
   { id: 'q_ext_services', section: 'Scope & sub-categories', text: 'Which additional services are externally managed (owned/operated by a separate entity with no oversight by you)? (Select all that apply.)', field: 'multi', optionsFn: subServiceOptions, showIf: (a) => !!mainCategoryOf(a) },
+  // Sub-category thresholds — triggered when accommodation / F&B is added as a
+  // service (Q17 / Q21 in the form), so the sub-category (HH vs SA, or R) is set.
+  { id: 'q_sub_rooms', section: 'Scope & sub-categories', text: 'Does this accommodation service have more than 20 rooms or 40 beds?', field: 'yesno', help: 'Sets whether the accommodation sub-category is Hotels & Hostels (HH) or Small Accommodation (SA).', showIf: (a) => svcSelected(a, 'accommodation') && !['HH', 'SA'].includes(mainCategoryOf(a) ?? '') },
+  { id: 'q_sub_tables', section: 'Scope & sub-categories', text: 'Does this F&B facility have a minimum of 4 tables or 8 seats for guests?', field: 'yesno', help: 'Sets whether the F&B sub-category (Restaurants/Cafés) applies.', showIf: (a) => svcSelected(a, 'fnb') && mainCategoryOf(a) !== 'R' },
   { id: 'q_ext_fnb', section: 'Scope & sub-categories', text: 'Does the externally managed F&B service form a core part of your offer (e.g. breakfast, half-board in an externally managed restaurant)?', field: 'yesno', showIf: (a) => Array.isArray(a.q_ext_services) && a.q_ext_services.includes('fnb') },
   { id: 'q_add_services', section: 'Scope & sub-categories', text: 'Which of these other services does your establishment offer that are internally managed? (Select all that apply — optional.)', field: 'multi', options: PS_ADDITIONAL_SERVICES, showIf: (a) => !!mainCategoryOf(a) },
   { id: 'q_add_ext_services', section: 'Scope & sub-categories', text: 'Which of these other services are externally managed? (Select all that apply — optional.)', field: 'multi', options: PS_ADDITIONAL_SERVICES, showIf: (a) => !!mainCategoryOf(a) },
@@ -196,10 +207,23 @@ export function evaluatePreScreening(a: PSAnswers): PSResult {
   if (yes(a, 'q_excluded') && yes(a, 'q_excluded_half')) return { ...base, eligible: false, ineligibleReason: 'Excluded activities represent 50% or more of operations.' }
 
   const main = mainCategoryOf(a)
-  // Sub-categories from additional managed services + external core F&B.
+  // Sub-categories from additional managed services (internal + external), gated
+  // by the threshold follow-ups: accommodation → HH/SA by room/bed count, F&B → R
+  // by table/seat count (internal) or "core part" (external).
   const services = Array.isArray(a.q_services) ? a.q_services : []
+  const extServices = Array.isArray(a.q_ext_services) ? a.q_ext_services : []
   const subs = new Set<EstablishmentCategory>()
-  for (const s of services) { const cat = SERVICE_CATEGORY[s]; if (cat && cat !== main) subs.add(cat) }
+  const addAccommodation = () => { if (main !== 'HH' && main !== 'SA') { if (a.q_sub_rooms === 'yes') subs.add('HH'); else if (a.q_sub_rooms === 'no') subs.add('SA') } }
+  for (const s of services) {
+    if (s === 'accommodation') addAccommodation()
+    else if (s === 'fnb') { if (main !== 'R' && a.q_sub_tables === 'yes') subs.add('R') }
+    else { const cat = SERVICE_CATEGORY[s]; if (cat && cat !== main) subs.add(cat) }
+  }
+  for (const s of extServices) {
+    if (s === 'accommodation') addAccommodation()
+    else if (s === 'fnb') { /* external F&B pulls in R only when it's a core part (below) */ }
+    else { const cat = SERVICE_CATEGORY[s]; if (cat && cat !== main) subs.add(cat) }
+  }
   if (flags.externalFnbCore && main !== 'R') subs.add('R')
 
   // Eligible once the eligibility gates pass and a main category is determined.
