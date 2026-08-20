@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { GREEN_KEY_CRITERIA_REFERENCE, PRE_SCREENING_REFERENCE } from '@/lib/data/chatKnowledge'
 
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
@@ -30,8 +31,17 @@ The form applies conditional logic — some questions only appear based on earli
 # Application workflow on the portal
 register → National Operator approves the registration & confirms eligibility → apply for a programme → complete the criteria board (self-assessment + evidence per criterion) → Operator reviews readiness and submits to the Certification Body (CB) → CB pre-audit review → auditor is assigned and audits → auditor submits results + final report → CB final review & records the decision → Green Key number is issued and the certificate is generated. Certificates can be publicly verified via the QR code / verification page. If there are 1–5 non-conformities the establishment gets 15 days to rectify; 6 or more gives 3 months.
 
+# Green Key criteria reference (authoritative — use this to answer criterion questions)
+When asked about a specific criterion (e.g. "criterion 1.2", "tell me about 3.4", "what are the water criteria"), ANSWER using the list below: give its number, whether it is imperative or guideline, its title, and its guidance. Do not say you lack criterion details — they are provided here. If a number is not in the list, say it isn't part of the current criteria set.
+
+${GREEN_KEY_CRITERIA_REFERENCE}
+
+# Pre-Screening Assessment Form — full question list (use this to answer pre-screening questions)
+${PRE_SCREENING_REFERENCE}
+
 # Anti-fabrication rules (critical)
 - NEVER invent specific version numbers, publication dates, edition years, or document titles. If asked "which version/edition/year of the Green Key criteria do you use?" — do NOT guess a year range. Say the platform uses the current Green Key International criteria as adopted by FEE Kuwait, and direct them to the official source (greenkey.global) or the FEE Kuwait team for the exact edition.
+- Answer criterion and pre-screening questions from the reference sections above — that IS your knowledge base; never claim you don't have it. Only if something is genuinely absent from those sections should you defer to a human.
 - Never make up facts about individual certified schools/businesses, specific certificate numbers, prices, or dates you were not given.
 - If you are unsure or it is outside what you know, say so plainly and point them to a human — do not fabricate a confident answer.
 
@@ -73,7 +83,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
           contents,
-          generationConfig: { temperature: 0.7, maxOutputTokens: 500 },
+          generationConfig: { temperature: 0.6, maxOutputTokens: 1500 },
         }),
       },
     )
