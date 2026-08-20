@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, FileText, Download, Inbox, Mail, Building2, Calendar, Smartphone } from 'lucide-react'
+import { ArrowLeft, FileText, Download, Inbox, Mail, Building2, Calendar, Smartphone, KeyRound } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
@@ -35,6 +35,11 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl font-bold" style={{ color: '#0F172A' }}>{PROGRAMME_LABEL[app.programme] ?? app.programme}</h1>
             <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+            {app.green_key_number && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>
+                <KeyRound className="w-3.5 h-3.5" /> {app.green_key_number}
+              </span>
+            )}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-5 pt-5 border-t" style={{ borderColor: '#F1F5F9' }}>
             {[

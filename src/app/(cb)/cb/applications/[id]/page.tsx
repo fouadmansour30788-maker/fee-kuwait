@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Mail, Calendar, Building2, FileText, Download, Inbox, Gavel, CheckCircle2, Award } from 'lucide-react'
+import { ArrowLeft, Mail, Calendar, Building2, FileText, Download, Inbox, Gavel, CheckCircle2, Award, KeyRound } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
@@ -51,6 +51,11 @@ export default async function CbApplicationDetail({
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl font-bold" style={{ color: '#0F172A' }}>{PROGRAMME_LABEL[app.programme] ?? app.programme}</h1>
             <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+            {app.green_key_number && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>
+                <KeyRound className="w-3.5 h-3.5" /> {app.green_key_number}
+              </span>
+            )}
           </div>
           <p className="text-sm mt-1" style={{ color: '#64748B' }}>{app.applicant?.name_en || app.applicant?.email || '—'}</p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-5 pt-5 border-t" style={{ borderColor: '#F1F5F9' }}>
