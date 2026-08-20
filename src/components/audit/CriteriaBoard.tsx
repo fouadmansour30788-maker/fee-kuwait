@@ -480,6 +480,13 @@ export default function CriteriaBoard({
     return { ready, needs, na, total: criteria.length, pending: criteria.length - ready - needs - na }
   }, [rows, criteria])
 
+  // CB Final Review summary — shown to operator/auditor/CB, hidden from the establishment.
+  const cbFinalCounts = useMemo(() => {
+    let conforming = 0, nonconforming = 0, clar = 0, rect = 0
+    for (const c of criteria) { const r = rows[c.ref]?.cbFinal; if (r === 'conforming') conforming++; else if (r === 'non_conforming') nonconforming++; else if (r === 'req_clarification') clar++; else if (r === 'req_rectification') rect++ }
+    return { conforming, nonconforming, clar, rect, total: criteria.length, pending: criteria.length - conforming - nonconforming - clar - rect }
+  }, [rows, criteria])
+
   const th = 'text-left px-3 py-2.5 font-semibold text-[11px] uppercase tracking-wider whitespace-nowrap'
   const cols = 7 + (showExternal ? 3 : 0)
 
@@ -562,6 +569,20 @@ export default function CriteriaBoard({
           ))}
           <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#94A3B8' }}>Not Assessed <span className="font-bold">{conformityCounts.notassessed}</span></span>
           <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{conformityCounts.conforming} / {conformityCounts.total} conforming</span>
+        </div>
+      )}
+
+      {/* CB Final Review summary — operator / auditor / CB only (hidden from the establishment) */}
+      {!isEstablishment && showExternal && (
+        <div className="flex items-center gap-2 flex-wrap rounded-xl border px-4 py-2.5" style={{ borderColor: '#FDE68A', background: '#FFFBEB' }}>
+          <span className="text-xs font-semibold" style={{ color: '#B45309' }}>CB Final Review:</span>
+          {([['conforming', cbFinalCounts.conforming], ['non_conforming', cbFinalCounts.nonconforming], ['req_clarification', cbFinalCounts.clar], ['req_rectification', cbFinalCounts.rect]] as const).map(([k, n]) => (
+            <span key={k} className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: CB_FINAL_META[k].bg, color: CB_FINAL_META[k].color }}>
+              {CB_FINAL_META[k].label} <span className="font-bold">{n}</span>
+            </span>
+          ))}
+          <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#94A3B8' }}>Pending <span className="font-bold">{cbFinalCounts.pending}</span></span>
+          <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{cbFinalCounts.conforming} / {cbFinalCounts.total} conforming</span>
         </div>
       )}
 
