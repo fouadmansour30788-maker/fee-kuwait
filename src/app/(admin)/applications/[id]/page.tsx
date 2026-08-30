@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, FileText, Download, Inbox, KeyRound } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, STATUS_META, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
-import { listAuditors, applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
+import { applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
 import { listAudits } from '@/lib/db/audits'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listCriterionMessages } from '@/lib/db/messages'
@@ -12,7 +12,6 @@ import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { getApplicationTimeline } from '@/lib/db/timeline'
 import JourneyTimeline from '@/components/timeline/JourneyTimeline'
 import PreScreeningReview from '@/components/prescreening/PreScreeningReview'
-import AssignAuditor from '@/components/audit/AssignAuditor'
 import ArchiveAudit from '@/components/audit/ArchiveAudit'
 import { establishmentCanEdit } from '@/lib/workflow'
 import WorkflowActions from '@/components/audit/WorkflowActions'
@@ -33,8 +32,8 @@ export default async function ApplicationDetail({
   const sp = searchParams
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, auditors, currentAuditor, assessments, bodies, currentCb, messages, audits, ps] = await Promise.all([
-    listApplicationDocuments(id), listAuditors(), applicationAuditor(id), listCriterionAssessments(id),
+  const [docs, currentAuditor, assessments, bodies, currentCb, messages, audits, ps] = await Promise.all([
+    listApplicationDocuments(id), applicationAuditor(id), listCriterionAssessments(id),
     listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id), getPreScreening(id),
   ])
   const [trail, timeline] = await Promise.all([listAuditTrail(id), getApplicationTimeline(id)])
@@ -104,15 +103,15 @@ export default async function ApplicationDetail({
         <PreScreeningReview applicationId={id} answers={ps.answers} status={ps.status} mainCategory={ps.mainCategory} subCategories={ps.subCategories} />
       )}
 
-      {/* Auditor assignment */}
+      {/* Auditor — assigned by the Certification Body (read-only for the operator) */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
         <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Auditor</h2>
         <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>
-          {currentAuditor ? `Assigned to ${currentAuditor.name_en || currentAuditor.email}.` : 'Assign an independent auditor to conduct the audit.'} Assigning moves the application to “Under Audit”.
+          The auditor is assigned by the Certification Body during its pre-audit review.
         </p>
-        {auditors.length > 0
-          ? <AssignAuditor applicationId={id} auditors={auditors} currentId={currentAuditor?.id ?? null} />
-          : <p className="text-xs" style={{ color: '#94A3B8' }}>No auditor accounts yet — create one and set its role under Team.</p>}
+        {currentAuditor
+          ? <span className="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg" style={{ background: '#F0FDFA', color: '#0F766E', border: '1px solid #99F6E4' }}>{currentAuditor.name_en || currentAuditor.email}</span>
+          : <p className="text-xs" style={{ color: '#94A3B8' }}>No auditor assigned yet.</p>}
         <div className="mt-4">
           <ArchiveAudit applicationId={id} />
         </div>

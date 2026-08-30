@@ -134,7 +134,7 @@ export const OPERATOR_ACTIONS: Partial<Record<AppStatus, Transition[]>> = {
 
 // ── CB actions ────────────────────────────────────────────────────────
 const CB_PRE = (): Transition[] => [
-  { action: 'Approve for Audit', to: 'ready_for_auditor', tone: 'primary', note: 'The operator is notified to assign an auditor.' },
+  { action: 'Approve for Audit', to: 'ready_for_auditor', tone: 'primary', note: 'You then assign the auditor who will conduct the audit.' },
   { action: 'Request Clarification', to: 'cb_clarification_operator', requires: ['owner'], note: 'Pick who must respond; the application remains locked.' },
   { action: 'Require Rectification', to: 'pre_audit_rectification_required', requires: ['reason'], tone: 'danger', note: 'Establishment answers or evidence must be amended.' },
 ]

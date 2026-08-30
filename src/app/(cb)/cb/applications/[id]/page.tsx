@@ -81,8 +81,8 @@ export default async function CbApplicationDetail({
         </div>
       )}
 
-      {/* Legacy pre-audit panel — only for old-vocabulary rows still at cb_review */}
-      {app.status === 'cb_review' && <CbReviewPanel applicationId={id} auditors={cbAuditors} />}
+      {/* CB assigns the auditor — at cb_review (legacy) or once approved for audit */}
+      {(app.status === 'cb_review' || app.status === 'ready_for_auditor') && <CbReviewPanel applicationId={id} auditors={cbAuditors} />}
 
       <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
         <Gavel className="w-4 h-4 mt-0.5 flex-shrink-0" />

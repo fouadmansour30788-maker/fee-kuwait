@@ -26,7 +26,7 @@ export default function CbReviewPanel({ applicationId, auditors }: { application
       <div>
         <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>CB review</h2>
         <p className="text-xs mt-0.5" style={{ color: '#94A3B8' }}>
-          The operator has handed this application over. Assign an auditor to proceed to audit, or return it for rectification.
+          Assign the auditor who will conduct the audit, or return the application for rectification.
         </p>
       </div>
 

@@ -27,17 +27,24 @@ export async function cbAssignAuditor(applicationId: string, auditorId: string):
   if ('error' in gate) return { error: gate.error }
 
   const admin = createAdminClient()
+  const { data: prev } = await admin.from('applications').select('status').eq('id', applicationId).single()
   const { error } = await admin.from('applications').update({
     auditor_id: auditorId,
     auditor_assigned_at: new Date().toISOString(),
-    status: 'audit',
+    status: 'auditor_assigned',
     updated_at: new Date().toISOString(),
   }).eq('id', applicationId)
   if (error) return { error: error.message }
 
+  // Notify the assigned auditor.
+  await admin.from('notifications').insert({
+    user_id: auditorId, type: 'application', title_en: 'You have been assigned an audit',
+    message_en: 'The Certification Body has assigned an application to you for audit.', action_url: `/auditor/applications/${applicationId}`,
+  })
+
   await admin.from('audit_trail').insert({
     application_id: applicationId, entity: 'application', field: 'CB assigned auditor',
-    previous_value: 'cb_review', new_value: 'audit',
+    previous_value: prev?.status ?? null, new_value: 'auditor_assigned',
     user_id: gate.user.id, user_name: gate.me.name_en || gate.me.email, user_role: gate.me.role,
   })
 
