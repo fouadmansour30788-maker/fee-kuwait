@@ -82,16 +82,21 @@ function ProgrammeTiltCard({ prog, index }: { prog: typeof PROGRAMMES[number]; i
       {/* Body panel */}
       <div className="relative px-5 pt-9 pb-6 text-center"
         style={{ background: 'linear-gradient(180deg, #173a27 0%, #102a1c 100%)', transform: 'translateZ(16px)' }}>
-        {/* Overlapping circular icon badge */}
+        {/* Overlapping circular logo badge */}
         <div
-          className="absolute -top-7 left-1/2 w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+          className="absolute -top-7 left-1/2 w-14 h-14 rounded-full flex items-center justify-center shadow-lg overflow-hidden"
           style={{
-            background: `linear-gradient(135deg, ${prog.color}, ${prog.color}CC)`,
+            background: prog.logo ? '#fff' : `linear-gradient(135deg, ${prog.color}, ${prog.color}CC)`,
             border: '3px solid #102a1c',
             transform: 'translateX(-50%) translateZ(50px)',
           }}
         >
-          <Icon className="w-6 h-6 text-white" />
+          {prog.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={prog.logo} alt="" className="w-9 h-9 object-contain" />
+          ) : (
+            <Icon className="w-6 h-6 text-white" />
+          )}
         </div>
 
         <h3 className="text-lg font-bold text-white mb-2">

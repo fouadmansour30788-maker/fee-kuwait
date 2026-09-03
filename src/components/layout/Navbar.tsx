@@ -113,10 +113,14 @@ export default function Navbar() {
                           onClick={() => setProgrammesOpen(false)}
                         >
                           <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ background: `${p.color}15` }}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden bg-white"
                           >
-                            <Icon className="w-4 h-4" style={{ color: p.color }} />
+                            {p.logo ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={p.logo} alt="" className="w-6 h-6 object-contain" />
+                            ) : (
+                              <Icon className="w-4 h-4" style={{ color: p.color }} />
+                            )}
                           </div>
                           <span className="text-sm font-medium text-charcoal group-hover:text-brand transition-colors">
                             {lang === 'ar' ? p.name_ar : p.name_en}

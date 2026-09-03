@@ -208,10 +208,15 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
 
             <div className="flex items-center gap-4 mb-6">
               <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                style={{ background: `${prog.color}20`, border: `1px solid ${prog.color}40` }}
+                className="w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden bg-white"
+                style={{ border: `1px solid ${prog.color}40` }}
               >
-                <Icon className="w-8 h-8" style={{ color: prog.color }} />
+                {prog.logo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={prog.logo} alt="" className="w-12 h-12 object-contain" />
+                ) : (
+                  <Icon className="w-8 h-8" style={{ color: prog.color }} />
+                )}
               </div>
               <span
                 className="text-sm font-bold px-4 py-1.5 rounded-full"

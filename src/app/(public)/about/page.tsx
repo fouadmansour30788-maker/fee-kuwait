@@ -291,10 +291,15 @@ export default function AboutPage() {
                     className="card p-6 flex flex-col gap-4 group hover:-translate-y-1 transition-transform duration-200 block"
                   >
                     <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center"
-                      style={{ background: `${prog.color}15`, border: `1px solid ${prog.color}30` }}
+                      className="w-11 h-11 rounded-xl flex items-center justify-center overflow-hidden bg-white"
+                      style={{ border: `1px solid ${prog.color}30` }}
                     >
-                      <Icon className="w-5 h-5" style={{ color: prog.color }} />
+                      {prog.logo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={prog.logo} alt="" className="w-8 h-8 object-contain" />
+                      ) : (
+                        <Icon className="w-5 h-5" style={{ color: prog.color }} />
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-bold text-forest text-base mb-1 group-hover:text-brand transition-colors">

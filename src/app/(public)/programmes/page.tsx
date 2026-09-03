@@ -123,13 +123,18 @@ export default function ProgrammesPage() {
                     />
 
                     <div className="p-7 flex flex-col flex-1">
-                      {/* Icon + name */}
+                      {/* Logo + name */}
                       <div className="flex items-start gap-4 mb-5">
                         <div
-                          className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                          style={{ background: `${prog.color}15`, border: `1px solid ${prog.color}30` }}
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden bg-white"
+                          style={{ border: `1px solid ${prog.color}30` }}
                         >
-                          <Icon className="w-6 h-6" style={{ color: prog.color }} />
+                          {prog.logo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={prog.logo} alt="" className="w-9 h-9 object-contain" />
+                          ) : (
+                            <Icon className="w-6 h-6" style={{ color: prog.color }} />
+                          )}
                         </div>
                         <div>
                           <h2 className="font-bold text-forest text-lg leading-tight group-hover:text-brand transition-colors">

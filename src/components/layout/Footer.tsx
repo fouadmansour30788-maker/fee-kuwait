@@ -24,10 +24,9 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-5 group w-fit">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105"
-                style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}>
-                <Leaf className="w-5 h-5 text-white" />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/fee-logo.jpg" alt="FEE — Foundation for Environmental Education"
+                className="h-9 w-auto rounded-md transition-transform group-hover:scale-105" />
               <span className="font-bold text-xl text-white tracking-tight">FEE Kuwait</span>
             </Link>
             <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(183,228,199,0.65)' }}>
@@ -71,7 +70,12 @@ export default function Footer() {
                       className="flex items-center gap-2 text-sm transition-colors duration-200 group"
                       style={{ color: 'rgba(255,255,255,0.58)' }}
                     >
-                      <Icon className="w-3.5 h-3.5 flex-shrink-0 transition-colors" style={{ color: p.color }} />
+                      {p.logoWhite ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.logoWhite} alt="" className="w-4 h-4 flex-shrink-0 object-contain" />
+                      ) : (
+                        <Icon className="w-3.5 h-3.5 flex-shrink-0 transition-colors" style={{ color: p.color }} />
+                      )}
                       <span className="group-hover:text-white transition-colors">
                         {lang === 'ar' ? p.name_ar : p.name_en}
                       </span>

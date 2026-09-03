@@ -233,6 +233,8 @@ export interface ProgrammeInfo {
   name_ar: string
   color: string
   icon: string
+  logo?: string
+  logoWhite?: string
   description_en: string
   description_ar: string
 }
