@@ -152,17 +152,25 @@ export default function PartnersPage() {
                       {lang === 'ar' ? group.title_ar : group.title_en}
                     </h3>
                     <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#EDF7F1', color: '#40916C' }}>
-                      {group.logos.length}
+                      {group.partners.length}
                     </span>
                     <div className="flex-1 h-px" style={{ background: '#C8E6D0' }} />
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {group.logos.map((src) => (
-                      <div key={src}
-                        className="aspect-[3/2] rounded-xl bg-white flex items-center justify-center p-4 transition-transform duration-200 hover:-translate-y-0.5"
-                        style={{ border: '1px solid #DCEBE0' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={src} alt="" loading="lazy" className="max-h-full max-w-full object-contain" />
+                    {group.partners.map((partner) => (
+                      <div key={partner.logo}
+                        className="rounded-xl bg-white flex flex-col items-center justify-between p-4 gap-2 transition-transform duration-200 hover:-translate-y-0.5"
+                        style={{ border: '1px solid #DCEBE0' }}
+                        title={partner.name || undefined}>
+                        <div className="flex-1 flex items-center justify-center w-full min-h-[3.5rem]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={partner.logo} alt={partner.name} loading="lazy" className="max-h-14 max-w-full object-contain" />
+                        </div>
+                        {partner.name && (
+                          <p className="text-[11px] font-medium text-center leading-tight" style={{ color: '#5A6672' }}>
+                            {partner.name}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
