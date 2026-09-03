@@ -2,12 +2,14 @@ import { UserCog, Info } from 'lucide-react'
 import { listUsers } from '@/lib/db/staff'
 import { ROLE_LABEL } from '@/lib/roles'
 import { getCurrentUser } from '@/lib/auth-server'
+import { getPermissionOverrides } from '@/lib/db/permissions'
 import RoleSelect from '@/components/staff/RoleSelect'
 import AddTeamMember from '@/components/staff/AddTeamMember'
 import RemoveMember from '@/components/staff/RemoveMember'
+import RolePermissionsMatrix from '@/components/staff/RolePermissionsMatrix'
 
 export default async function StaffPage() {
-  const [users, me] = await Promise.all([listUsers(), getCurrentUser()])
+  const [users, me, overrides] = await Promise.all([listUsers(), getCurrentUser(), getPermissionOverrides()])
 
   return (
     <div className="space-y-6">
@@ -68,6 +70,8 @@ export default async function StaffPage() {
           </div>
         )}
       </div>
+
+      <RolePermissionsMatrix overrides={overrides} />
     </div>
   )
 }

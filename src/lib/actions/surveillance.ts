@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { can } from '@/lib/permissions-server'
 
 // National Operator opens a surveillance activity: requests updates/documents on
 // selected criteria for a given surveillance year.
@@ -16,6 +17,7 @@ export async function requestSurveillance(
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
+  if (!(await can('manage_surveillance'))) return { error: 'You do not have permission to request surveillance.' }
 
   const { error } = await supabase.from('surveillance_activities').insert({
     application_id: applicationId, period, criteria, request_note: requestNote || null,
@@ -48,6 +50,7 @@ export async function reviewSurveillance(id: string): Promise<{ ok?: true; error
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
+  if (!(await can('review_surveillance'))) return { error: 'You do not have permission to review surveillance.' }
   const { error } = await supabase.from('surveillance_activities')
     .update({ status: 'reviewed', reviewed_by: user.id }).eq('id', id)
   if (error) return { error: error.message }
@@ -63,6 +66,7 @@ export async function requestSurveillanceClarification(id: string, note: string)
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
+  if (!(await can('review_surveillance'))) return { error: 'You do not have permission to review surveillance.' }
   const { error } = await supabase.from('surveillance_activities')
     .update({ status: 'clarification', decision_note: note.trim() })
     .eq('id', id)
@@ -83,6 +87,7 @@ export async function decideSurveillance(
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
+  if (!(await can('review_surveillance'))) return { error: 'You do not have permission to decide surveillance.' }
   const { error } = await supabase.from('surveillance_activities')
     .update({ status: decision, decision_note: note || null, decided_at: new Date().toISOString() })
     .eq('id', id)

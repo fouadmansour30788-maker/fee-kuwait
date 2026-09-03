@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { can } from '@/lib/permissions-server'
 
 function slugify(s: string): string {
   return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').slice(0, 60) || 'article'
@@ -40,6 +41,7 @@ function parseMedia(raw: FormDataEntryValue | null): MediaItem[] {
 }
 
 export async function saveArticle(formData: FormData) {
+  if (!(await can('manage_content'))) return
   const supabase = createClient()
   const id = str(formData.get('id'))
   const title_en = str(formData.get('title_en'))
@@ -74,6 +76,7 @@ export async function saveArticle(formData: FormData) {
 }
 
 export async function deleteArticle(id: string) {
+  if (!(await can('manage_content'))) return
   const supabase = createClient()
   await supabase.from('news_articles').delete().eq('id', id)
   revalidatePath('/content')

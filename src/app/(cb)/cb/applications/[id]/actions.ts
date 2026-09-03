@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { issueCertificate, notifyApplicant } from '@/lib/certify'
+import { can } from '@/lib/permissions-server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -25,6 +26,7 @@ export async function cbAssignAuditor(applicationId: string, auditorId: string):
   if (!auditorId) return { error: 'Select an auditor.' }
   const gate = await requireCb()
   if ('error' in gate) return { error: gate.error }
+  if (!(await can('assign_auditor'))) return { error: 'You do not have permission to assign auditors.' }
 
   const admin = createAdminClient()
   const { data: prev } = await admin.from('applications').select('status').eq('id', applicationId).single()
@@ -115,6 +117,7 @@ export async function recordCbDecision(applicationId: string, formData: FormData
   if (!user) redirect('/login')
   const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
   if (!me || me.role !== 'certification_body') return
+  if (!(await can('issue_certificate'))) return
 
   await supabase.from('applications').update({
     cb_decision: decision,
