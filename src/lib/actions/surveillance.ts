@@ -55,6 +55,25 @@ export async function reviewSurveillance(id: string): Promise<{ ok?: true; error
   return { ok: true }
 }
 
+// The Certification Body sends the surveillance response back to the establishment
+// for clarification, with a note on what is needed. The establishment can respond
+// again (status returns to an actionable state).
+export async function requestSurveillanceClarification(id: string, note: string): Promise<{ ok?: true; error?: string }> {
+  if (!note.trim()) return { error: 'Add a note describing what needs clarification.' }
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const { error } = await supabase.from('surveillance_activities')
+    .update({ status: 'clarification', decision_note: note.trim() })
+    .eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath('/cb/surveillance')
+  revalidatePath('/surveillance')
+  revalidatePath('/business/surveillance')
+  revalidatePath('/school/surveillance')
+  return { ok: true }
+}
+
 // The Certification Body records the surveillance decision.
 export async function decideSurveillance(
   id: string,

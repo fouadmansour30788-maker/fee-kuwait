@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 
-export type SurveillanceStatus = 'requested' | 'submitted' | 'reviewed' | 'certified' | 'not_certified'
+export type SurveillanceStatus = 'requested' | 'submitted' | 'reviewed' | 'clarification' | 'certified' | 'not_certified'
 
 export interface SurveillanceActivity {
   id: string
@@ -20,6 +20,7 @@ export const SURVEILLANCE_STATUS_META: Record<SurveillanceStatus, { label: strin
   requested:     { label: 'Update requested', color: '#B45309', bg: '#FEF3C7' },
   submitted:     { label: 'Response submitted', color: '#1D4ED8', bg: '#EFF6FF' },
   reviewed:      { label: 'Reviewed by operator', color: '#7C3AED', bg: '#F3E8FF' },
+  clarification: { label: 'Clarification requested', color: '#B45309', bg: '#FEF3C7' },
   certified:     { label: 'Certification maintained', color: '#059669', bg: '#D1FAE5' },
   not_certified: { label: 'Not maintained', color: '#DC2626', bg: '#FEE2E2' },
 }

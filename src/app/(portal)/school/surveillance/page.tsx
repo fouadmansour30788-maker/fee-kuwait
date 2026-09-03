@@ -33,7 +33,7 @@ export default async function SchoolSurveillancePage() {
           {items.map(({ act, app, docs, titles }) => (
             <SurveillanceCard key={act.id} activity={act} titles={titles} subtitle={PROGRAMME_LABEL[app.programme] ?? app.programme}>
               <SurveillanceRespond id={act.id} applicationId={app.id} period={act.period} criteria={act.criteria} titles={titles}
-                docs={docs} responseNote={act.responseNote} editable={act.status === 'requested'} />
+                docs={docs} responseNote={act.responseNote} editable={act.status === 'requested' || act.status === 'clarification'} />
             </SurveillanceCard>
           ))}
         </div>
