@@ -1,5 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 
+export type MediaType = 'image' | 'video' | 'link' | 'slideshow'
+export interface MediaItem {
+  type: MediaType
+  url?: string
+  urls?: string[]
+  title?: string
+  caption?: string
+}
+
 export interface Article {
   id: string
   slug: string
@@ -14,9 +23,10 @@ export interface Article {
   status: string
   published_at: string | null
   updated_at: string
+  media: MediaItem[]
 }
 
-const COLS = 'id, slug, title_en, title_ar, excerpt_en, excerpt_ar, body_en, body_ar, image_url, programme, status, published_at, updated_at'
+const COLS = 'id, slug, title_en, title_ar, excerpt_en, excerpt_ar, body_en, body_ar, image_url, programme, status, published_at, updated_at, media'
 
 // Operator: every article (staff RLS).
 export async function listAllNews(): Promise<Article[]> {

@@ -22,6 +22,7 @@ const TEAM = [
     role_en: 'FEE National Operator',
     role_ar: 'المشغّل الوطني لـ FEE',
     initials: 'MB',
+    photo: '/team/mona.jpg',
     color: '#40916C',
   },
 ]
@@ -428,12 +429,22 @@ export default function AboutPage() {
             {TEAM.map((member, i) => (
               <FadeInSection key={i} delay={i * 0.1}>
                 <div className="card p-8 text-center flex flex-col items-center">
-                  <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl mb-4"
-                    style={{ background: `linear-gradient(135deg, ${member.color}, ${member.color}99)` }}
-                  >
-                    {member.initials}
-                  </div>
+                  {member.photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={member.photo}
+                      alt={lang === 'ar' ? member.name_ar : member.name_en}
+                      className="w-24 h-24 rounded-full object-cover mb-4"
+                      style={{ boxShadow: `0 0 0 3px #fff, 0 0 0 5px ${member.color}` }}
+                    />
+                  ) : (
+                    <div
+                      className="w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl mb-4"
+                      style={{ background: `linear-gradient(135deg, ${member.color}, ${member.color}99)` }}
+                    >
+                      {member.initials}
+                    </div>
+                  )}
                   <h3 className="font-bold text-forest text-base mb-0.5">
                     {lang === 'ar' ? member.name_ar : member.name_en}
                   </h3>

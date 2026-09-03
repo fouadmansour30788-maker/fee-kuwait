@@ -1,6 +1,7 @@
 import { Save } from 'lucide-react'
 import { saveArticle } from '@/lib/actions/news'
 import type { Article } from '@/lib/db/news'
+import MediaEditor from './MediaEditor'
 
 const PROGRAMMES = ['', 'eco-schools', 'blue-flag', 'green-key', 'leaf', 'yre', 'eco-campus']
 
@@ -56,6 +57,10 @@ export default function ArticleForm({ article }: { article: Article | null }) {
         </div>
         <Area label="Body (English)" name="body_en" value={article?.body_en} rows={8} />
         <Area label="النص (Arabic)" name="body_ar" value={article?.body_ar} rows={8} dir="rtl" />
+      </div>
+
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <MediaEditor initial={article?.media ?? []} />
       </div>
 
       <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
