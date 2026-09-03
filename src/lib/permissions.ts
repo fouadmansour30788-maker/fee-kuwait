@@ -30,6 +30,7 @@ export type CapabilityId =
   | 'review_surveillance'
   | 'manage_content'
   | 'view_reports'
+  | 'create_auditor'
   | 'manage_team'
 
 export interface Capability {
@@ -84,6 +85,9 @@ export const CAPABILITIES: Capability[] = [
     default: ['admin', 'certification_body'], grantable: true },
 
   // ── Team ──────────────────────────────────────────────────────
+  { id: 'create_auditor', area: 'Team', label: 'Create auditor accounts',
+    description: 'Create new auditor sign-in accounts (without full team management).',
+    default: ['admin', 'certification_body'], grantable: true },
   { id: 'manage_team', area: 'Team', label: 'Manage team & roles',
     description: 'Add members, change roles and configure permissions.',
     default: ['admin'], grantable: false },
