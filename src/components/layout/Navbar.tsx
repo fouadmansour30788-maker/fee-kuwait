@@ -56,10 +56,8 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 text-white font-bold text-lg shrink-0 group">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105"
-            style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}>
-            <Leaf className="w-4.5 h-4.5 text-white" />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/fee-logo.jpg" alt="FEE — Foundation for Environmental Education" className="h-9 w-auto rounded-md transition-transform group-hover:scale-105" />
           <span className="hidden sm:block tracking-tight">FEE Kuwait</span>
         </Link>
 

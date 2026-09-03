@@ -216,14 +216,14 @@ export default function ImpactPage() {
               </h2>
               <p className="text-white/55 text-sm leading-relaxed mb-8">
                 {lang === 'ar'
-                  ? 'تمثل إنجازاتنا في الكويت جزءاً من شبكة عالمية أشمل. FEE الدولية تربط أكثر من 35,000 موقع معتمد عبر 80+ دولة، وكويتنا تضيف قيمة لهذه الحركة بنتائجها المميزة.'
-                  : 'Our achievements in Kuwait are part of a much larger global network. FEE International connects 35,000+ certified sites across 80+ countries, and Kuwait adds real value to this movement through its standout results.'}
+                  ? 'تمثل إنجازاتنا في الكويت جزءاً من شبكة عالمية أشمل. تأسست مؤسسة التعليم البيئي عام 1981، وتعمل اليوم عبر أكثر من 110 منظمة عضو في أكثر من 100 دولة — وكويتنا تضيف قيمة لهذه الحركة بنتائجها المميزة.'
+                  : 'Our achievements in Kuwait are part of a much larger global network. Founded in 1981, the Foundation for Environmental Education works through 110+ member organisations across 100+ countries — and Kuwait adds real value to this movement through its standout results.'}
               </p>
               <div className="grid grid-cols-3 gap-4">
                 {[
-                  { n: '80+', l_en: 'FEE Countries', l_ar: 'دول FEE' },
-                  { n: '35k+', l_en: 'Global Sites', l_ar: 'موقع عالمي' },
-                  { n: '20M+', l_en: 'Young People', l_ar: 'شاب وشابة' },
+                  { n: '100+', l_en: 'Countries', l_ar: 'دولة' },
+                  { n: '110+', l_en: 'Member Orgs', l_ar: 'منظمة عضو' },
+                  { n: '1981', l_en: 'Established', l_ar: 'التأسيس' },
                 ].map((s) => (
                   <div key={s.n} className="text-center">
                     <p className="text-2xl font-bold text-light mb-0.5">{s.n}</p>
@@ -237,7 +237,7 @@ export default function ImpactPage() {
               <div className="space-y-4">
                 {[
                   { icon: Globe, title_en: 'International Recognition', title_ar: 'الاعتراف الدولي', desc_en: 'Every certified site in Kuwait is listed on the global FEE registry, visible to international tourists and partners.', desc_ar: 'كل موقع معتمد في الكويت مدرج في السجل العالمي لـ FEE، ومرئي للسياح والشركاء الدوليين.', color: '#52B788' },
-                  { icon: Users, title_en: 'Community Building', title_ar: 'بناء المجتمع', desc_en: 'Our certified institutions connect to a peer network of schools, hotels, and campuses across 80+ countries.', desc_ar: 'تتصل مؤسساتنا المعتمدة بشبكة نظيرة من المدارس والفنادق والحرم الجامعي في 80+ دولة.', color: '#006994' },
+                  { icon: Users, title_en: 'Community Building', title_ar: 'بناء المجتمع', desc_en: 'Our certified institutions connect to a peer network of schools, hotels, and campuses across 100+ countries.', desc_ar: 'تتصل مؤسساتنا المعتمدة بشبكة نظيرة من المدارس والفنادق والحرم الجامعي في 100+ دولة.', color: '#006994' },
                   { icon: TreePine, title_en: 'Environmental Action', title_ar: 'العمل البيئي', desc_en: 'Beyond certification, our programmes drive measurable environmental action: waste reduction, energy savings, biodiversity.', desc_ar: 'ما وراء الشهادة، تدفع برامجنا إجراءات بيئية قابلة للقياس: تقليل النفايات وتوفير الطاقة والتنوع البيولوجي.', color: '#C8A951' },
                 ].map((item, i) => {
                   const Icon = item.icon
