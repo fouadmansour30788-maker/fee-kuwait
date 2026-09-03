@@ -7,6 +7,7 @@ import { useLang } from '@/context/LangContext'
 import Link from 'next/link'
 import PartnerLogo from '@/components/ui/PartnerLogo'
 import { PARTNERS_DATA } from '@/lib/data/partners'
+import { GK_PARTNER_GROUPS } from '@/lib/data/greenKeyPartners'
 
 const TYPE_CONFIG: Record<string, { label_en: string; label_ar: string; icon: React.ElementType; color: string }> = {
   government:   { label_en: 'Government',  label_ar: 'حكومي',        icon: Landmark,     color: '#40916C' },
@@ -122,8 +123,58 @@ export default function PartnersPage() {
         </div>
       </section>
 
+      {/* Green Key International partners — logo walls by category */}
+      <section className="py-24" style={{ background: '#F4F9F5' }}>
+        <div className="container-fee">
+          <FadeIn>
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-5"
+                style={{ background: '#EDF7F1', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                {lang === 'ar' ? 'الشبكة العالمية' : 'Global Network'}
+              </span>
+              <h2 className="text-2xl md:text-3xl font-bold text-forest mb-3">
+                {lang === 'ar' ? 'شركاء المفتاح الأخضر الدوليون' : 'Green Key International Partners'}
+              </h2>
+              <p className="text-sm leading-relaxed" style={{ color: '#5A6672' }}>
+                {lang === 'ar'
+                  ? 'المنشآت المعتمدة في الكويت تنضم إلى شبكة عالمية من سلاسل الفنادق ومشغلي الرحلات والشركاء المؤسسيين الذين يدعمون معيار المفتاح الأخضر.'
+                  : 'Certified establishments in Kuwait join a worldwide network of hotel chains, tour operators, and institutional partners that back the Green Key standard.'}
+              </p>
+            </div>
+          </FadeIn>
+
+          <div className="space-y-12">
+            {GK_PARTNER_GROUPS.map((group, gi) => (
+              <FadeIn key={group.id} delay={gi * 0.05}>
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: '#3D4A42' }}>
+                      {lang === 'ar' ? group.title_ar : group.title_en}
+                    </h3>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#EDF7F1', color: '#40916C' }}>
+                      {group.logos.length}
+                    </span>
+                    <div className="flex-1 h-px" style={{ background: '#C8E6D0' }} />
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    {group.logos.map((src) => (
+                      <div key={src}
+                        className="aspect-[3/2] rounded-xl bg-white flex items-center justify-center p-4 transition-transform duration-200 hover:-translate-y-0.5"
+                        style={{ border: '1px solid #DCEBE0' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={src} alt="" loading="lazy" className="max-h-full max-w-full object-contain" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Logo scrolling strip */}
-      <section className="py-14" style={{ background: '#F4F9F5' }}>
+      <section className="py-14" style={{ background: '#FFFFFF' }}>
         <div className="container-fee mb-8 text-center">
           <FadeIn>
             <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: '#7A9080' }}>
