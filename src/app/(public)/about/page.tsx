@@ -439,7 +439,7 @@ export default function AboutPage() {
                     <img
                       src={member.photo}
                       alt={lang === 'ar' ? member.name_ar : member.name_en}
-                      className="w-24 h-24 rounded-full object-cover mb-4"
+                      className="w-40 h-40 rounded-full object-cover mb-5"
                       style={{ boxShadow: `0 0 0 3px #fff, 0 0 0 5px ${member.color}` }}
                     />
                   ) : (

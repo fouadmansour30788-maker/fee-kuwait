@@ -57,7 +57,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 text-white font-bold text-lg shrink-0 group">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/fee-logo.jpg" alt="FEE — Foundation for Environmental Education" className="h-9 w-auto rounded-md transition-transform group-hover:scale-105" />
+          <img src="/fee-logo.jpg" alt="FEE — Foundation for Environmental Education" className="h-14 w-auto rounded-md transition-transform group-hover:scale-105" />
           <span className="hidden sm:block tracking-tight">FEE Kuwait</span>
         </Link>
 
