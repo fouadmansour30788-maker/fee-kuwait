@@ -95,13 +95,19 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.98 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="absolute top-full mt-2.5 w-72 bg-white rounded-2xl overflow-hidden"
-                  style={{
-                    [dir === 'rtl' ? 'right' : 'left']: 0,
-                    boxShadow: '0 16px 48px rgba(27,67,50,0.18), 0 4px 12px rgba(0,0,0,0.08)',
-                    border: '1px solid #C8E6D0',
-                  }}
+                  // pt-2.5 keeps the hover area flush with the button (no dead gap that would
+                  // close the menu as the cursor moves down); the visible card sits inside.
+                  className="absolute top-full pt-2.5 w-72"
+                  style={{ [dir === 'rtl' ? 'right' : 'left']: 0 }}
+                  onMouseEnter={() => setProgrammesOpen(true)}
                 >
+                  <div
+                    className="bg-white rounded-2xl overflow-hidden"
+                    style={{
+                      boxShadow: '0 16px 48px rgba(27,67,50,0.18), 0 4px 12px rgba(0,0,0,0.08)',
+                      border: '1px solid #C8E6D0',
+                    }}
+                  >
                   <div className="p-1.5">
                     {PROGRAMMES.map(p => {
                       const Icon = ICON_MAP[p.icon] ?? Leaf
@@ -138,6 +144,7 @@ export default function Navbar() {
                       {lang === 'ar' ? 'عرض جميع البرامج' : 'View all programmes'}
                       <ChevronDown className="w-3 h-3 -rotate-90" />
                     </Link>
+                  </div>
                   </div>
                 </motion.div>
               )}
