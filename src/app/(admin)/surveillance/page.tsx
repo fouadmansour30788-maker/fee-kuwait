@@ -1,9 +1,10 @@
-import { Radar, Inbox, Building2 } from 'lucide-react'
+import { Radar, Inbox } from 'lucide-react'
 import { listApplications, PROGRAMME_LABEL } from '@/lib/db/applications'
 import { listAllSurveillance } from '@/lib/db/surveillance'
 import { criteriaForProgramme } from '@/lib/criteria'
 import SurveillanceCreate from '@/components/surveillance/SurveillanceCreate'
 import SurveillanceCard from '@/components/surveillance/SurveillanceCard'
+import EstablishmentGroup from '@/components/surveillance/EstablishmentGroup'
 import { OperatorReview } from '@/components/surveillance/SurveillanceStaffActions'
 
 export const dynamic = 'force-dynamic'
@@ -38,26 +39,11 @@ export default async function AdminSurveillancePage() {
       <SurveillanceCreate apps={createApps} criteriaByProgramme={criteriaByProgramme} />
 
       {activities.length > 0 ? (
-        <div className="space-y-8">
+        <div className="space-y-3">
           {grouped.map(([establishment, acts]) => {
             const pending = acts.filter((a) => a.status === 'submitted').length
             return (
-              <div key={establishment}>
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#EDF7F1' }}>
-                    <Building2 className="w-4 h-4" style={{ color: '#40916C' }} />
-                  </div>
-                  <h2 className="font-bold text-base" style={{ color: '#0F172A' }}>{establishment}</h2>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#F1F5F9', color: '#475569' }}>
-                    {acts.length} {acts.length === 1 ? 'activity' : 'activities'}
-                  </span>
-                  {pending > 0 && (
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#FEF3C7', color: '#854D0E' }}>
-                      {pending} to review
-                    </span>
-                  )}
-                  <div className="flex-1 h-px" style={{ background: '#E2E8F0' }} />
-                </div>
+              <EstablishmentGroup key={establishment} name={establishment} count={acts.length} pending={pending} pendingLabel="to review">
                 {acts.map((act) => (
                   <SurveillanceCard key={act.id} activity={act} titles={titlesByProgramme[act.programme] ?? {}}
                     subtitle={PROGRAMME_LABEL[act.programme] ?? act.programme}>
@@ -69,7 +55,7 @@ export default async function AdminSurveillancePage() {
                     {act.status === 'submitted' && <OperatorReview id={act.id} />}
                   </SurveillanceCard>
                 ))}
-              </div>
+              </EstablishmentGroup>
             )
           })}
         </div>
