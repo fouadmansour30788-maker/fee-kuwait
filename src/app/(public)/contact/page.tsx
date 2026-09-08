@@ -34,7 +34,7 @@ const CONTACT_INFO = [
     icon: User,
     label_en: 'Contact Person',
     label_ar: 'الشخص المسؤول',
-    value: 'Mostafa Kanjo',
+    value: 'Mona El Rez',
     color: '#40916C',
   },
   {
