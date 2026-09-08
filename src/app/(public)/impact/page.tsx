@@ -3,7 +3,6 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef, useEffect, useState } from 'react'
 import {
-  School, Waves, KeyRound, Leaf, Newspaper, GraduationCap,
   TrendingUp, Globe, Users, TreePine,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
@@ -41,28 +40,18 @@ function AnimatedCounter({ target, suffix = '', duration = 2000 }: { target: num
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>
 }
 
+// Cumulative certified establishments in Kuwait, year on year (real figures).
 const YEAR_STATS = [
-  { year: 2019, schools: 12, businesses: 5, students: 8000 },
-  { year: 2020, schools: 24, businesses: 12, students: 18000 },
-  { year: 2021, schools: 38, businesses: 22, students: 32000 },
-  { year: 2022, schools: 67, businesses: 41, students: 58000 },
-  { year: 2023, schools: 112, businesses: 68, students: 97000 },
-  { year: 2024, schools: 145, businesses: 89, students: 125000 },
-]
-
-const PROGRAMME_IMPACT = [
-  { icon: School, name_en: 'Eco-Schools', name_ar: 'المدارس البيئية', sites: 145, color: '#52B788', unit_en: 'certified schools', unit_ar: 'مدرسة معتمدة' },
-  { icon: Waves, name_en: 'Blue Flag', name_ar: 'العلم الأزرق', sites: 12, color: '#006994', unit_en: 'certified beaches & marinas', unit_ar: 'شاطئ ومرسى معتمد' },
-  { icon: KeyRound, name_en: 'Green Key', name_ar: 'المفتاح الأخضر', sites: 31, color: '#C8A951', unit_en: 'certified tourism sites', unit_ar: 'موقع سياحي معتمد' },
-  { icon: Leaf, name_en: 'LEAF', name_ar: 'LEAF', sites: 8, color: '#1B4332', unit_en: 'participating schools', unit_ar: 'مدرسة مشاركة' },
-  { icon: Newspaper, name_en: 'YRE', name_ar: 'YRE', sites: 320, color: '#74C69D', unit_en: 'young reporters', unit_ar: 'مراسل شاب' },
-  { icon: GraduationCap, name_en: 'Eco-Campus', name_ar: 'الحرم البيئي', sites: 3, color: '#40916C', unit_en: 'certified universities', unit_ar: 'جامعة معتمدة' },
+  { year: 2023, certified: 0 },
+  { year: 2024, certified: 9 },
+  { year: 2025, certified: 15 },
+  { year: 2026, certified: 23 },
 ]
 
 export default function ImpactPage() {
   const { lang } = useLang()
 
-  const maxStudents = Math.max(...YEAR_STATS.map(y => y.students))
+  const maxCertified = Math.max(...YEAR_STATS.map(y => y.certified))
 
   return (
     <>
@@ -94,10 +83,10 @@ export default function ImpactPage() {
         <div className="container-fee">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { target: 145, suffix: '+', label_en: 'Schools Certified', label_ar: 'مدرسة معتمدة', color: '#52B788' },
-              { target: 89, suffix: '+', label_en: 'Businesses Certified', label_ar: 'منشأة معتمدة', color: '#006994' },
-              { target: 125000, suffix: '+', label_en: 'Students Reached', label_ar: 'طالب وصلنا إليهم', color: '#C8A951' },
-              { target: 80, suffix: '+', label_en: 'Countries Connected', label_ar: 'دولة متصلة', color: '#40916C' },
+              { target: 23, suffix: '', label_en: 'Certified Establishments', label_ar: 'منشأة معتمدة', color: '#40916C' },
+              { target: 6, suffix: '', label_en: 'Programmes Offered', label_ar: 'برامج متاحة', color: '#52B788' },
+              { target: 100, suffix: '+', label_en: 'Countries Connected', label_ar: 'دولة متصلة', color: '#006994' },
+              { target: 110, suffix: '+', label_en: 'Global Member Orgs', label_ar: 'منظمة عضو عالمياً', color: '#C8A951' },
             ].map((stat, i) => (
               <FadeIn key={i} delay={i * 0.08}>
                 <div className="text-center">
@@ -114,51 +103,6 @@ export default function ImpactPage() {
         </div>
       </section>
 
-      {/* Programme-by-programme breakdown */}
-      <section className="section-pale py-24">
-        <div className="container-fee">
-          <FadeIn>
-            <div className="text-center mb-14">
-              <span className="badge-green mb-4 inline-block">
-                {lang === 'ar' ? 'تفصيل البرامج' : 'Programme Breakdown'}
-              </span>
-              <h2 className="section-heading">
-                {lang === 'ar' ? 'الأثر بحسب البرنامج' : 'Impact by Programme'}
-              </h2>
-            </div>
-          </FadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {PROGRAMME_IMPACT.map((prog, i) => {
-              const Icon = prog.icon
-              return (
-                <FadeIn key={i} delay={i * 0.08}>
-                  <div className="card p-6 flex items-start gap-4">
-                    <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: `${prog.color}15`, border: `1px solid ${prog.color}30` }}
-                    >
-                      <Icon className="w-6 h-6" style={{ color: prog.color }} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-forest text-sm mb-1">
-                        {lang === 'ar' ? prog.name_ar : prog.name_en}
-                      </h3>
-                      <p className="text-4xl font-bold mb-0.5" style={{ color: prog.color }}>
-                        {prog.sites.toLocaleString()}
-                      </p>
-                      <p className="text-gray text-xs">
-                        {lang === 'ar' ? prog.unit_ar : prog.unit_en}
-                      </p>
-                    </div>
-                  </div>
-                </FadeIn>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* Growth chart */}
       <section className="section-white py-24">
         <div className="container-fee">
@@ -168,12 +112,12 @@ export default function ImpactPage() {
                 {lang === 'ar' ? 'مسيرة النمو' : 'Growth Journey'}
               </span>
               <h2 className="section-heading">
-                {lang === 'ar' ? 'نمو مستمر منذ 2019' : 'Continuous Growth Since 2019'}
+                {lang === 'ar' ? 'نمو مستمر منذ 2023' : 'Continuous Growth Since 2023'}
               </h2>
               <p className="section-sub mx-auto">
                 {lang === 'ar'
-                  ? 'عدد الطلاب الذين وصلنا إليهم من خلال برامجنا عاماً بعد عام.'
-                  : 'Number of students reached through our programmes year on year.'}
+                  ? 'إجمالي المنشآت المعتمدة في الكويت عاماً بعد عام.'
+                  : 'Total certified establishments in Kuwait, year on year.'}
               </p>
             </div>
           </FadeIn>
@@ -182,13 +126,13 @@ export default function ImpactPage() {
             <div className="card p-8">
               <div className="flex items-end gap-3 h-48">
                 {YEAR_STATS.map((y, i) => (
-                  <div key={y.year} className="flex-1 flex flex-col items-center gap-2">
-                    <p className="text-xs font-bold text-brand">{(y.students / 1000).toFixed(0)}k</p>
+                  <div key={y.year} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                    <p className="text-sm font-bold text-brand">{y.certified}</p>
                     <motion.div
                       className="w-full rounded-t-lg"
-                      style={{ background: `linear-gradient(to top, #40916C, #52B788)` }}
+                      style={{ background: `linear-gradient(to top, #40916C, #52B788)`, minHeight: y.certified > 0 ? 4 : 0 }}
                       initial={{ height: 0 }}
-                      animate={{ height: `${(y.students / maxStudents) * 100}%` }}
+                      animate={{ height: `${(y.certified / maxCertified) * 100}%` }}
                       transition={{ duration: 0.8, delay: i * 0.1, ease: 'easeOut' }}
                     />
                     <p className="text-xs text-gray">{y.year}</p>
