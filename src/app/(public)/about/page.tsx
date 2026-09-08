@@ -395,6 +395,9 @@ export default function AboutPage() {
                 <Building2 className="w-7 h-7" style={{ color: '#40916C' }} />
                 {lang === 'ar' ? 'يُقدَّم في الكويت من قِبَل Academics' : 'Delivered in Kuwait by Academics'}
               </h2>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/academics-logo.png" alt="Academics — FEE National Operator in Kuwait"
+                className="h-16 md:h-20 w-auto mx-auto mt-7" />
             </div>
           </FadeInSection>
           <FadeInSection delay={0.1}>
