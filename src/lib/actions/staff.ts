@@ -65,6 +65,22 @@ export async function removeTeamMember(userId: string): Promise<{ ok?: true; err
   return { ok: true }
 }
 
+// Reset a team member's password. Operator-gated (admin/super_admin). Generates a
+// new temporary password with the service role and returns it to share; the member
+// can change it themselves afterwards from their profile menu.
+export async function resetUserPassword(userId: string): Promise<{ ok?: true; error?: string; tempPassword?: string }> {
+  const gate = await requireOperator()
+  if (gate.error) return { error: gate.error }
+
+  const tempPassword = crypto.randomUUID().replace(/-/g, '').slice(0, 12)
+  const admin = createAdminClient()
+  const { error } = await admin.auth.admin.updateUserById(userId, { password: tempPassword })
+  if (error) return { error: error.message }
+
+  revalidatePath('/staff')
+  return { ok: true, tempPassword }
+}
+
 // Change a user's role. Gated to staff (admin/super_admin); the actual update
 // runs with the service role because updating *another* user's row is not
 // permitted by the users RLS.
