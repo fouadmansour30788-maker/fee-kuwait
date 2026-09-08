@@ -1,4 +1,4 @@
-import { Radar, Inbox } from 'lucide-react'
+import { Radar, Inbox, Building2 } from 'lucide-react'
 import { PROGRAMME_LABEL } from '@/lib/db/applications'
 import { listAllSurveillance } from '@/lib/db/surveillance'
 import { criteriaForProgramme } from '@/lib/criteria'
@@ -12,6 +12,15 @@ export default async function CbSurveillancePage() {
   const programmes = Array.from(new Set(activities.map((a) => a.programme)))
   const titlesByProgramme = Object.fromEntries(programmes.map((p) => [p, Object.fromEntries(criteriaForProgramme(p).map((c) => [c.ref, c.title]))]))
 
+  // Group surveillance activities per establishment (applicant).
+  const groups = new Map<string, typeof activities>()
+  for (const act of activities) {
+    const key = act.applicant ?? '—'
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(act)
+  }
+  const grouped = Array.from(groups.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+
   return (
     <div className="space-y-6">
       <div>
@@ -20,18 +29,40 @@ export default async function CbSurveillancePage() {
       </div>
 
       {activities.length > 0 ? (
-        <div>
-          {activities.map((act) => (
-            <SurveillanceCard key={act.id} activity={act} titles={titlesByProgramme[act.programme] ?? {}}
-              subtitle={`${PROGRAMME_LABEL[act.programme] ?? act.programme} · ${act.applicant ?? '—'}`}>
-              {act.responseNote && (
-                <div className="rounded-xl px-3 py-2 text-sm mb-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155' }}>
-                  <span className="text-[11px] font-semibold block mb-0.5" style={{ color: '#64748B' }}>Establishment response</span>{act.responseNote}
+        <div className="space-y-8">
+          {grouped.map(([establishment, acts]) => {
+            const pending = acts.filter((a) => a.status === 'submitted' || a.status === 'reviewed').length
+            return (
+              <div key={establishment}>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#EDF7F1' }}>
+                    <Building2 className="w-4 h-4" style={{ color: '#40916C' }} />
+                  </div>
+                  <h2 className="font-bold text-base" style={{ color: '#0F172A' }}>{establishment}</h2>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#F1F5F9', color: '#475569' }}>
+                    {acts.length} {acts.length === 1 ? 'activity' : 'activities'}
+                  </span>
+                  {pending > 0 && (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#FEF3C7', color: '#854D0E' }}>
+                      {pending} to decide
+                    </span>
+                  )}
+                  <div className="flex-1 h-px" style={{ background: '#E2E8F0' }} />
                 </div>
-              )}
-              {(act.status === 'submitted' || act.status === 'reviewed') && <CBDecision id={act.id} />}
-            </SurveillanceCard>
-          ))}
+                {acts.map((act) => (
+                  <SurveillanceCard key={act.id} activity={act} titles={titlesByProgramme[act.programme] ?? {}}
+                    subtitle={PROGRAMME_LABEL[act.programme] ?? act.programme}>
+                    {act.responseNote && (
+                      <div className="rounded-xl px-3 py-2 text-sm mb-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155' }}>
+                        <span className="text-[11px] font-semibold block mb-0.5" style={{ color: '#64748B' }}>Establishment response</span>{act.responseNote}
+                      </div>
+                    )}
+                    {(act.status === 'submitted' || act.status === 'reviewed') && <CBDecision id={act.id} />}
+                  </SurveillanceCard>
+                ))}
+              </div>
+            )
+          })}
         </div>
       ) : (
         <div className="bg-white rounded-2xl border py-14 text-center" style={{ borderColor: '#E2E8F0', color: '#94A3B8' }}>
