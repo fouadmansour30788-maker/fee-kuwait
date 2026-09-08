@@ -33,7 +33,6 @@ export default function Navbar() {
     { href: '/about',    label: t(lang, 'nav.about') },
     { href: '/news',     label: t(lang, 'nav.news') },
     { href: '/impact',   label: t(lang, 'nav.impact') },
-    { href: '/youth',    label: t(lang, 'nav.youth') },
     { href: '/partners', label: t(lang, 'nav.partners') },
     { href: '/contact',  label: t(lang, 'nav.contact') },
   ]
