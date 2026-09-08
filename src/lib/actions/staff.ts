@@ -81,6 +81,23 @@ export async function resetUserPassword(userId: string): Promise<{ ok?: true; er
   return { ok: true, tempPassword }
 }
 
+// Set (or clear) a Certification Body's scope: 'hospitality', 'educational',
+// 'both', or null. Operator-gated.
+const CB_SCOPES = ['hospitality', 'educational', 'both']
+export async function setCbScope(userId: string, scope: string): Promise<{ ok?: true; error?: string }> {
+  const value = scope || null
+  if (value && !CB_SCOPES.includes(value)) return { error: 'Invalid scope' }
+  const gate = await requireOperator()
+  if (gate.error) return { error: gate.error }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('users').update({ cb_scope: value, updated_at: new Date().toISOString() }).eq('id', userId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/staff')
+  return { ok: true }
+}
+
 // Change a user's role. Gated to staff (admin/super_admin); the actual update
 // runs with the service role because updating *another* user's row is not
 // permitted by the users RLS.

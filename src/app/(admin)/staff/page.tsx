@@ -7,6 +7,7 @@ import RoleSelect from '@/components/staff/RoleSelect'
 import AddTeamMember from '@/components/staff/AddTeamMember'
 import RemoveMember from '@/components/staff/RemoveMember'
 import ResetPassword from '@/components/staff/ResetPassword'
+import CbScopeSelect from '@/components/staff/CbScopeSelect'
 import RolePermissionsMatrix from '@/components/staff/RolePermissionsMatrix'
 
 export default async function StaffPage() {
@@ -55,6 +56,7 @@ export default async function StaffPage() {
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <RoleSelect userId={u.id} role={u.role} disabled={isMe} />
+                      {u.role === 'certification_body' && <CbScopeSelect userId={u.id} scope={u.cb_scope} />}
                       <ResetPassword userId={u.id} name={u.name_en || u.email} />
                       <RemoveMember userId={u.id} name={u.name_en || u.email} disabled={isMe} />
                     </div>

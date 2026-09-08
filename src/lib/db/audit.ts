@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { AppRow } from './applications'
 
-export interface AuditorUser { id: string; name_en: string | null; email: string }
+export interface AuditorUser { id: string; name_en: string | null; email: string; cb_scope?: string | null }
 
 // Users with the auditor role (operator picks from these).
 export async function listAuditors(): Promise<AuditorUser[]> {
@@ -49,7 +49,7 @@ export async function applicationAuditor(applicationId: string): Promise<Auditor
 // Users with the certification_body role (operator picks from these).
 export async function listCertificationBodies(): Promise<AuditorUser[]> {
   const supabase = createClient()
-  const { data, error } = await supabase.from('users').select('id, name_en, email').eq('role', 'certification_body').order('name_en')
+  const { data, error } = await supabase.from('users').select('id, name_en, email, cb_scope').eq('role', 'certification_body').order('name_en')
   if (error) { console.error('listCertificationBodies:', error.message); return [] }
   return (data ?? []) as AuditorUser[]
 }

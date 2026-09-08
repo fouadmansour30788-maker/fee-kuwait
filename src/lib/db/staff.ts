@@ -5,6 +5,7 @@ export interface AppUser {
   email: string
   name_en: string | null
   role: string
+  cb_scope: string | null
   created_at: string
 }
 
@@ -13,7 +14,7 @@ export async function listUsers(): Promise<AppUser[]> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('users')
-    .select('id, email, name_en, role, created_at')
+    .select('id, email, name_en, role, cb_scope, created_at')
     .order('created_at', { ascending: false })
   if (error) { console.error('listUsers:', error.message); return [] }
   return (data ?? []) as AppUser[]

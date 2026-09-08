@@ -121,11 +121,11 @@ export default async function ApplicationDetail({
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
         <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Certification Body</h2>
         <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>
-          {currentCb ? `Assigned to ${currentCb.name_en || currentCb.email}.` : 'Once the audit is complete, assign a Certification Body to make the certification decision.'} Assigning moves the application to “CB Review”.
+          {currentCb ? `Assigned to ${currentCb.name_en || currentCb.email}.` : 'Assign a Certification Body to review this application and take it forward.'} Assigning moves the application to “CB Review”.
         </p>
         {bodies.length > 0
-          ? <AssignCb applicationId={id} bodies={bodies} currentId={currentCb?.id ?? null} />
-          : <p className="text-xs" style={{ color: '#94A3B8' }}>No certification-body accounts yet — create one and set its role under Team.</p>}
+          ? <AssignCb applicationId={id} bodies={bodies} currentId={currentCb?.id ?? null} entityType={app.entity_type} />
+          : <p className="text-xs" style={{ color: '#94A3B8' }}>No certification-body accounts yet — create one and set its role (and scope) under Team.</p>}
 
         {app.cb_decision && app.cb_decision !== 'pending' && (
           <div className="mt-4 pt-4 border-t" style={{ borderColor: '#F1F5F9' }}>
