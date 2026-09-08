@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import {
-  ArrowRight, CheckCircle2, ClipboardList, SearchCheck, BadgeCheck,
+  ArrowRight, CheckCircle2, ClipboardList, SearchCheck, BadgeCheck, ExternalLink,
   School, Waves, KeyRound, Leaf, Newspaper, GraduationCap,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
@@ -244,6 +244,41 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
           </motion.div>
         </div>
       </section>
+
+      {/* ── Global reach + official link ───────────────── */}
+      {prog.globalUrl && (
+        <section className="section-white pt-10 -mb-6">
+          <div className="container-fee">
+            <div className="card p-6 md:p-7 flex flex-col md:flex-row md:items-center gap-5 md:gap-8"
+              style={{ borderColor: `${prog.color}30` }}>
+              {prog.globalStat && (
+                <div className="flex items-center gap-6 md:gap-8">
+                  {prog.globalStat.count && (
+                    <div>
+                      <p className="text-3xl md:text-4xl font-bold" style={{ color: prog.color }}>{prog.globalStat.count}</p>
+                      <p className="text-gray text-xs mt-0.5">{lang === 'ar' ? prog.globalStat.unit_ar : prog.globalStat.unit_en}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-3xl md:text-4xl font-bold" style={{ color: prog.color }}>{prog.globalStat.countries}</p>
+                    <p className="text-gray text-xs mt-0.5">{lang === 'ar' ? 'دولة' : 'countries'}</p>
+                  </div>
+                </div>
+              )}
+              <div className="md:ms-auto flex flex-col gap-1.5">
+                <p className="text-xs" style={{ color: '#5A6672' }}>
+                  {lang === 'ar' ? 'أرقام عالمية من الموقع الرسمي للبرنامج' : 'Global figures from the official programme site'}
+                </p>
+                <a href={prog.globalUrl} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-semibold transition-colors" style={{ color: prog.color }}>
+                  {lang === 'ar' ? 'زيارة الموقع العالمي للبرنامج' : 'Visit the global programme site'}
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── What is it ─────────────────────────────────── */}
       <section className="section-white py-20">

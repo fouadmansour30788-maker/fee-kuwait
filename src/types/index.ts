@@ -235,6 +235,8 @@ export interface ProgrammeInfo {
   icon: string
   logo?: string
   logoWhite?: string
+  globalUrl?: string
+  globalStat?: { count?: string; unit_en: string; unit_ar: string; countries: string }
   description_en: string
   description_ar: string
 }
