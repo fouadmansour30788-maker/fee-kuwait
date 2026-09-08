@@ -50,8 +50,12 @@ export async function applicationAuditor(applicationId: string): Promise<Auditor
 export async function listCertificationBodies(): Promise<AuditorUser[]> {
   const supabase = createClient()
   const { data, error } = await supabase.from('users').select('id, name_en, email, cb_scope').eq('role', 'certification_body').order('name_en')
-  if (error) { console.error('listCertificationBodies:', error.message); return [] }
-  return (data ?? []) as AuditorUser[]
+  if (!error) return (data ?? []) as AuditorUser[]
+
+  // Fallback if the cb_scope column isn't present yet (migration 041 not run).
+  const res = await supabase.from('users').select('id, name_en, email').eq('role', 'certification_body').order('name_en')
+  if (res.error) { console.error('listCertificationBodies:', res.error.message); return [] }
+  return (res.data ?? []).map((u) => ({ ...u, cb_scope: null })) as AuditorUser[]
 }
 
 // Applications assigned to the signed-in certification body (RLS returns only their own).

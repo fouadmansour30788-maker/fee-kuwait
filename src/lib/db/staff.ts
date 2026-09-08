@@ -16,6 +16,14 @@ export async function listUsers(): Promise<AppUser[]> {
     .from('users')
     .select('id, email, name_en, role, cb_scope, created_at')
     .order('created_at', { ascending: false })
-  if (error) { console.error('listUsers:', error.message); return [] }
-  return (data ?? []) as AppUser[]
+  if (!error) return (data ?? []) as AppUser[]
+
+  // Fallback if the cb_scope column isn't present yet (migration 041 not run):
+  // never let a missing column blank the whole team list.
+  const res = await supabase
+    .from('users')
+    .select('id, email, name_en, role, created_at')
+    .order('created_at', { ascending: false })
+  if (res.error) { console.error('listUsers:', res.error.message); return [] }
+  return (res.data ?? []).map((u) => ({ ...u, cb_scope: null })) as AppUser[]
 }
