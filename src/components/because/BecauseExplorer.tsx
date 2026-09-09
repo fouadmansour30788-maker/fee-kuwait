@@ -73,13 +73,37 @@ function IdTable({ rows, columns }: { rows: Row[]; columns: { key: string; label
   )
 }
 
-export default function BecauseExplorer({ configured }: { configured: boolean }) {
+// The list endpoints may return a bare array or wrap it in an envelope
+// ({data|items|results|value|content|frameworks|groups|…: [...]}). Pull the first
+// array we can find so the tables render regardless of shape.
+function pickRows(data: unknown): Row[] {
+  if (Array.isArray(data)) return data as Row[]
+  if (data && typeof data === 'object') {
+    const o = data as Record<string, unknown>
+    for (const k of ['data', 'items', 'results', 'value', 'content', 'records', 'frameworks', 'groups', 'customProperties', 'unitTypes']) {
+      if (Array.isArray(o[k])) return o[k] as Row[]
+    }
+    for (const v of Object.values(o)) if (Array.isArray(v)) return v as Row[]
+  }
+  return []
+}
+
+function RawResponse({ raw }: { raw: unknown }) {
+  return (
+    <details className="mt-3">
+      <summary className="text-xs font-semibold cursor-pointer" style={{ color: '#64748B' }}>Raw response</summary>
+      <pre className="text-[11px] mt-2 p-3 rounded-lg overflow-x-auto max-h-80" style={{ background: '#0F172A', color: '#E2E8F0' }}>{JSON.stringify(raw, null, 2)}</pre>
+    </details>
+  )
+}
+
+export default function BecauseExplorer({ configured, baseUrl }: { configured: boolean; baseUrl: string }) {
   const [pending, start] = useTransition()
   const [active, setActive] = useState<string | null>(null)
-  const [fw, setFw] = useState<{ rows?: Row[]; error?: string }>()
-  const [groups, setGroups] = useState<{ rows?: Row[]; error?: string }>()
-  const [props, setProps] = useState<{ rows?: Row[]; error?: string }>()
-  const [units, setUnits] = useState<{ rows?: Row[]; error?: string }>()
+  const [fw, setFw] = useState<{ rows?: Row[]; raw?: unknown; error?: string }>()
+  const [groups, setGroups] = useState<{ rows?: Row[]; raw?: unknown; error?: string }>()
+  const [props, setProps] = useState<{ rows?: Row[]; raw?: unknown; error?: string }>()
+  const [units, setUnits] = useState<{ rows?: Row[]; raw?: unknown; error?: string }>()
   const [fid, setFid] = useState('')
   const [struct, setStruct] = useState<{ points?: FlatDataPoint[]; raw?: unknown; error?: string }>()
   const [cid, setCid] = useState('')
@@ -87,8 +111,6 @@ export default function BecauseExplorer({ configured }: { configured: boolean })
 
   function go(key: string, fn: () => void) { setActive(key); start(fn) }
   const busy = (key: string) => pending && active === key
-
-  const asRows = (data: unknown): Row[] => Array.isArray(data) ? data as Row[] : []
 
   if (!configured) {
     return (
@@ -107,12 +129,19 @@ export default function BecauseExplorer({ configured }: { configured: boolean })
 
   return (
     <div className="space-y-5">
+      <p className="text-xs" style={{ color: '#94A3B8' }}>
+        Requests go to <code className="px-1.5 py-0.5 rounded" style={{ background: '#F1F5F9', color: '#475569' }}>{baseUrl}</code>.
+        If a panel says “No rows returned”, open <span className="font-semibold">Raw response</span> to see exactly what BeCause sent —
+        an empty list means the API key&apos;s profile has no frameworks assigned yet; set <code className="px-1 rounded" style={{ background: '#F1F5F9', color: '#475569' }}>BECAUSE_API_BASE</code> in Vercel if the host above is wrong.
+      </p>
+
       {/* Frameworks — find the Green Key consumption framework */}
       <Panel title="Frameworks — find the GK consumption framework" icon={Boxes}
-        busy={busy('fw')} onRun={() => go('fw', async () => { const r = await discoverFrameworks(); setFw('error' in r ? { error: r.error } : { rows: asRows(r.data) }) })}>
+        busy={busy('fw')} onRun={() => go('fw', async () => { const r = await discoverFrameworks(); setFw('error' in r ? { error: r.error } : { rows: pickRows(r.data), raw: r.data }) })}>
         {fw?.error && <ErrorLine text={fw.error} />}
         {fw?.rows && <IdTable rows={fw.rows} columns={[{ key: 'id', label: 'Framework ID', id: true }, { key: 'title', label: 'Title' }, { key: 'name', label: 'Name' }]} />}
-        {fw?.rows && <p className="text-xs mt-3" style={{ color: '#94A3B8' }}>Copy the Green Key consumption framework&apos;s ID, then paste it below to fetch its data-point IDs.</p>}
+        {fw?.rows && fw.rows.length > 0 && <p className="text-xs mt-3" style={{ color: '#94A3B8' }}>Copy the Green Key consumption framework&apos;s ID, then paste it below to fetch its data-point IDs.</p>}
+        {fw?.raw !== undefined && <RawResponse raw={fw.raw} />}
       </Panel>
 
       {/* Framework structure — data point IDs */}
@@ -145,28 +174,31 @@ export default function BecauseExplorer({ configured }: { configured: boolean })
       <div className="grid md:grid-cols-2 gap-5">
         {/* Groups */}
         <Panel title="Groups — group ID" icon={Boxes}
-          busy={busy('groups')} onRun={() => go('groups', async () => { const r = await discoverGroups(); setGroups('error' in r ? { error: r.error } : { rows: asRows(r.data) }) })}>
+          busy={busy('groups')} onRun={() => go('groups', async () => { const r = await discoverGroups(); setGroups('error' in r ? { error: r.error } : { rows: pickRows(r.data), raw: r.data }) })}>
           {groups?.error && <ErrorLine text={groups.error} />}
           {groups?.rows && <IdTable rows={groups.rows} columns={[{ key: 'id', label: 'Group ID', id: true }, { key: 'name', label: 'Name' }]} />}
+          {groups?.raw !== undefined && <RawResponse raw={groups.raw} />}
         </Panel>
 
         {/* Custom properties — GK ID identifier */}
         <Panel title="Custom properties — GK ID identifier" icon={Tag}
-          busy={busy('props')} onRun={() => go('props', async () => { const r = await discoverCustomProperties(); setProps('error' in r ? { error: r.error } : { rows: asRows(r.data) }) })}>
+          busy={busy('props')} onRun={() => go('props', async () => { const r = await discoverCustomProperties(); setProps('error' in r ? { error: r.error } : { rows: pickRows(r.data), raw: r.data }) })}>
           {props?.error && <ErrorLine text={props.error} />}
           {props?.rows && <IdTable rows={props.rows} columns={[
             { key: 'id', label: 'Property ID', id: true },
             { key: 'name', label: 'Name' },
             { key: 'isIdentifier', label: 'Identifier', badge: true },
           ]} />}
+          {props?.raw !== undefined && <RawResponse raw={props.raw} />}
         </Panel>
       </div>
 
       {/* Unit types */}
       <Panel title="Unit types — unit IDs (kWh, m³, kg …)" icon={Ruler}
-        busy={busy('units')} onRun={() => go('units', async () => { const r = await discoverUnitTypes(); setUnits('error' in r ? { error: r.error } : { rows: asRows(r.data) }) })}>
+        busy={busy('units')} onRun={() => go('units', async () => { const r = await discoverUnitTypes(); setUnits('error' in r ? { error: r.error } : { rows: pickRows(r.data), raw: r.data }) })}>
         {units?.error && <ErrorLine text={units.error} />}
         {units?.rows && <IdTable rows={units.rows} columns={[{ key: 'id', label: 'Unit ID', id: true }, { key: 'name', label: 'Name' }, { key: 'symbol', label: 'Symbol' }]} />}
+        {units?.raw !== undefined && <RawResponse raw={units.raw} />}
       </Panel>
 
       {/* Import task status */}

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Cable } from 'lucide-react'
 import { getCurrentUser } from '@/lib/auth-server'
-import { becauseConfigured } from '@/lib/because/client'
+import { becauseConfigured, becauseBaseUrl } from '@/lib/because/client'
 import BecauseExplorer from '@/components/because/BecauseExplorer'
 
 export const dynamic = 'force-dynamic'
@@ -22,7 +22,7 @@ export default async function BecausePage() {
         </p>
       </div>
 
-      <BecauseExplorer configured={becauseConfigured()} />
+      <BecauseExplorer configured={becauseConfigured()} baseUrl={becauseBaseUrl()} />
     </div>
   )
 }

@@ -24,6 +24,10 @@ export function becauseConfigured(): boolean {
   return !!process.env.BECAUSE_API_KEY
 }
 
+export function becauseBaseUrl(): string {
+  return BASE
+}
+
 async function becauseFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const key = process.env.BECAUSE_API_KEY
   if (!key) throw new BecauseError('BECAUSE_API_KEY is not set. Add it in the Vercel project environment variables.')
