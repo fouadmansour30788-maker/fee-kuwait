@@ -18,11 +18,13 @@ import DocumentUpload from '@/components/documents/DocumentUpload'
 import DocumentRemove from '@/components/documents/DocumentRemove'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
+import InvoicesReadonly from '@/components/invoices/InvoicesReadonly'
+import { listInvoicesForApplication } from '@/lib/db/invoices'
 
 export default async function SchoolApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
-  const [docs, assessments, messages, ent, audits, ps, timeline] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity(), listAudits(params.id), getPreScreening(params.id), getApplicationTimeline(params.id)])
+  const [docs, assessments, messages, ent, audits, ps, timeline, invoices] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity(), listAudits(params.id), getPreScreening(params.id), getApplicationTimeline(params.id), listInvoicesForApplication(params.id)])
   const psApproved = preScreeningApproved(ps)
   const criteria = app.programme === 'green-key' && psApproved && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
@@ -87,6 +89,8 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
           <WorkflowActions applicationId={app.id} role="establishment" status={app.status} />
         </div>
       )}
+
+      <InvoicesReadonly invoices={invoices} />
 
       {app.programme === 'green-key' && (
         <PreScreeningBanner href={`/school/pre-screening/${params.id}`} status={ps?.status ?? null} mainCategory={ps?.mainCategory ?? null} subCategories={ps?.subCategories} ineligibleReason={ps?.ineligibleReason} reviewNote={ps?.reviewNote} />

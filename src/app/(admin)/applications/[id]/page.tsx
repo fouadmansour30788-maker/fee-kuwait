@@ -19,6 +19,8 @@ import ManualOverride from '@/components/admin/ManualOverride'
 import ReopenApplication from '@/components/admin/ReopenApplication'
 import AssignCb from '@/components/audit/AssignCb'
 import SubmitToCb from '@/components/audit/SubmitToCb'
+import InvoicesPanel from '@/components/invoices/InvoicesPanel'
+import { listInvoicesForApplication } from '@/lib/db/invoices'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 import ReopenRevision from '@/components/audit/ReopenRevision'
@@ -37,7 +39,7 @@ export default async function ApplicationDetail({
     listApplicationDocuments(id), applicationAuditor(id), listCriterionAssessments(id),
     listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id), getPreScreening(id),
   ])
-  const [trail, timeline] = await Promise.all([listAuditTrail(id), getApplicationTimeline(id)])
+  const [trail, timeline, invoices] = await Promise.all([listAuditTrail(id), getApplicationTimeline(id), listInvoicesForApplication(id)])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
 
@@ -140,6 +142,9 @@ export default async function ApplicationDetail({
           </div>
         )}
       </div>
+
+      {/* Fees & invoices */}
+      <InvoicesPanel applicationId={id} invoices={invoices} />
 
       {/* Submitted documents */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
