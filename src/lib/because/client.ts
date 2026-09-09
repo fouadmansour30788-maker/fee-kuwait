@@ -91,16 +91,20 @@ export function flattenDataPoints(structure: unknown): FlatDataPoint[] {
   const out: FlatDataPoint[] = []
   const seen = new Set<string>()
   const labelOf = (o: Record<string, unknown>): string | undefined => {
-    for (const k of ['label', 'name', 'title', 'text', 'questionText']) {
+    for (const k of ['questionText', 'label', 'name', 'title', 'text', 'displayName', 'shortText', 'description']) {
       const v = o[k]
       if (typeof v === 'string' && v.trim()) return v.trim()
     }
     return undefined
   }
-  const walk = (node: unknown, path: string) => {
-    if (Array.isArray(node)) { node.forEach((n, i) => walk(n, `${path}[${i}]`)) ; return }
+  // `inherited` carries the nearest ancestor label (topic/subtopic/question text)
+  // down to the leaf data points — BeCause puts the field name on the parent
+  // question while the leaf only carries a value dimension (Volume/Mass/…).
+  const walk = (node: unknown, path: string, inherited?: string) => {
+    if (Array.isArray(node)) { node.forEach((n, i) => walk(n, `${path}[${i}]`, inherited)) ; return }
     if (!node || typeof node !== 'object') return
     const o = node as Record<string, unknown>
+    const own = labelOf(o)
     // A data point: has an id and looks like a leaf answerable field.
     const id = typeof o.id === 'string' ? o.id : (typeof o.dataPointId === 'string' ? o.dataPointId : undefined)
     const isDataPoint = !!id && ('valueType' in o || 'answerType' in o || 'unitTypeIds' in o || 'unitTypes' in o || /dataPoint/i.test(path))
@@ -108,17 +112,20 @@ export function flattenDataPoints(structure: unknown): FlatDataPoint[] {
       seen.add(id)
       const unitTypeIds = Array.isArray(o.unitTypeIds) ? (o.unitTypeIds as unknown[]).map(String)
         : Array.isArray(o.unitTypes) ? (o.unitTypes as unknown[]).map((u) => String((u as Record<string, unknown>)?.id ?? u)) : undefined
+      const label = inherited && own ? `${inherited} · ${own}` : (inherited ?? own ?? '(unlabelled)')
       out.push({
         id,
-        label: labelOf(o) ?? '(unlabelled)',
+        label,
         valueType: typeof o.valueType === 'string' ? o.valueType : (typeof o.answerType === 'string' ? o.answerType : undefined),
         unitTypeIds,
         path,
       })
     }
-    for (const [k, v] of Object.entries(o)) if (v && typeof v === 'object') walk(v, path ? `${path}.${k}` : k)
+    // Non-datapoint containers with a label set the inherited label for children.
+    const nextInherited = own && !isDataPoint ? own : inherited
+    for (const [k, v] of Object.entries(o)) if (v && typeof v === 'object') walk(v, path ? `${path}.${k}` : k, nextInherited)
   }
-  walk(structure, '')
+  walk(structure, '', undefined)
   return out
 }
 
