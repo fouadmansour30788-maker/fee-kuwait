@@ -120,7 +120,10 @@ export async function assignAuditor(applicationId: string, auditorId: string) {
   revalidatePath('/applications')
 }
 
-// Operator assigns (or clears) a Certification Body; moves the application to CB review.
+// Operator assigns (or clears) a Certification Body. This ONLY records the CB —
+// it does not change the application status or notify the applicant. Submitting
+// the application to the CB for pre-audit review is a separate, explicit step
+// (submitToCb) so assigning a CB never moves the application on its own.
 export async function assignCb(applicationId: string, cbId: string) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -131,26 +134,46 @@ export async function assignCb(applicationId: string, cbId: string) {
   await supabase.from('applications').update({
     cb_id: cbId || null,
     cb_assigned_at: cbId ? new Date().toISOString() : null,
-    status: cbId ? 'cb_pre_audit_review' : 'in_progress',
     updated_at: new Date().toISOString(),
   }).eq('id', applicationId)
 
-  // Let the applicant know their application is now with the Certification Body.
-  if (cbId) {
-    const { data: appRow } = await supabase
-      .from('applications')
-      .select('entity_type, programme, applicant:users!applicant_id(email)')
-      .eq('id', applicationId)
-      .single()
-    const applicant = Array.isArray(appRow?.applicant) ? appRow?.applicant[0] : appRow?.applicant
-    await notifyApplicant({
-      email: applicant?.email, programme: appRow?.programme ?? '', entityType: appRow?.entity_type ?? null,
-      applicationId, status: 'cb_pre_audit_review',
-    })
-  }
+  revalidatePath(`/applications/${applicationId}`)
+  revalidatePath('/applications')
+}
+
+// Operator submits the application to the assigned Certification Body for the
+// pre-audit review. Requires a CB to be assigned first. Moves the status and
+// notifies the applicant.
+export async function submitToCb(applicationId: string): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
+  if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Not allowed' }
+
+  const { data: app } = await supabase
+    .from('applications')
+    .select('cb_id, entity_type, programme, applicant:users!applicant_id(email)')
+    .eq('id', applicationId)
+    .single()
+  if (!app?.cb_id) return { error: 'Assign a Certification Body first.' }
+
+  const { error } = await supabase.from('applications').update({
+    status: 'cb_pre_audit_review',
+    cb_assigned_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }).eq('id', applicationId)
+  if (error) return { error: error.message }
+
+  const applicant = Array.isArray(app.applicant) ? app.applicant[0] : app.applicant
+  await notifyApplicant({
+    email: applicant?.email, programme: app.programme ?? '', entityType: app.entity_type ?? null,
+    applicationId, status: 'cb_pre_audit_review',
+  })
 
   revalidatePath(`/applications/${applicationId}`)
   revalidatePath('/applications')
+  return { ok: true }
 }
 
 // Operator updates an application's status + review notes. RLS also enforces

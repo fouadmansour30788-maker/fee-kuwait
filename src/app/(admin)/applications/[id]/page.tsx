@@ -18,6 +18,7 @@ import WorkflowActions from '@/components/audit/WorkflowActions'
 import ManualOverride from '@/components/admin/ManualOverride'
 import ReopenApplication from '@/components/admin/ReopenApplication'
 import AssignCb from '@/components/audit/AssignCb'
+import SubmitToCb from '@/components/audit/SubmitToCb'
 import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 import ReopenRevision from '@/components/audit/ReopenRevision'
@@ -121,10 +122,13 @@ export default async function ApplicationDetail({
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
         <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Certification Body</h2>
         <p className="text-xs mb-3" style={{ color: '#94A3B8' }}>
-          {currentCb ? `Assigned to ${currentCb.name_en || currentCb.email}.` : 'Assign a Certification Body to review this application and take it forward.'} Assigning moves the application to “CB Review”.
+          {currentCb ? `Assigned to ${currentCb.name_en || currentCb.email}.` : 'Assign a Certification Body, then submit the application for its pre-audit review.'} Assigning a CB does not move the application on its own.
         </p>
         {bodies.length > 0
-          ? <AssignCb applicationId={id} bodies={bodies} currentId={currentCb?.id ?? null} entityType={app.entity_type} />
+          ? <>
+              <AssignCb applicationId={id} bodies={bodies} currentId={currentCb?.id ?? null} entityType={app.entity_type} />
+              {app.status !== 'cb_pre_audit_review' && <SubmitToCb applicationId={id} disabled={!currentCb} />}
+            </>
           : <p className="text-xs" style={{ color: '#94A3B8' }}>No certification-body accounts yet — create one and set its role (and scope) under Team.</p>}
 
         {app.cb_decision && app.cb_decision !== 'pending' && (
