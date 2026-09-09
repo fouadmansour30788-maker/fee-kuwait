@@ -20,7 +20,8 @@ export async function listAuditorsForCb(): Promise<AuditorUser[]> {
   if (!user) return []
   const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
   if (!me || !['certification_body', 'admin', 'super_admin'].includes(me.role)) return []
-  const { data } = await createAdminClient().from('users').select('id, name_en, email').eq('role', 'auditor').order('name_en')
+  // Newest first, so an auditor the CB just created appears at the top of the list.
+  const { data } = await createAdminClient().from('users').select('id, name_en, email').eq('role', 'auditor').order('created_at', { ascending: false })
   return (data ?? []) as AuditorUser[]
 }
 

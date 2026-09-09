@@ -30,12 +30,19 @@ export async function cbCreateAuditor(input: { email: string; name: string }): P
     email,
     password: tempPassword,
     email_confirm: true,
-    user_metadata: { name, role: 'auditor', lang: 'en' },
+    // name_en / preferred_language match what the signup trigger reads.
+    user_metadata: { name_en: name, name, role: 'auditor', preferred_language: 'en', lang: 'en' },
   })
   if (error) return { error: error.message }
 
+  // Guarantee the profile row carries role=auditor + name regardless of trigger
+  // timing (upsert: insert if the trigger hasn't created it, else update).
   if (created.user?.id) {
-    await admin.from('users').update({ role: 'auditor', name_en: name || null, updated_at: new Date().toISOString() }).eq('id', created.user.id)
+    const { error: upErr } = await admin.from('users').upsert(
+      { id: created.user.id, email, role: 'auditor', name_en: name || null, updated_at: new Date().toISOString() },
+      { onConflict: 'id' },
+    )
+    if (upErr) return { error: `Account created but role not set: ${upErr.message}` }
   }
 
   revalidatePath('/cb/auditors')
