@@ -96,6 +96,7 @@ export default function Footer() {
                 { label: t(lang, 'nav.about'),    href: '/about' },
                 { label: t(lang, 'nav.news'),     href: '/news' },
                 { label: t(lang, 'nav.impact'),   href: '/impact' },
+                { label: lang === 'ar' ? 'مراجعة العام' : 'Year in Review', href: '/year' },
                 { label: t(lang, 'nav.partners'), href: '/partners' },
                 { label: t(lang, 'nav.contact'),  href: '/contact' },
                 { label: t(lang, 'footer.privacy'), href: '/privacy' },
