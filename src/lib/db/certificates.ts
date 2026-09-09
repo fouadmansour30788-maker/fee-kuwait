@@ -90,6 +90,8 @@ export interface PublicCertifiedEntry {
   programme: string
   issuedAt: string
   expiresAt: string | null
+  ratingAvg: number
+  ratingCount: number
 }
 
 // Canonicalise any governorate string to Kuwait's six ADM1 keys (+ 'other').
@@ -132,11 +134,15 @@ export async function getPublicCertifiedDirectory(): Promise<PublicCertifiedEntr
   const bizById = new Map((biz ?? []).map((b) => [b.id, b]))
   const schById = new Map((sch ?? []).map((s) => [s.id, s]))
 
+  const { getRatingAggregates } = await import('@/lib/db/reviews')
+  const ratings = await getRatingAggregates(notExpired.map((c) => c.certificate_number))
+
   return notExpired.map((c) => {
     const app = appById.get(c.application_id)
     const isSchool = app?.entity_type === 'school'
     const ent = isSchool ? schById.get(app?.entity_id ?? '') : bizById.get(app?.entity_id ?? '')
     const governorate = ent?.governorate ?? null
+    const r = ratings[c.certificate_number]
     return {
       number: c.certificate_number,
       name: ent?.name_en ?? null,
@@ -146,6 +152,8 @@ export async function getPublicCertifiedDirectory(): Promise<PublicCertifiedEntr
       programme: c.programme,
       issuedAt: c.issued_at,
       expiresAt: c.expires_at,
+      ratingAvg: r?.avg ?? 0,
+      ratingCount: r?.count ?? 0,
     }
   }).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
 }

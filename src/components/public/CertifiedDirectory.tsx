@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Search, MapPin, Award, ShieldCheck } from 'lucide-react'
+import Stars from '@/components/reviews/Stars'
 import type { PublicCertifiedEntry } from '@/lib/db/certificates'
 
 const CAT_LABEL = (c: string | null) => {
@@ -58,7 +59,7 @@ export default function CertifiedDirectory({ entries }: { entries: PublicCertifi
             const daysLeft = e.expiresAt ? Math.ceil((new Date(e.expiresAt).getTime() - Date.now()) / 86400000) : null
             const soon = daysLeft !== null && daysLeft <= 90
             return (
-            <Link key={e.number} href={`/verify/${encodeURIComponent(e.number)}`}
+            <Link key={e.number} href={`/certified/${encodeURIComponent(e.number)}`}
               className="group bg-white rounded-2xl border p-5 hover:shadow-lg transition-shadow" style={{ borderColor: '#D4E7DA' }}>
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#ECFDF3' }}>
@@ -78,6 +79,15 @@ export default function CertifiedDirectory({ entries }: { entries: PublicCertifi
               <div className="flex items-center gap-1.5 mt-1.5 text-xs" style={{ color: '#5B7568' }}>
                 <MapPin className="w-3.5 h-3.5" /> {e.governorate ?? 'Kuwait'} · {CAT_LABEL(e.category)}
               </div>
+              {e.ratingCount > 0 ? (
+                <div className="flex items-center gap-1.5 mt-2">
+                  <Stars value={e.ratingAvg} size={13} />
+                  <span className="text-[11px] font-semibold" style={{ color: '#3D4A42' }}>{e.ratingAvg.toFixed(1)}</span>
+                  <span className="text-[11px]" style={{ color: '#94A3B8' }}>({e.ratingCount})</span>
+                </div>
+              ) : (
+                <p className="text-[11px] mt-2" style={{ color: '#B7C5BC' }}>No reviews yet</p>
+              )}
               <div className="flex items-center justify-between mt-3 pt-3 border-t" style={{ borderColor: '#EEF5F0' }}>
                 <span className="font-mono text-[11px]" style={{ color: '#94A3B8' }}>{e.number}</span>
                 <span className="text-[11px]" style={{ color: '#5B7568' }}>Valid to {fmt(e.expiresAt)}</span>
