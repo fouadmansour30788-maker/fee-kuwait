@@ -1,9 +1,10 @@
 'use client'
 
 import { motion, useInView } from 'framer-motion'
-import { useRef, useState } from 'react'
-import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, User } from 'lucide-react'
+import { useRef, useState, useTransition } from 'react'
+import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, User, AlertCircle, Loader2 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
+import { submitContactMessage } from '@/lib/actions/contact'
 
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef(null)
@@ -58,12 +59,18 @@ const CONTACT_INFO = [
 export default function ContactPage() {
   const { lang } = useLang()
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+  const [pending, start] = useTransition()
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // Demo: just show success state
-    setSent(true)
+    setError('')
+    start(async () => {
+      const res = await submitContactMessage(form)
+      if (res.error) setError(res.error)
+      else setSent(true)
+    })
   }
 
   return (
@@ -233,8 +240,13 @@ export default function ContactPage() {
                         placeholder={lang === 'ar' ? 'اكتب رسالتك هنا...' : 'Write your message here...'}
                       />
                     </div>
-                    <button type="submit" className="btn-primary w-full justify-center">
-                      <Send className="w-4 h-4" />
+                    {error && (
+                      <p className="flex items-center gap-1.5 text-sm" style={{ color: '#DC2626' }}>
+                        <AlertCircle className="w-4 h-4" /> {error}
+                      </p>
+                    )}
+                    <button type="submit" disabled={pending} className="btn-primary w-full justify-center disabled:opacity-60">
+                      {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       {lang === 'ar' ? 'إرسال الرسالة' : 'Send Message'}
                     </button>
                   </form>

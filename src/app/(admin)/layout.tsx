@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   LayoutDashboard, FileCheck, ClipboardList, Users, Award, FileBarChart, Newspaper, UserCog, BookOpen, Leaf, Menu, X,
-  LogOut, ChevronRight, Bell, Search, Radar, Cable,
+  LogOut, ChevronRight, Bell, Search, Radar, Cable, Inbox,
   MessageSquare, Paperclip, Send, RotateCcw,
 } from 'lucide-react'
 import SignOutButton from '@/components/auth/SignOutButton'
@@ -31,6 +31,7 @@ const ADMIN_NAV = [
   { href: '/applications', icon: FileCheck,       label: 'Applications' },
   { href: '/tracker',      icon: ClipboardList,   label: 'Tracker' },
   { href: '/surveillance', icon: Radar,           label: 'Surveillance' },
+  { href: '/inbox',        icon: Inbox,           label: 'Inbox' },
   { href: '/members',      icon: Users,           label: 'Members' },
   { href: '/registrations', icon: ClipboardList,  label: 'Registrations' },
   { href: '/certificates', icon: Award,           label: 'Certificates' },
