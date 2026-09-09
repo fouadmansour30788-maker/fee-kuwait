@@ -54,16 +54,25 @@ export default function CertifiedDirectory({ entries }: { entries: PublicCertifi
 
       {filtered.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((e) => (
+          {filtered.map((e) => {
+            const daysLeft = e.expiresAt ? Math.ceil((new Date(e.expiresAt).getTime() - Date.now()) / 86400000) : null
+            const soon = daysLeft !== null && daysLeft <= 90
+            return (
             <Link key={e.number} href={`/verify/${encodeURIComponent(e.number)}`}
               className="group bg-white rounded-2xl border p-5 hover:shadow-lg transition-shadow" style={{ borderColor: '#D4E7DA' }}>
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#ECFDF3' }}>
                   <Award className="w-5 h-5" style={{ color: '#00A95D' }} />
                 </div>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: '#ECFDF3', color: '#047857' }}>
-                  <ShieldCheck className="w-3 h-3" /> Valid
-                </span>
+                {soon ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: '#FEF3C7', color: '#854D0E' }} title={`Expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`}>
+                    <ShieldCheck className="w-3 h-3" /> Expiring soon
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: '#ECFDF3', color: '#047857' }}>
+                    <ShieldCheck className="w-3 h-3" /> Valid
+                  </span>
+                )}
               </div>
               <p className="text-sm font-bold leading-snug" style={{ color: '#0F2318' }}>{e.name ?? '—'}</p>
               <div className="flex items-center gap-1.5 mt-1.5 text-xs" style={{ color: '#5B7568' }}>
@@ -74,7 +83,8 @@ export default function CertifiedDirectory({ entries }: { entries: PublicCertifi
                 <span className="text-[11px]" style={{ color: '#5B7568' }}>Valid to {fmt(e.expiresAt)}</span>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
       ) : (
         <div className="text-center py-16 rounded-2xl border" style={{ borderColor: '#D4E7DA', background: '#fff' }}>
