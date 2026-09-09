@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Gavel, KeyRound, Menu, X, LogOut, ChevronRight, Bell, Radar, Users } from 'lucide-react'
+import { LayoutDashboard, Gavel, KeyRound, Menu, X, LogOut, ChevronRight, Bell, Radar, Users, FileCheck } from 'lucide-react'
 import SignOutButton from '@/components/auth/SignOutButton'
 import ProfileMenu from '@/components/auth/ProfileMenu'
 import NotificationBell from '@/components/notifications/NotificationBell'
@@ -11,6 +11,7 @@ import ChatWidget from '@/components/chat/ChatWidget'
 
 const NAV = [
   { href: '/cb/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/cb/applications', icon: FileCheck, label: 'Applications' },
   { href: '/cb/registrations', icon: KeyRound, label: 'Registrations' },
   { href: '/cb/surveillance', icon: Radar, label: 'Surveillance' },
   { href: '/cb/auditors', icon: Users, label: 'Auditors' },
