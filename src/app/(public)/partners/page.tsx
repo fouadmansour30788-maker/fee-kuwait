@@ -8,6 +8,7 @@ import Link from 'next/link'
 import PartnerLogo from '@/components/ui/PartnerLogo'
 import { PARTNERS_DATA } from '@/lib/data/partners'
 import { GK_PARTNER_GROUPS } from '@/lib/data/greenKeyPartners'
+import { FEE_PARTNER_GROUPS } from '@/lib/data/feeGlobalPartners'
 
 const TYPE_CONFIG: Record<string, { label_en: string; label_ar: string; icon: React.ElementType; color: string }> = {
   government:   { label_en: 'Government',  label_ar: 'حكومي',        icon: Landmark,     color: '#40916C' },
@@ -145,6 +146,64 @@ export default function PartnersPage() {
 
           <div className="space-y-12">
             {GK_PARTNER_GROUPS.map((group, gi) => (
+              <FadeIn key={group.id} delay={gi * 0.05}>
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: '#3D4A42' }}>
+                      {lang === 'ar' ? group.title_ar : group.title_en}
+                    </h3>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#EDF7F1', color: '#40916C' }}>
+                      {group.partners.length}
+                    </span>
+                    <div className="flex-1 h-px" style={{ background: '#C8E6D0' }} />
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    {group.partners.map((partner) => (
+                      <div key={partner.logo}
+                        className="rounded-xl bg-white flex flex-col items-center justify-between p-4 gap-2 transition-transform duration-200 hover:-translate-y-0.5"
+                        style={{ border: '1px solid #DCEBE0' }}
+                        title={partner.name || undefined}>
+                        <div className="flex-1 flex items-center justify-center w-full min-h-[3.5rem]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={partner.logo} alt={partner.name} loading="lazy" className="max-h-14 max-w-full object-contain" />
+                        </div>
+                        {partner.name && (
+                          <p className="text-[11px] font-medium text-center leading-tight" style={{ color: '#5A6672' }}>
+                            {partner.name}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEE global corporate & institutional partners */}
+      <section className="py-24 section-white">
+        <div className="container-fee">
+          <FadeIn>
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-5"
+                style={{ background: '#EDF7F1', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                {lang === 'ar' ? 'الشبكة العالمية لـ FEE' : 'FEE Global Network'}
+              </span>
+              <h2 className="text-2xl md:text-3xl font-bold text-forest mb-3">
+                {lang === 'ar' ? 'شركاء مؤسسة التعليم البيئي' : 'FEE Corporate & Institutional Partners'}
+              </h2>
+              <p className="text-sm leading-relaxed" style={{ color: '#5A6672' }}>
+                {lang === 'ar'
+                  ? 'تعمل مؤسسة التعليم البيئي عالمياً مع شركاء من الشركات والمؤسسات يدعمون برامجها الستة حول العالم.'
+                  : 'Globally, the Foundation for Environmental Education works with corporate and institutional partners that support its six programmes worldwide.'}
+              </p>
+            </div>
+          </FadeIn>
+
+          <div className="space-y-12">
+            {FEE_PARTNER_GROUPS.map((group, gi) => (
               <FadeIn key={group.id} delay={gi * 0.05}>
                 <div>
                   <div className="flex items-center gap-3 mb-6">
