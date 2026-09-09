@@ -2,13 +2,18 @@ import { redirect } from 'next/navigation'
 import { Cable } from 'lucide-react'
 import { getCurrentUser } from '@/lib/auth-server'
 import { becauseConfigured, becauseBaseUrl } from '@/lib/because/client'
+import { getBecauseConfig } from '@/lib/db/becauseConfig'
 import BecauseExplorer from '@/components/because/BecauseExplorer'
+import BecauseImporter from '@/components/because/BecauseImporter'
 
 export const dynamic = 'force-dynamic'
 
 export default async function BecausePage() {
   const me = await getCurrentUser()
   if (!me || !['admin', 'super_admin'].includes(me.role)) redirect('/dashboard')
+
+  const configured = becauseConfigured()
+  const cfg = configured ? await getBecauseConfig() : { framework_id: null, group_id: null, gk_property_id: null, field_map: {} }
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -22,7 +27,9 @@ export default async function BecausePage() {
         </p>
       </div>
 
-      <BecauseExplorer configured={becauseConfigured()} baseUrl={becauseBaseUrl()} />
+      <BecauseExplorer configured={configured} baseUrl={becauseBaseUrl()} />
+
+      {configured && <BecauseImporter config={cfg} />}
     </div>
   )
 }
