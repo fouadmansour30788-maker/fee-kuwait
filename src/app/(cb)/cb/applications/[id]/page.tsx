@@ -43,9 +43,14 @@ export default async function CbApplicationDetail({
           <Link href="/cb/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: '#64748B' }}>
             <ArrowLeft className="w-4 h-4" /> Certification Body
           </Link>
-          <Link href={`/cb/applications/${id}/records`} className="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg" style={{ background: '#F1F5F9', color: '#40916C' }}>
-            <FileText className="w-4 h-4" /> Export records (PDF)
-          </Link>
+          <div className="flex items-center gap-2">
+            <a href={`/api/applications/${id}/export`} className="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg" style={{ background: '#F1F5F9', color: '#1D6F42' }}>
+              <FileText className="w-4 h-4" /> Export (Excel)
+            </a>
+            <Link href={`/cb/applications/${id}/records`} className="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg" style={{ background: '#F1F5F9', color: '#40916C' }}>
+              <FileText className="w-4 h-4" /> Export records (PDF)
+            </Link>
+          </div>
         </div>
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <div className="flex items-center gap-3 flex-wrap">
