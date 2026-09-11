@@ -25,9 +25,9 @@ export default function GreenKeyCell({ kind, id, number, status, canAssign = fal
     )
   }
   if (status !== 'active') return <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>
-  // Operator view: read-only. The number is assigned by the Certification Body
+  // Read-only view (e.g. the CB): the number is assigned by the National Operator
   // and syncs here once issued.
-  if (!canAssign) return <span className="text-[11px] font-medium" style={{ color: '#94A3B8' }}>Awaiting CB</span>
+  if (!canAssign) return <span className="text-[11px] font-medium" style={{ color: '#94A3B8' }}>Not assigned yet</span>
 
   function save() {
     setError('')

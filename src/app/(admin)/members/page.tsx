@@ -47,7 +47,7 @@ export default async function MembersPage() {
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: st.bg, color: st.color }}>{st.label}</span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <GreenKeyCell kind={m.kind} id={m.id} number={m.green_key_number} status={m.status} />
+                    <GreenKeyCell kind={m.kind} id={m.id} number={m.green_key_number} status={m.status} canAssign />
                   </td>
                   <td className="px-5 py-3.5">
                     <MemberActions kind={m.kind} id={m.id} status={m.status} />

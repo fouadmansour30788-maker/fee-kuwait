@@ -33,9 +33,9 @@ export async function setMemberStatus(kind: 'School' | 'Establishment', id: stri
   return { ok: true }
 }
 
-// The Certification Body assigns a Green Key number to an approved registration
-// by entering it manually (the operator does not — they only see the synced
-// result). The number must be unique across establishments and schools.
+// The National Operator assigns a Green Key number to an approved registration
+// by entering it manually (the CB only sees the synced result). The number must
+// be unique across establishments and schools.
 export async function assignGreenKeyNumber(kind: 'School' | 'Establishment', id: string, number: string): Promise<{ ok?: true; error?: string; number?: string }> {
   const value = number?.trim()
   if (!value) return { error: 'Enter a Green Key number.' }
@@ -43,7 +43,7 @@ export async function assignGreenKeyNumber(kind: 'School' | 'Establishment', id:
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
   const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
-  if (!me || !['certification_body', 'super_admin'].includes(me.role)) return { error: 'Only the Certification Body can assign a Green Key number.' }
+  if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Only the National Operator can assign a Green Key number.' }
 
   const admin = createAdminClient()
   const table = kind === 'School' ? 'schools' : 'businesses'

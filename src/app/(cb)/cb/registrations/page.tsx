@@ -12,12 +12,12 @@ export default async function CbRegistrationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Registrations</h1>
-        <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>{active.length} approved · assign a Green Key number to each.</p>
+        <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>{active.length} approved · Green Key numbers are assigned by the National Operator.</p>
       </div>
 
       <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#FEF9EC', border: '1px solid #FDE68A', color: '#854D0E' }}>
         <KeyRound className="w-4 h-4 mt-0.5 flex-shrink-0" />
-        <p>Enter the Green Key number issued for each approved registration. Numbers must be unique and are shared with the operator.</p>
+        <p>The Green Key number for each approved registration is assigned by the National Operator and shown here once issued.</p>
       </div>
 
       <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
@@ -46,7 +46,7 @@ export default async function CbRegistrationsPage() {
                   <td className="px-5 py-3.5" style={{ color: '#334155' }}>{m.kind}</td>
                   <td className="px-5 py-3.5" style={{ color: '#334155' }}>{m.governorate ?? '—'}</td>
                   <td className="px-5 py-3.5"><span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: st.bg, color: st.color }}>{st.label}</span></td>
-                  <td className="px-5 py-3.5"><GreenKeyCell kind={m.kind} id={m.id} number={m.green_key_number} status={m.status} canAssign /></td>
+                  <td className="px-5 py-3.5"><GreenKeyCell kind={m.kind} id={m.id} number={m.green_key_number} status={m.status} /></td>
                 </tr>
               )
             })}
