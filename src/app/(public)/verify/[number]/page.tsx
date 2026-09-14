@@ -15,7 +15,7 @@ export default async function VerifyPage({ params }: { params: { number: string 
   const st = cert ? (CERT_STATUS_META[cert.status] ?? { label: cert.status, color: '#64748B', bg: '#F1F5F9' }) : null
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'linear-gradient(160deg, #0F2318, #1B4332)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 pt-28 pb-16" style={{ background: 'linear-gradient(160deg, #0F2318, #1B4332)' }}>
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-2 mb-6">
           <Leaf className="w-6 h-6" style={{ color: '#74C69D' }} />
