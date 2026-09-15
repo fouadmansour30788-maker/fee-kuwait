@@ -238,11 +238,13 @@ export const AUDIT_STATUSES = ['audit', 'auditor_assigned', 'audit_scheduled', '
 // Statuses at which the auditor's per-criterion results are shown to the applicant
 // (audit submitted to the CB or a decision recorded).
 export const AUDIT_RESULTS_VISIBLE = [
-  'cb_review', 'revision', 'approved', 'certified', 'certified_rectification', 'not_certified', 'rejected',
+  // Every closed outcome — certified (incl. the rectification path's issued
+  // status) and not-approved — keeps the audit report/results visible.
+  ...CLOSED_STATUSES,
+  'cb_review', 'revision', 'approved',
   'cb_final_review', 'cb_final_re_review', 'post_audit_rectification_required', 'post_audit_corrective_open',
   'auditor_reassessment', 'auditor_reassessment_in_progress', 'further_corrective_required',
   'cb_clarification_operator', 'cb_clarification_auditor', 'cb_clarification_establishment',
-  'certified_active', 'not_certified_recorded', 'not_certified_communicated',
 ]
 export const isCertified = (s: string) => CERTIFIED_STATUSES.includes(s)
 export const isClosed = (s: string) => CLOSED_STATUSES.includes(s)
