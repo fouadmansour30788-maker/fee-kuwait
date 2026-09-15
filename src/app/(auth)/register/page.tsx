@@ -65,8 +65,14 @@ interface FormData {
   // Eco-Schools
   coordinatorName: string
   teacher1: string
+  teacher1Email: string
+  teacher1Phone: string
   teacher2: string
+  teacher2Email: string
+  teacher2Phone: string
   parentRep: string
+  parentEmail: string
+  parentPhone: string
   whyInterested: string
   committeeFrequency: string
   themes: string[]
@@ -177,7 +183,7 @@ const EMPTY: FormData = {
   website: '', socialLinks: '',
   numRooms: '', numGuestsYear: '', numGuestNightsYear: '',
   gmName: '', gmEmail: '', envDirName: '', envDirEmail: '', contactEmail: '',
-  coordinatorName: '', teacher1: '', teacher2: '', parentRep: '',
+  coordinatorName: '', teacher1: '', teacher1Email: '', teacher1Phone: '', teacher2: '', teacher2Email: '', teacher2Phone: '', parentRep: '', parentEmail: '', parentPhone: '',
   whyInterested: '', committeeFrequency: '', themes: [], comments: '',
   declaration: false, signatureName: '', coordinatorSignature: '',
   paymentMethod: '', paymentRef: '', paymentAck: false,
@@ -469,7 +475,12 @@ function RegisterForm() {
             socialLinks: data.socialLinks || null,
             coordinatorName: data.coordinatorName || null,
             teachers: [data.teacher1, data.teacher2].filter(Boolean),
+            teacherContacts: [
+              { name: data.teacher1 || null, email: data.teacher1Email || null, phone: data.teacher1Phone || null },
+              { name: data.teacher2 || null, email: data.teacher2Email || null, phone: data.teacher2Phone || null },
+            ].filter(t => t.name || t.email || t.phone),
             parentRep: data.parentRep || null,
+            parentContact: (data.parentEmail || data.parentPhone) ? { name: data.parentRep || null, email: data.parentEmail || null, phone: data.parentPhone || null } : null,
             whyInterested: data.whyInterested || null,
             committeeFrequency: data.committeeFrequency || null,
             themes: data.themes,
@@ -1125,21 +1136,51 @@ function RegisterForm() {
                         <input type="text" value={data.socialLinks} onChange={e => set('socialLinks', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>{lang === 'ar' ? 'المعلّم الأول' : 'Teacher 1'}</Label>
-                        <input type="text" value={data.teacher1} onChange={e => set('teacher1', e.target.value)} className="input" />
-                        {errors.teacher1 && <FieldError msg={errors.teacher1} />}
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <Label>{lang === 'ar' ? 'المعلّم الأول' : 'Teacher 1'}</Label>
+                          <input type="text" value={data.teacher1} onChange={e => set('teacher1', e.target.value)} className="input" />
+                          {errors.teacher1 && <FieldError msg={errors.teacher1} />}
+                        </div>
+                        <div>
+                          <Label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</Label>
+                          <input type="email" value={data.teacher1Email} onChange={e => set('teacher1Email', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                        </div>
+                        <div>
+                          <Label>{lang === 'ar' ? 'الهاتف' : 'Phone'}</Label>
+                          <input type="tel" value={data.teacher1Phone} onChange={e => set('teacher1Phone', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                        </div>
                       </div>
-                      <div>
-                        <Label>{lang === 'ar' ? 'المعلّم الثاني' : 'Teacher 2'}</Label>
-                        <input type="text" value={data.teacher2} onChange={e => set('teacher2', e.target.value)} className="input" />
-                        {errors.teacher2 && <FieldError msg={errors.teacher2} />}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <Label>{lang === 'ar' ? 'المعلّم الثاني' : 'Teacher 2'}</Label>
+                          <input type="text" value={data.teacher2} onChange={e => set('teacher2', e.target.value)} className="input" />
+                          {errors.teacher2 && <FieldError msg={errors.teacher2} />}
+                        </div>
+                        <div>
+                          <Label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</Label>
+                          <input type="email" value={data.teacher2Email} onChange={e => set('teacher2Email', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                        </div>
+                        <div>
+                          <Label>{lang === 'ar' ? 'الهاتف' : 'Phone'}</Label>
+                          <input type="tel" value={data.teacher2Phone} onChange={e => set('teacher2Phone', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <Label>{lang === 'ar' ? 'ممثل أولياء الأمور (أو غيره)' : 'Parent representative (or other)'}</Label>
-                      <input type="text" value={data.parentRep} onChange={e => set('parentRep', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <Label>{lang === 'ar' ? 'ممثل أولياء الأمور (أو غيره)' : 'Parent representative (or other)'}</Label>
+                        <input type="text" value={data.parentRep} onChange={e => set('parentRep', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                      </div>
+                      <div>
+                        <Label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</Label>
+                        <input type="email" value={data.parentEmail} onChange={e => set('parentEmail', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                      </div>
+                      <div>
+                        <Label>{lang === 'ar' ? 'الهاتف' : 'Phone'}</Label>
+                        <input type="tel" value={data.parentPhone} onChange={e => set('parentPhone', e.target.value)} className="input" placeholder={lang === 'ar' ? 'اختياري' : 'Optional'} />
+                      </div>
                     </div>
                     <div>
                       <Label>{lang === 'ar' ? 'لماذا تهتم مدرستك بالمشاركة في البرنامج؟' : 'Why is your school interested in participating?'}</Label>
