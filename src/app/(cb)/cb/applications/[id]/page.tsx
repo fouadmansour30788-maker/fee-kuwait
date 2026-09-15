@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, Mail, Calendar, Building2, FileText, Download, Inbox, Gavel, CheckCircle2, Award, KeyRound } from 'lucide-react'
-import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL } from '@/lib/db/applications'
+import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listAudits } from '@/lib/db/audits'
@@ -31,7 +31,7 @@ export default async function CbApplicationDetail({
   const { id } = params
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, assessments, messages, audits, ps, cbAuditors] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id), getPreScreening(id), listAuditorsForCb()])
+  const [docs, assessments, messages, audits, ps, cbAuditors, trail] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id), getPreScreening(id), listAuditorsForCb(), listAuditTrail(id)])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const s = statusMeta(app.status)
   const decided = !!app.cb_decision && app.cb_decision !== 'pending'
@@ -156,6 +156,25 @@ export default async function CbApplicationDetail({
           </div>
         )}
       </div>
+
+      {/* Audit trail */}
+      {trail.length > 0 && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Audit trail</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Every change is recorded with the previous and new value, who made it, and when.</p>
+          <div className="space-y-2">
+            {trail.map((t) => (
+              <div key={t.id} className="rounded-xl border p-3 text-sm" style={{ borderColor: '#E2E8F0' }}>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold" style={{ color: '#1E293B' }}>{t.field}</span>
+                  <span className="text-xs" style={{ color: '#94A3B8' }}>{statusMeta(t.previousValue ?? '').label} → {t.newValue}</span>
+                  <span className="text-xs ml-auto" style={{ color: '#94A3B8' }}>{t.userName} · {t.userRole} · {new Date(t.createdAt).toLocaleString('en-GB', { timeZone: 'Asia/Kuwait' })}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Recorded decision */}
       {decided && (
