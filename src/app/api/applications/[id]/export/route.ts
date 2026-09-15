@@ -12,7 +12,8 @@ const RESULT: Record<string, string> = { pending: 'Pending', pass: 'Conforming',
 const CB_PRE: Record<string, string> = { pending: 'Pending', approved_audit: 'Approved for audit', clarification: 'Request clarification', rectification: 'Request rectification' }
 const CB_FINAL: Record<string, string> = { pending: 'Pending', conforming: 'Conforming', non_conforming: 'Non-conforming', req_clarification: 'Request clarification', req_rectification: 'Request rectification' }
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  const origin = new URL(req.url).origin
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return new Response('Not signed in', { status: 401 })
@@ -37,7 +38,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const docCell = (ref: string) => {
     const list = docsByRef.get(ref) ?? []
     if (list.length === 0) return ''
-    return list.map((d) => (d.url ? `<a href="${esc(d.url)}">${esc(d.name)}</a>` : esc(d.name))).join('<br/>')
+    // Link to the stable in-app download route (re-signs on click) rather than
+    // the raw signed URL, so the links keep working long after export.
+    return list.map((d) => `<a href="${esc(`${origin}/api/documents/${d.id}/download`)}">${esc(d.name)}</a>`).join('<br/>')
   }
 
   const applicant = app.applicant?.name_en || app.applicant?.email || '—'
@@ -85,7 +88,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     <thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody>
   </table>
-  <p style="font-family:Arial;font-size:10px;color:#64748B;">Document links are time-limited; open the file soon after export to download attachments.</p>
+  <p style="font-family:Arial;font-size:10px;color:#64748B;">Document links stay valid — you must be signed in to FEE Kuwait in your browser to open them.</p>
 </body></html>`
 
   const safeName = `${(PROGRAMME_LABEL[app.programme] ?? app.programme)}-${applicant}`.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60)
