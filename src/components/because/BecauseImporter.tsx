@@ -43,6 +43,7 @@ export default function BecauseImporter({ config }: { config: Config }) {
   const [elec, setElec] = useState('')
   const [water, setWater] = useState('')
   const [waste, setWaste] = useState('')
+  const [periodType, setPeriodType] = useState<'Monthly' | 'Yearly'>('Monthly')
   const [impPending, impStart] = useTransition()
   const [impMsg, setImpMsg] = useState<{ ok?: boolean; text: string } | null>(null)
   const [correlationId, setCorrelationId] = useState('')
@@ -53,7 +54,7 @@ export default function BecauseImporter({ config }: { config: Config }) {
     setImpMsg(null); setTask(null); setCorrelationId('')
     impStart(async () => {
       const r = await importConsumption({
-        greenKeyNumber: gk, year: Number(year), month: Number(month),
+        greenKeyNumber: gk, year: Number(year), month: Number(month), periodType,
         electricity: elec === '' ? null : Number(elec),
         water: water === '' ? null : Number(water),
         waste: waste === '' ? null : Number(waste),
@@ -90,7 +91,7 @@ export default function BecauseImporter({ config }: { config: Config }) {
               <div key={f.key} className="grid grid-cols-[90px_1fr_1fr] gap-2 items-center">
                 <span className="text-xs font-semibold" style={{ color: '#334155' }}>{f.label}</span>
                 <input value={fieldMap[f.key]?.dataPointId ?? ''} onChange={(e) => setField(f.key, 'dataPointId', e.target.value)} placeholder="data-point id" className={inputCls} style={inputStyle} />
-                <input value={fieldMap[f.key]?.unitId ?? ''} onChange={(e) => setField(f.key, 'unitId', e.target.value)} placeholder="unit id (optional)" className={inputCls} style={inputStyle} />
+                <input value={fieldMap[f.key]?.unitId ?? ''} onChange={(e) => setField(f.key, 'unitId', e.target.value)} placeholder="unit id (required — a unit GUID)" className={inputCls} style={inputStyle} />
               </div>
             ))}
           </div>
@@ -106,10 +107,17 @@ export default function BecauseImporter({ config }: { config: Config }) {
         </div>
         <div className="p-5 space-y-4">
           <p className="text-xs" style={{ color: '#94A3B8' }}>Identifies the establishment by its Green Key number via the GK-ID custom property, then upserts the month&apos;s electricity/water/waste as framework answers.</p>
+          <div className="flex items-center gap-2 mb-1">
+            {(['Monthly', 'Yearly'] as const).map((pt) => (
+              <button key={pt} type="button" onClick={() => setPeriodType(pt)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={periodType === pt ? { background: '#EDF7F1', color: '#1B4332', border: '1px solid #40916C' } : { background: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0' }}>{pt}</button>
+            ))}
+            <span className="text-[11px]" style={{ color: '#94A3B8' }}>match the field&apos;s reporting period</span>
+          </div>
           <div className="grid sm:grid-cols-3 gap-3">
             <div><label className="block text-[11px] font-semibold mb-1" style={{ color: '#475569' }}>Green Key number</label><input value={gk} onChange={(e) => setGk(e.target.value)} className={inputCls} style={inputStyle} /></div>
             <div><label className="block text-[11px] font-semibold mb-1" style={{ color: '#475569' }}>Year</label><input type="number" value={year} onChange={(e) => setYear(e.target.value)} className={inputCls} style={inputStyle} /></div>
-            <div><label className="block text-[11px] font-semibold mb-1" style={{ color: '#475569' }}>Month (1–12)</label><input type="number" min="1" max="12" value={month} onChange={(e) => setMonth(e.target.value)} className={inputCls} style={inputStyle} /></div>
+            {periodType === 'Monthly' && <div><label className="block text-[11px] font-semibold mb-1" style={{ color: '#475569' }}>Month (1–12)</label><input type="number" min="1" max="12" value={month} onChange={(e) => setMonth(e.target.value)} className={inputCls} style={inputStyle} /></div>}
           </div>
           <div className="grid sm:grid-cols-3 gap-3">
             <div><label className="block text-[11px] font-semibold mb-1" style={{ color: '#475569' }}>Electricity</label><input type="number" value={elec} onChange={(e) => setElec(e.target.value)} className={inputCls} style={inputStyle} /></div>

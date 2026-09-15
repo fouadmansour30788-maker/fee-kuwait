@@ -63,7 +63,25 @@ export interface CustomProperty {
   isOwnedByInvokingCompany?: boolean
   ownerName?: string
 }
-export interface UnitType { id: string; name: string; symbol?: string }
+// A concrete unit (what `unitId` on an answer must be — a unit GUID, NOT a unit
+// type). Units are nested inside unit types: unitTypes[].units[].
+export interface UnitType { id: string; name: string; symbol?: string; typeName?: string }
+
+// Pull the real units out of the nested unit-type catalogue.
+function extractUnits(raw: unknown): UnitType[] {
+  const arr = Array.isArray(raw) ? raw
+    : (raw && typeof raw === 'object')
+      ? ((raw as Record<string, unknown>).unitTypes ?? (raw as Record<string, unknown>).data ?? (raw as Record<string, unknown>).items ?? [])
+      : []
+  const out: UnitType[] = []
+  for (const ut of (Array.isArray(arr) ? arr : []) as Record<string, unknown>[]) {
+    const units = Array.isArray(ut?.units) ? ut.units as Record<string, unknown>[] : []
+    for (const u of units) {
+      if (typeof u?.id === 'string') out.push({ id: u.id, name: String(u.name ?? ''), symbol: String(u.abbreviation ?? u.symbol ?? ''), typeName: String(ut.name ?? '') })
+    }
+  }
+  return out
+}
 
 // GET /api/v1/frameworks — frameworks this API key's profile can read.
 export const listFrameworks = () => becauseFetch<Framework[]>('/api/v1/frameworks')
@@ -80,13 +98,22 @@ export const listGroups = () => becauseFetch<Group[]>('/api/v1/groups')
 // with isIdentifier can be used as external identifiers (e.g. a Green Key ID).
 export const listCustomProperties = () => becauseFetch<CustomProperty[]>('/api/v1/custom-properties')
 
-// GET /api/v1/unit-types — shared unit catalogue (same for every caller).
-export const listUnitTypes = () => becauseFetch<UnitType[]>('/api/v1/unit-types')
+// GET /api/v1/unit-types — shared catalogue. The API nests real units inside
+// unit types (unitTypes[].units[]); `unitId` on an answer must be one of these
+// nested unit GUIDs, so we flatten to the units here.
+export const listUnitTypes = async (): Promise<UnitType[]> => extractUnits(await becauseFetch<unknown>('/api/v1/unit-types'))
 
 // Best-effort flatten of a framework structure into a flat list of data points.
 // The nested shape is not fully specified in the docs, so we walk the tree and
 // collect any object that carries an id plus a label-ish field.
-export interface FlatDataPoint { id: string; label: string; valueType?: string; unitTypeIds?: string[]; path: string }
+export interface FlatDataPoint {
+  id: string
+  label: string
+  valueType?: string
+  reportingPeriodType?: string   // Yearly / Monthly / Any — a monthly import fails on a Yearly-only field
+  units: UnitType[]              // the real units this data point accepts (unitId must be one of these)
+  path: string
+}
 export function flattenDataPoints(structure: unknown): FlatDataPoint[] {
   const out: FlatDataPoint[] = []
   const seen = new Set<string>()
@@ -97,33 +124,46 @@ export function flattenDataPoints(structure: unknown): FlatDataPoint[] {
     }
     return undefined
   }
+  // Extract the accepted units for a data point from `unitTypes` (plural — the
+  // deprecated singular `unitType` still handled for safety).
+  const unitsOf = (o: Record<string, unknown>): UnitType[] => {
+    const uts = Array.isArray(o.unitTypes) ? o.unitTypes
+      : Array.isArray(o.unitType) ? o.unitType
+      : (o.unitType && typeof o.unitType === 'object' ? [o.unitType] : [])
+    return extractUnits(uts)
+  }
   // `inherited` carries the nearest ancestor label (topic/subtopic/question text)
   // down to the leaf data points — BeCause puts the field name on the parent
   // question while the leaf only carries a value dimension (Volume/Mass/…).
+  const UNIT_KEYS = ['unitTypes', 'unitType', 'units']
   const walk = (node: unknown, path: string, inherited?: string) => {
     if (Array.isArray(node)) { node.forEach((n, i) => walk(n, `${path}[${i}]`, inherited)) ; return }
     if (!node || typeof node !== 'object') return
     const o = node as Record<string, unknown>
+    // Unit-type objects carry a units[] array; units carry an abbreviation.
+    // These are NOT data points — never emit them or descend into them.
+    if (Array.isArray(o.units) || typeof o.abbreviation === 'string') return
     const own = labelOf(o)
-    // A data point: has an id and looks like a leaf answerable field.
     const id = typeof o.id === 'string' ? o.id : (typeof o.dataPointId === 'string' ? o.dataPointId : undefined)
-    const isDataPoint = !!id && ('valueType' in o || 'answerType' in o || 'unitTypeIds' in o || 'unitTypes' in o || /dataPoint/i.test(path))
+    const isDataPoint = !!id && ('reportingPeriodType' in o || 'valueType' in o || 'answerType' in o || /dataPoint/i.test(path))
     if (id && isDataPoint && !seen.has(id)) {
       seen.add(id)
-      const unitTypeIds = Array.isArray(o.unitTypeIds) ? (o.unitTypeIds as unknown[]).map(String)
-        : Array.isArray(o.unitTypes) ? (o.unitTypes as unknown[]).map((u) => String((u as Record<string, unknown>)?.id ?? u)) : undefined
       const label = inherited && own ? `${inherited} · ${own}` : (inherited ?? own ?? '(unlabelled)')
       out.push({
         id,
         label,
         valueType: typeof o.valueType === 'string' ? o.valueType : (typeof o.answerType === 'string' ? o.answerType : undefined),
-        unitTypeIds,
+        reportingPeriodType: typeof o.reportingPeriodType === 'string' ? o.reportingPeriodType : undefined,
+        units: unitsOf(o),
         path,
       })
+      // Descend into non-unit children only (keeps sub-questions, drops unit rows).
+      for (const [k, v] of Object.entries(o)) if (!UNIT_KEYS.includes(k) && v && typeof v === 'object') walk(v, `${path}.${k}`, own ?? inherited)
+      return
     }
-    // Non-datapoint containers with a label set the inherited label for children.
-    const nextInherited = own && !isDataPoint ? own : inherited
-    for (const [k, v] of Object.entries(o)) if (v && typeof v === 'object') walk(v, path ? `${path}.${k}` : k, nextInherited)
+    // Non-datapoint container: recurse (skip unit metadata), carrying the label.
+    const nextInherited = own ?? inherited
+    for (const [k, v] of Object.entries(o)) if (!UNIT_KEYS.includes(k) && v && typeof v === 'object') walk(v, path ? `${path}.${k}` : k, nextInherited)
   }
   walk(structure, '', undefined)
   return out

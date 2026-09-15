@@ -158,11 +158,16 @@ export default function BecauseExplorer({ configured, baseUrl }: { configured: b
         {struct?.error && <ErrorLine text={struct.error} />}
         {struct?.points && (
           <>
-            <IdTable rows={struct.points as unknown as Row[]} columns={[
+            <IdTable rows={struct.points.map((p) => ({
+              id: p.id, label: p.label, period: p.reportingPeriodType ?? '—',
+              units: p.units.length ? p.units.map((u) => `${u.symbol || u.name} = ${u.id}`).join('  •  ') : '—',
+            })) as unknown as Row[]} columns={[
               { key: 'id', label: 'Data-point ID', id: true },
               { key: 'label', label: 'Field' },
-              { key: 'valueType', label: 'Value type' },
+              { key: 'period', label: 'Reporting period' },
+              { key: 'units', label: 'Accepted unit → unit id' },
             ]} />
+            <p className="text-xs mt-2" style={{ color: '#94A3B8' }}>Use the <span className="font-semibold">Reporting period</span> to pick Monthly vs Yearly, and copy the <span className="font-semibold">unit id</span> (after the =) into the matching field in Configuration.</p>
             <details className="mt-3">
               <summary className="text-xs font-semibold cursor-pointer" style={{ color: '#64748B' }}>Raw structure JSON</summary>
               <pre className="text-[11px] mt-2 p-3 rounded-lg overflow-x-auto max-h-96" style={{ background: '#0F172A', color: '#E2E8F0' }}>{JSON.stringify(struct.raw, null, 2)}</pre>
@@ -197,7 +202,7 @@ export default function BecauseExplorer({ configured, baseUrl }: { configured: b
       <Panel title="Unit types — unit IDs (kWh, m³, kg …)" icon={Ruler}
         busy={busy('units')} onRun={() => go('units', async () => { const r = await discoverUnitTypes(); setUnits('error' in r ? { error: r.error } : { rows: pickRows(r.data), raw: r.data }) })}>
         {units?.error && <ErrorLine text={units.error} />}
-        {units?.rows && <IdTable rows={units.rows} columns={[{ key: 'id', label: 'Unit ID', id: true }, { key: 'name', label: 'Name' }, { key: 'symbol', label: 'Symbol' }]} />}
+        {units?.rows && <IdTable rows={units.rows} columns={[{ key: 'id', label: 'Unit ID', id: true }, { key: 'symbol', label: 'Symbol' }, { key: 'name', label: 'Unit' }, { key: 'typeName', label: 'Unit type' }]} />}
         {units?.raw !== undefined && <RawResponse raw={units.raw} />}
       </Panel>
 

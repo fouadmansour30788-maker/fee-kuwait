@@ -72,8 +72,10 @@ export async function saveBecauseConfig(input: {
 // Build + send a consumption upsert for one establishment/month using the saved
 // config. Identifies the company by its Green Key number via the GK-ID custom
 // property; answers carry each field's data-point id + unit id.
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
 export async function importConsumption(input: {
-  greenKeyNumber: string; year: number; month: number
+  greenKeyNumber: string; year: number; month: number; periodType?: 'Monthly' | 'Yearly'
   electricity?: number | null; water?: number | null; waste?: number | null
 }): Promise<Result<{ correlationId: string }>> {
   const gate = await requireOperator()
@@ -87,27 +89,38 @@ export async function importConsumption(input: {
   const gk = input.greenKeyNumber?.trim()
   if (!gk) return { error: 'Enter the establishment Green Key number.' }
   const year = Number(input.year)
-  const month = Number(input.month)
   if (!Number.isInteger(year) || year < 2000 || year > 2100) return { error: 'Invalid year.' }
-  if (!Number.isInteger(month) || month < 1 || month > 12) return { error: 'Invalid month.' }
+  const periodType = input.periodType === 'Yearly' ? 'Yearly' : 'Monthly'
+  const month = Number(input.month)
+  if (periodType === 'Monthly' && (!Number.isInteger(month) || month < 1 || month > 12)) return { error: 'Invalid month.' }
 
   const vals: [string, number | null | undefined][] = [
     ['electricity', input.electricity], ['water', input.water], ['waste', input.waste],
   ]
   const answers = [] as { dataPointId: string; answer: { number: number }; unitId?: string }[]
+  const missingUnit: string[] = []
   for (const [field, v] of vals) {
     if (v == null || v === undefined || Number.isNaN(Number(v))) continue
     const map = cfg.field_map[field]
     if (!map?.dataPointId) continue
-    answers.push({ dataPointId: map.dataPointId, answer: { number: Number(v) }, ...(map.unitId ? { unitId: map.unitId } : {}) })
+    if (!map.unitId) { missingUnit.push(field); continue }
+    // unitId must be a real unit GUID; the datapoint declares units so it is required.
+    answers.push({ dataPointId: map.dataPointId, answer: { number: Number(v) }, unitId: map.unitId })
   }
-  if (answers.length === 0) return { error: 'Enter at least one value whose field has a configured data-point id.' }
+  if (missingUnit.length > 0) return { error: `Set a unit id for: ${missingUnit.join(', ')} (required by BeCause when the field declares units).` }
+  if (answers.length === 0) return { error: 'Enter at least one value whose field has a configured data-point id + unit id.' }
+
+  // v2: a Monthly reading is its own bucket and REQUIRES `month` as the month
+  // NAME (e.g. "September"), not a number. Yearly omits month.
+  const period = periodType === 'Yearly'
+    ? { periodType: 'Yearly' as const, year, answers }
+    : { periodType: 'Monthly' as const, year, month: MONTH_NAMES[month - 1], answers }
 
   const payload: UpsertPayload = {
     frameworkId: cfg.framework_id,
     companies: [{
       identifiedBy: { customProperty: { customPropertyId: cfg.gk_property_id, value: gk } },
-      periods: [{ periodType: 'Monthly', year, month: String(month).padStart(2, '0'), answers }],
+      periods: [period],
     }],
   }
   return run(() => upsertFrameworkAnswers(payload))
