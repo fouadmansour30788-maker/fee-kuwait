@@ -38,7 +38,7 @@ const ADMIN_NAV = [
   { href: '/certificates', icon: Award,           label: 'Certificates' },
   { href: '/invoices',     icon: Receipt,         label: 'Invoices' },
   { href: '/reports',      icon: FileBarChart,    label: 'Reports' },
-  { href: '/content',      icon: Newspaper,       label: 'Content' },
+  { href: '/content',      icon: Newspaper,       label: 'News & Media' },
   { href: '/resources',    icon: BookOpen,        label: 'Resources' },
   { href: '/settings',     icon: Settings,        label: 'Site content' },
   { href: '/integrations/because', icon: Cable,   label: 'BeCause' },

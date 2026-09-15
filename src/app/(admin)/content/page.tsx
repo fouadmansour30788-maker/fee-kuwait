@@ -10,7 +10,7 @@ export default async function ContentPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>Content</h1>
+          <h1 className="text-2xl font-bold" style={{ color: '#0F172A' }}>News & Media</h1>
           <p className="text-sm mt-0.5" style={{ color: '#64748B' }}>{articles.length} news {articles.length === 1 ? 'article' : 'articles'}</p>
         </div>
         <Link href="/content/new" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>

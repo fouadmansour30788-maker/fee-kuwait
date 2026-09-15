@@ -11,7 +11,7 @@ const LINKS = [
   { href: '/members', label: 'Members', desc: 'Approve and manage registrations', Icon: Users, color: '#059669' },
   { href: '/certificates', label: 'Certificates', desc: 'Issued certificates & expiry', Icon: Award, color: '#C8A951' },
   { href: '/reports', label: 'Reports', desc: 'Analysis, breakdowns & CSV export', Icon: FileBarChart, color: '#2563EB' },
-  { href: '/content', label: 'Content', desc: 'News & public site content', Icon: Newspaper, color: '#0891B2' },
+  { href: '/content', label: 'News & Media', desc: 'News & public site content', Icon: Newspaper, color: '#0891B2' },
   { href: '/staff', label: 'Team', desc: 'Roles & access', Icon: UserCog, color: '#7C3AED' },
 ]
 

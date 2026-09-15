@@ -76,7 +76,10 @@ const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'Ju
 
 export async function importConsumption(input: {
   greenKeyNumber: string; year: number; month: number; periodType?: 'Monthly' | 'Yearly'
+  // Legacy single-field params (kept for backward compatibility).
   electricity?: number | null; water?: number | null; waste?: number | null
+  // Any of the 61 catalog datapoints, keyed by their slug.
+  values?: Record<string, number | null | undefined>
 }): Promise<Result<{ correlationId: string }>> {
   const gate = await requireOperator()
   if (gate.error) return { error: gate.error }
@@ -94,20 +97,27 @@ export async function importConsumption(input: {
   const month = Number(input.month)
   if (periodType === 'Monthly' && (!Number.isInteger(month) || month < 1 || month > 12)) return { error: 'Invalid month.' }
 
-  const vals: [string, number | null | undefined][] = [
-    ['electricity', input.electricity], ['water', input.water], ['waste', input.waste],
-  ]
+  // Merge the generic values map with the three legacy params.
+  const merged: Record<string, number | null | undefined> = {
+    ...(input.values ?? {}),
+    ...(input.electricity != null ? { electricity: input.electricity } : {}),
+    ...(input.water != null ? { water: input.water } : {}),
+    ...(input.waste != null ? { waste: input.waste } : {}),
+  }
+
   const answers = [] as { dataPointId: string; answer: { number: number }; unitId?: string }[]
   const missingUnit: string[] = []
-  for (const [field, v] of vals) {
+  const unmapped: string[] = []
+  for (const [field, v] of Object.entries(merged)) {
     if (v == null || v === undefined || Number.isNaN(Number(v))) continue
     const map = cfg.field_map[field]
-    if (!map?.dataPointId) continue
+    if (!map?.dataPointId) { unmapped.push(field); continue }
     if (!map.unitId) { missingUnit.push(field); continue }
     // unitId must be a real unit GUID; the datapoint declares units so it is required.
     answers.push({ dataPointId: map.dataPointId, answer: { number: Number(v) }, unitId: map.unitId })
   }
   if (missingUnit.length > 0) return { error: `Set a unit id for: ${missingUnit.join(', ')} (required by BeCause when the field declares units).` }
+  if (unmapped.length > 0) return { error: `No data-point id configured for: ${unmapped.join(', ')}. Map it in configuration, or clear the value.` }
   if (answers.length === 0) return { error: 'Enter at least one value whose field has a configured data-point id + unit id.' }
 
   // v2: a Monthly reading is its own bucket and REQUIRES `month` as the month
