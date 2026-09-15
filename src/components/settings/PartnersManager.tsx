@@ -36,7 +36,16 @@ function PartnerForm({ partner, onDone }: { partner?: DbPartner; onDone: () => v
         <div>{l('Colour')}<input name="color" type="color" defaultValue={partner?.color ?? '#40916C'} className="w-full h-9 px-1 py-1 rounded-lg outline-none" style={field} /></div>
         <div className="flex items-end pb-1"><label className="inline-flex items-center gap-2 text-xs font-semibold" style={{ color: '#475569' }}><input type="checkbox" name="active" defaultChecked={partner ? partner.active : true} /> Visible</label></div>
       </div>
-      <div>{l('Logo URL (optional — falls back to initials)')}<input name="logo_url" defaultValue={partner?.logo_url ?? ''} placeholder="https://…" className="w-full text-sm px-3 py-2 rounded-lg outline-none" style={field} /></div>
+      <div>
+        {l('Logo image (upload — PNG/JPG/SVG, ≤ 3 MB)')}
+        <div className="flex items-center gap-3">
+          {partner?.logo_url && (/* eslint-disable-next-line @next/next/no-img-element */
+            <img src={partner.logo_url} alt="" className="w-10 h-10 object-contain rounded-lg bg-white flex-shrink-0" style={{ border: '1px solid #E2E8F0' }} />
+          )}
+          <input name="logo_file" type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="w-full text-sm" style={{ color: '#475569' }} />
+        </div>
+      </div>
+      <div>{l('…or Logo URL (optional — falls back to initials)')}<input name="logo_url" defaultValue={partner?.logo_url ?? ''} placeholder="https://… (leave as-is; a new upload above overrides this)" className="w-full text-sm px-3 py-2 rounded-lg outline-none" style={field} /></div>
       <div>{l('Website')}<input name="website" defaultValue={partner?.website ?? ''} placeholder="https://…" className="w-full text-sm px-3 py-2 rounded-lg outline-none" style={field} /></div>
       <div className="grid sm:grid-cols-2 gap-3">
         <div>{l('Description (English)')}<textarea name="desc_en" defaultValue={partner?.desc_en ?? ''} rows={2} className="w-full text-sm px-3 py-2 rounded-lg outline-none resize-y" style={field} /></div>

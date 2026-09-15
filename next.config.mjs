@@ -11,6 +11,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    // Allow CMS image uploads (partner logos) through server actions — the
+    // default server-action body limit is 1 MB.
+    serverActions: { bodySizeLimit: '4mb' },
+  },
 };
 
 export default nextConfig;

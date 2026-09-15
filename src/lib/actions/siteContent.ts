@@ -80,11 +80,28 @@ export async function savePartner(formData: FormData): Promise<{ ok?: true; erro
   const type = (formData.get('type')?.toString() || 'government')
   if (!['government', 'corporate', 'institutional'].includes(type)) return { error: 'Invalid type.' }
 
+  const admin = createAdminClient()
+
+  // If a logo image was uploaded, store it in the public site-assets bucket and
+  // use its public URL; otherwise fall back to the (optional) logo URL field.
+  let logo_url = str(formData.get('logo_url'))
+  const file = formData.get('logo_file')
+  if (file instanceof File && file.size > 0) {
+    if (file.size > 3 * 1024 * 1024) return { error: 'Logo must be 3 MB or smaller.' }
+    const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png'
+    const path = `partners/${crypto.randomUUID()}.${ext}`
+    const { error: upErr } = await admin.storage.from('site-assets').upload(path, file, {
+      contentType: file.type || 'image/png', upsert: true,
+    })
+    if (upErr) return { error: `Logo upload failed: ${upErr.message}` }
+    logo_url = admin.storage.from('site-assets').getPublicUrl(path).data.publicUrl
+  }
+
   const fields = {
     name_en,
     name_ar: str(formData.get('name_ar')),
     type,
-    logo_url: str(formData.get('logo_url')),
+    logo_url,
     initials: str(formData.get('initials')),
     color: str(formData.get('color')) || '#40916C',
     desc_en: str(formData.get('desc_en')),
@@ -95,7 +112,6 @@ export async function savePartner(formData: FormData): Promise<{ ok?: true; erro
     updated_at: new Date().toISOString(),
   }
   const id = str(formData.get('id'))
-  const admin = createAdminClient()
   const { error } = id
     ? await admin.from('partners').update(fields).eq('id', id)
     : await admin.from('partners').insert(fields)
