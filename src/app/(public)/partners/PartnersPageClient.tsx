@@ -32,8 +32,8 @@ export default function PartnersPageClient({ localPartners }: { localPartners: D
           <div className="absolute -top-10 left-1/3 w-[500px] h-[350px] rounded-full opacity-20"
             style={{ background: 'radial-gradient(ellipse, #52B788 0%, transparent 70%)', filter: 'blur(80px)' }} />
         </div>
-        <div className="container-fee relative z-10 max-w-2xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+        <div className="container-fee relative z-10">
+          <motion.div className="max-w-2xl" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-semibold tracking-widest uppercase mb-7"
               style={{ border: '1px solid rgba(82,183,136,0.3)', color: 'rgba(116,198,157,0.85)', background: 'rgba(82,183,136,0.08)' }}>
               <Handshake className="w-3 h-3" />
@@ -56,7 +56,7 @@ export default function PartnersPageClient({ localPartners }: { localPartners: D
       {/* Partners — one centered grid, no category titles */}
       <section className="section-white py-24">
         <div className="container-fee">
-          <div className="flex flex-wrap justify-start gap-5">
+          <div className="flex flex-wrap justify-center gap-5">
             {localPartners.map((partner, i) => (
               <FadeIn key={partner.id ?? i} delay={i * 0.06}>
                 <a
