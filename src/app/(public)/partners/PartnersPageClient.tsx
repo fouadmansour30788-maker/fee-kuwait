@@ -29,11 +29,9 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 export default function PartnersPageClient({ localPartners }: { localPartners: DbPartner[] }) {
   const { lang } = useLang()
 
-  const grouped = Object.entries(TYPE_CONFIG).map(([type, config]) => ({
-    type,
-    config,
-    partners: localPartners.filter((p) => p.type === type),
-  }))
+  const grouped = Object.entries(TYPE_CONFIG)
+    .map(([type, config]) => ({ type, config, partners: localPartners.filter((p) => p.type === type) }))
+    .filter((g) => g.partners.length > 0)
 
   return (
     <>
