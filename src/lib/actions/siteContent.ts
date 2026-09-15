@@ -58,6 +58,19 @@ export async function saveImpactSettings(impact: unknown): Promise<{ ok?: true; 
   return { ok: true }
 }
 
+export async function saveTestimonials(testimonials: unknown): Promise<{ ok?: true; error?: string }> {
+  const gate = await requireOperator()
+  if (gate.error) return { error: gate.error }
+  const admin = createAdminClient()
+  const { error } = await admin.from('site_settings').upsert(
+    { id: 'default', testimonials, updated_at: new Date().toISOString() },
+    { onConflict: 'id' },
+  )
+  if (error) return { error: error.message }
+  revalidatePath('/'); revalidatePath('/settings')
+  return { ok: true }
+}
+
 // ── Partners ──────────────────────────────────────────────────────────
 export async function savePartner(formData: FormData): Promise<{ ok?: true; error?: string }> {
   const gate = await requireOperator()

@@ -15,6 +15,7 @@ import PartnersStrip from '@/components/sections/PartnersStrip'
 import { listPublishedNews } from '@/lib/db/news'
 import { getSiteSettings } from '@/lib/db/siteSettings'
 import { listPublicPartners } from '@/lib/db/sitePartners'
+import { getTestimonials } from '@/lib/db/testimonials'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -23,8 +24,8 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const [news, settings, localPartners] = await Promise.all([
-    listPublishedNews().then((n) => n.slice(0, 3)), getSiteSettings(), listPublicPartners(),
+  const [news, settings, localPartners, testimonials] = await Promise.all([
+    listPublishedNews().then((n) => n.slice(0, 3)), getSiteSettings(), listPublicPartners(), getTestimonials(),
   ])
   return (
     <SmoothScrollProvider>
@@ -36,7 +37,7 @@ export default async function HomePage() {
         <ImpactCounters />
         <ProgrammeCards />
         <HowItWorks />
-        <TestimonialsSection />
+        <TestimonialsSection testimonials={testimonials} />
         <NewsSection articles={news} />
         <CtaSection />
         <PartnersStrip localPartners={localPartners} />

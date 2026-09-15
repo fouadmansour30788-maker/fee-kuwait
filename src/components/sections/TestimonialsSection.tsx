@@ -2,64 +2,25 @@
 
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { School, Waves, GraduationCap } from 'lucide-react'
+import { School, Waves, GraduationCap, KeyRound, Leaf, Newspaper } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import type { LucideIcon } from 'lucide-react'
+import { DEFAULT_TESTIMONIALS, type Testimonial } from '@/lib/testimonials'
 
-interface Testimonial {
-  quote_en: string
-  quote_ar: string
-  name_en: string
-  name_ar: string
-  role_en: string
-  role_ar: string
-  initials: string
-  programme: string
-  color: string
-  Icon: LucideIcon
+// Pick an icon from the (free-text) programme label.
+function iconFor(programme: string): LucideIcon {
+  const p = programme.toLowerCase()
+  if (p.includes('school')) return School
+  if (p.includes('blue') || p.includes('flag')) return Waves
+  if (p.includes('campus') || p.includes('universit')) return GraduationCap
+  if (p.includes('key')) return KeyRound
+  if (p.includes('report') || p.includes('yre')) return Newspaper
+  return Leaf
 }
 
-const TESTIMONIALS: Testimonial[] = [
-  {
-    quote_en: 'Joining Eco-Schools transformed how our students see their responsibility toward the environment. We are incredibly proud of our Green Flag.',
-    quote_ar: 'انضمامنا لبرنامج المدارس البيئية غيّر نظرة طلابنا تجاه مسؤوليتهم البيئية. نحن فخورون جداً بعلمنا الأخضر.',
-    name_en: 'Sarah Al-Rashidi',
-    name_ar: 'سارة الرشيدي',
-    role_en: 'Principal, Al-Sabah Model School',
-    role_ar: 'مديرة مدرسة الصباح النموذجية',
-    initials: 'SR',
-    programme: 'Eco-Schools',
-    color: '#52B788',
-    Icon: School,
-  },
-  {
-    quote_en: 'Blue Flag certification put us on the international map. Guests now choose us specifically because of our demonstrated environmental commitment.',
-    quote_ar: 'وضعتنا شهادة العلم الأزرق على الخريطة الدولية. يختارنا الضيوف الآن تحديداً بسبب التزامنا البيئي المُثبَت.',
-    name_en: 'Faisal Al-Mutairi',
-    name_ar: 'فيصل المطيري',
-    role_en: 'Director, Marina Waves Resort',
-    role_ar: 'مدير منتجع مارينا ويفز',
-    initials: 'FM',
-    programme: 'Blue Flag',
-    color: '#90E0EF',
-    Icon: Waves,
-  },
-  {
-    quote_en: 'Eco-Campus gave our sustainability work global recognition and attracted international partnerships we never imagined possible.',
-    quote_ar: 'منح الحرم البيئي عملنا في الاستدامة اعترافاً عالمياً وجذب شراكات دولية لم نتخيلها.',
-    name_en: 'Dr. Noura Al-Ahmad',
-    name_ar: 'د. نورة الأحمد',
-    role_en: 'Sustainability Lead, Gulf University',
-    role_ar: 'رئيسة الاستدامة، جامعة الخليج',
-    initials: 'NA',
-    programme: 'Eco-Campus',
-    color: '#74C69D',
-    Icon: GraduationCap,
-  },
-]
-
-export default function TestimonialsSection() {
+export default function TestimonialsSection({ testimonials }: { testimonials?: Testimonial[] }) {
   const { lang } = useLang()
+  const TESTIMONIALS = testimonials && testimonials.length > 0 ? testimonials : DEFAULT_TESTIMONIALS
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
@@ -100,7 +61,9 @@ export default function TestimonialsSection() {
 
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {TESTIMONIALS.map((item, i) => (
+          {TESTIMONIALS.map((item, i) => {
+            const Icon = iconFor(item.programme)
+            return (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 50, scale: 0.96 }}
@@ -127,7 +90,7 @@ export default function TestimonialsSection() {
                   className="inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-full"
                   style={{ color: item.color, background: `${item.color}18`, border: `1px solid ${item.color}30` }}
                 >
-                  <item.Icon className="w-3 h-3" />
+                  <Icon className="w-3 h-3" />
                   {item.programme}
                 </span>
               </div>
@@ -156,7 +119,8 @@ export default function TestimonialsSection() {
                 </div>
               </div>
             </motion.div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
