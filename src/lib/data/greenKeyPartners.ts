@@ -7,6 +7,8 @@
 export interface GkPartner {
   name: string
   logo: string
+  id?: string
+  active?: boolean
 }
 export interface GkPartnerGroup {
   id: string
@@ -14,6 +16,15 @@ export interface GkPartnerGroup {
   title_ar: string
   partners: GkPartner[]
 }
+
+// The fixed set of wall categories (id → titles). The back-office manager and
+// the DB grouping both use this so category headings stay consistent.
+export const GK_GROUP_META: { id: string; title_en: string; title_ar: string }[] = [
+  { id: 'hotels', title_en: 'Hotel Chains & Tour Operators', title_ar: 'سلاسل الفنادق ومشغلو الرحلات' },
+  { id: 'corporate', title_en: 'Corporate Partners', title_ar: 'الشركاء من الشركات' },
+  { id: 'ota', title_en: 'OTAs & Web Partners', title_ar: 'وكالات السفر الإلكترونية وشركاء الويب' },
+  { id: 'ngo', title_en: 'NGOs & Institutional Partners', title_ar: 'المنظمات غير الحكومية والشركاء المؤسسيون' },
+]
 
 const base = '/partners/gk'
 const p = (logo: string, name = ''): GkPartner => ({ name, logo: `${base}/${logo}` })

@@ -6,7 +6,7 @@ import { ArrowRight, Handshake } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import Link from 'next/link'
 import PartnerLogo from '@/components/ui/PartnerLogo'
-import { GK_PARTNER_GROUPS } from '@/lib/data/greenKeyPartners'
+import { GK_PARTNER_GROUPS, type GkPartnerGroup } from '@/lib/data/greenKeyPartners'
 import { FEE_PARTNER_GROUPS } from '@/lib/data/feeGlobalPartners'
 import type { DbPartner } from '@/lib/db/sitePartners'
 
@@ -20,8 +20,9 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   )
 }
 
-export default function PartnersPageClient({ localPartners }: { localPartners: DbPartner[] }) {
+export default function PartnersPageClient({ localPartners, gkGroups }: { localPartners: DbPartner[]; gkGroups?: GkPartnerGroup[] }) {
   const { lang } = useLang()
+  const GK_GROUPS = gkGroups && gkGroups.length > 0 ? gkGroups : GK_PARTNER_GROUPS
 
   return (
     <>
@@ -111,7 +112,7 @@ export default function PartnersPageClient({ localPartners }: { localPartners: D
           </FadeIn>
 
           <div className="space-y-12">
-            {GK_PARTNER_GROUPS.map((group, gi) => (
+            {GK_GROUPS.map((group, gi) => (
               <FadeIn key={group.id} delay={gi * 0.05}>
                 <div>
                   <div className="flex items-center gap-3 mb-6">
@@ -125,7 +126,7 @@ export default function PartnersPageClient({ localPartners }: { localPartners: D
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     {group.partners.map((partner) => (
-                      <div key={partner.logo}
+                      <div key={partner.id ?? partner.logo}
                         className="rounded-xl bg-white flex flex-col items-center justify-between p-4 gap-2 transition-transform duration-200 hover:-translate-y-0.5"
                         style={{ border: '1px solid #DCEBE0' }}
                         title={partner.name || undefined}>
