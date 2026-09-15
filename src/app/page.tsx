@@ -13,6 +13,8 @@ import NewsSection from '@/components/sections/NewsSection'
 import CtaSection from '@/components/sections/CtaSection'
 import PartnersStrip from '@/components/sections/PartnersStrip'
 import { listPublishedNews } from '@/lib/db/news'
+import { getSiteSettings } from '@/lib/db/siteSettings'
+import { listPublicPartners } from '@/lib/db/sitePartners'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -21,7 +23,9 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const news = (await listPublishedNews()).slice(0, 3)
+  const [news, settings, localPartners] = await Promise.all([
+    listPublishedNews().then((n) => n.slice(0, 3)), getSiteSettings(), listPublicPartners(),
+  ])
   return (
     <SmoothScrollProvider>
       <ScrollProgressBar />
@@ -35,9 +39,9 @@ export default async function HomePage() {
         <TestimonialsSection />
         <NewsSection articles={news} />
         <CtaSection />
-        <PartnersStrip />
+        <PartnersStrip localPartners={localPartners} />
       </main>
-      <Footer />
+      <Footer settings={settings} />
       <ChatWidget />
     </SmoothScrollProvider>
   )

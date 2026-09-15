@@ -9,13 +9,14 @@ import { PARTNERS_DATA } from '@/lib/data/partners'
 import { GK_PARTNER_GROUPS } from '@/lib/data/greenKeyPartners'
 import { FEE_PARTNER_GROUPS } from '@/lib/data/feeGlobalPartners'
 
+interface LocalPartner { name_en: string; name_ar: string | null; logo_url: string | null; initials: string | null; color: string | null; website: string | null }
 interface StripItem { name_en: string; name_ar: string; src: string; initials: string; color: string; website?: string }
 
 const initialsOf = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
 
 // Kuwait-local partners first, then the Green Key + FEE global partner logos —
 // one combined marquee. De-duplicated by name (some appear in more than one set).
-function buildItems(): StripItem[] {
+function buildItems(local: LocalPartner[]): StripItem[] {
   const items: StripItem[] = []
   const seen = new Set<string>()
   const push = (it: StripItem) => {
@@ -24,20 +25,21 @@ function buildItems(): StripItem[] {
     seen.add(key); items.push(it)
   }
 
-  for (const p of PARTNERS_DATA) push({ name_en: p.name_en, name_ar: p.name_ar, src: p.logo_url, initials: p.initials, color: p.color, website: p.website })
+  for (const p of local) push({ name_en: p.name_en, name_ar: p.name_ar ?? p.name_en, src: p.logo_url ?? '', initials: p.initials ?? initialsOf(p.name_en), color: p.color ?? '#40916C', website: p.website ?? undefined })
   for (const g of GK_PARTNER_GROUPS) for (const p of g.partners) if (p.name) push({ name_en: p.name, name_ar: p.name, src: p.logo, initials: initialsOf(p.name), color: '#40916C' })
   for (const g of FEE_PARTNER_GROUPS) for (const p of g.partners) if (p.name) push({ name_en: p.name, name_ar: p.name, src: p.logo, initials: initialsOf(p.name), color: '#40916C' })
   return items
 }
 
-const ITEMS = buildItems()
+const FALLBACK: LocalPartner[] = PARTNERS_DATA.map((p) => ({ name_en: p.name_en, name_ar: p.name_ar, logo_url: p.logo_url || null, initials: p.initials, color: p.color, website: p.website }))
 
-export default function PartnersStrip() {
+export default function PartnersStrip({ localPartners }: { localPartners?: LocalPartner[] }) {
   const { lang } = useLang()
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
 
-  const doubled = [...ITEMS, ...ITEMS]
+  const items = buildItems(localPartners && localPartners.length > 0 ? localPartners : FALLBACK)
+  const doubled = [...items, ...items]
 
   return (
     <section className="py-20 bg-[#F4F9F5]" ref={ref}>
