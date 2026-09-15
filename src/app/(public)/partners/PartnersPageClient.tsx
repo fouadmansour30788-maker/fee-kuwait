@@ -2,19 +2,13 @@
 
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { Building2, GraduationCap, Landmark, ArrowRight, Handshake } from 'lucide-react'
+import { ArrowRight, Handshake } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
 import Link from 'next/link'
 import PartnerLogo from '@/components/ui/PartnerLogo'
 import { GK_PARTNER_GROUPS } from '@/lib/data/greenKeyPartners'
 import { FEE_PARTNER_GROUPS } from '@/lib/data/feeGlobalPartners'
 import type { DbPartner } from '@/lib/db/sitePartners'
-
-const TYPE_CONFIG: Record<string, { label_en: string; label_ar: string; icon: React.ElementType; color: string }> = {
-  government:   { label_en: 'Government',  label_ar: 'حكومي',        icon: Landmark,     color: '#40916C' },
-  corporate:    { label_en: 'Corporate',   label_ar: 'مؤسسي',        icon: Building2,    color: '#C8A951' },
-  institutional:{ label_en: 'Institutional', label_ar: 'أكاديمي / دولي', icon: GraduationCap, color: '#006994' },
-}
 
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef(null)
@@ -28,10 +22,6 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 
 export default function PartnersPageClient({ localPartners }: { localPartners: DbPartner[] }) {
   const { lang } = useLang()
-
-  const grouped = Object.entries(TYPE_CONFIG)
-    .map(([type, config]) => ({ type, config, partners: localPartners.filter((p) => p.type === type) }))
-    .filter((g) => g.partners.length > 0)
 
   return (
     <>
@@ -63,62 +53,40 @@ export default function PartnersPageClient({ localPartners }: { localPartners: D
         </div>
       </section>
 
-      {/* Partners by category */}
+      {/* Partners — one centered grid, no category titles */}
       <section className="section-white py-24">
-        <div className="container-fee space-y-20">
-          {grouped.map(({ type, config, partners }, gi) => {
-            const GroupIcon = config.icon
-            return (
-              <div key={type}>
-                <FadeIn delay={gi * 0.05}>
-                  <div className="flex items-center gap-3 mb-10">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: `${config.color}12`, border: `1px solid ${config.color}28` }}
-                    >
-                      <GroupIcon className="w-5 h-5" style={{ color: config.color }} />
-                    </div>
-                    <h2 className="text-xl font-bold text-forest">
-                      {lang === 'ar' ? `${config.label_ar} الشركاء` : `${config.label_en} Partners`}
-                    </h2>
-                    <div className="flex-1 h-px bg-[#C8E6D0] ml-4" />
+        <div className="container-fee">
+          <div className="flex flex-wrap justify-center gap-5">
+            {localPartners.map((partner, i) => (
+              <FadeIn key={partner.id ?? i} delay={i * 0.06}>
+                <a
+                  href={partner.website ?? '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="card p-6 flex gap-4 items-start h-full group hover:-translate-y-1.5 block w-full sm:w-[22rem]"
+                >
+                  {/* Logo */}
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 bg-[#F4F9F5] border border-[#C8E6D0] p-2 overflow-hidden">
+                    <PartnerLogo
+                      src={partner.logo_url ?? ''}
+                      name={(lang === 'ar' ? partner.name_ar : partner.name_en) ?? partner.name_en}
+                      initials={partner.initials ?? ''}
+                      color={partner.color ?? '#40916C'}
+                      className="w-10 h-10 object-contain"
+                    />
                   </div>
-                </FadeIn>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {partners.map((partner, i) => (
-                    <FadeIn key={i} delay={gi * 0.05 + i * 0.08}>
-                      <a
-                        href={partner.website ?? '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="card p-6 flex gap-4 items-start h-full group hover:-translate-y-1.5 block"
-                      >
-                        {/* Logo */}
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 bg-[#F4F9F5] border border-[#C8E6D0] p-2 overflow-hidden">
-                          <PartnerLogo
-                            src={partner.logo_url ?? ''}
-                            name={(lang === 'ar' ? partner.name_ar : partner.name_en) ?? partner.name_en}
-                            initials={partner.initials ?? ''}
-                            color={partner.color ?? '#40916C'}
-                            className="w-10 h-10 object-contain"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="font-bold text-forest text-sm mb-1.5 group-hover:text-brand transition-colors leading-tight">
-                            {lang === 'ar' ? partner.name_ar : partner.name_en}
-                          </h3>
-                          <p className="text-xs leading-relaxed" style={{ color: '#5A6672' }}>
-                            {lang === 'ar' ? partner.desc_ar : partner.desc_en}
-                          </p>
-                        </div>
-                      </a>
-                    </FadeIn>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-forest text-sm mb-1.5 group-hover:text-brand transition-colors leading-tight">
+                      {lang === 'ar' ? partner.name_ar : partner.name_en}
+                    </h3>
+                    <p className="text-xs leading-relaxed" style={{ color: '#5A6672' }}>
+                      {lang === 'ar' ? partner.desc_ar : partner.desc_en}
+                    </p>
+                  </div>
+                </a>
+              </FadeIn>
+            ))}
+          </div>
         </div>
       </section>
 
