@@ -56,7 +56,7 @@ export default function PartnersPageClient({ localPartners }: { localPartners: D
       {/* Partners — one centered grid, no category titles */}
       <section className="section-white py-24">
         <div className="container-fee">
-          <div className="flex flex-wrap justify-center gap-5">
+          <div className="flex flex-wrap justify-start gap-5">
             {localPartners.map((partner, i) => (
               <FadeIn key={partner.id ?? i} delay={i * 0.06}>
                 <a
