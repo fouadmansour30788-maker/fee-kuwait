@@ -74,6 +74,11 @@ interface FormData {
   // Declaration
   declaration: boolean
   signatureName: string
+  coordinatorSignature: string
+  // Fees & payment
+  paymentMethod: string
+  paymentRef: string
+  paymentAck: boolean
 }
 
 // ── Constants ───────────────────────────────────────
@@ -174,7 +179,8 @@ const EMPTY: FormData = {
   gmName: '', gmEmail: '', envDirName: '', envDirEmail: '', contactEmail: '',
   coordinatorName: '', teacher1: '', teacher2: '', parentRep: '',
   whyInterested: '', committeeFrequency: '', themes: [], comments: '',
-  declaration: false, signatureName: '',
+  declaration: false, signatureName: '', coordinatorSignature: '',
+  paymentMethod: '', paymentRef: '', paymentAck: false,
 }
 
 // ── Helpers ─────────────────────────────────────────
@@ -225,7 +231,7 @@ function RegisterForm() {
   const showGKDetails = institutionType === 'business' && data.programmes.includes('green-key')
   const showESDetails = institutionType === 'school' && data.programmes.includes('eco-schools')
   const hasDetails = showGKDetails || showESDetails
-  const flow: string[] = [...(hasPreScreen ? ['prescreen'] : []), 'account', 'institution', 'programme', ...(hasDetails ? ['details'] : []), 'review']
+  const flow: string[] = [...(hasPreScreen ? ['prescreen'] : []), 'account', 'institution', 'programme', ...(hasDetails ? ['details'] : []), 'payment', 'review']
   const stepId = flow[step] ?? 'review'
   const psResult = evaluatePreScreening(ps)
   const psVisible = PS_QUESTIONS.filter((q) => PS_WIZARD_SECTIONS.includes(q.section) && (!q.showIf || q.showIf(ps)))
@@ -388,10 +394,18 @@ function RegisterForm() {
       }
       if (!data.declaration) e.declaration = lang === 'ar' ? 'يرجى الموافقة على الإقرار' : 'Please accept the declaration'
       req('signatureName', lang === 'ar' ? 'التوقيع (الاسم) مطلوب' : 'Signature (typed name) is required')
+      if (showESDetails) req('coordinatorSignature', lang === 'ar' ? 'توقيع المنسق مطلوب' : 'Coordinator signature is required')
       const needPolicy = showGKDetails && !signedPolicies
       setPolicyError(needPolicy ? (lang === 'ar' ? 'يرجى رفع سياسات المفتاح الأخضر الموقّعة' : 'Please upload the signed Green Key policies') : '')
       setErrors(e)
       return Object.keys(e).length === 0 && !needPolicy
+    }
+
+    if (s === 'payment') {
+      if (!data.paymentMethod) e.paymentMethod = lang === 'ar' ? 'يرجى اختيار طريقة الدفع' : 'Please choose a payment method'
+      if (!data.paymentAck) e.paymentAck = lang === 'ar' ? 'يرجى الإقرار' : 'Please acknowledge'
+      setErrors(e)
+      return Object.keys(e).length === 0
     }
 
     setErrors(e)
@@ -446,6 +460,7 @@ function RegisterForm() {
         latitude: data.latitude ? Number(data.latitude) : null,
         longitude: data.longitude ? Number(data.longitude) : null,
         numEmployees: data.numEmployees ? Number(data.numEmployees) : null,
+        payment: data.paymentMethod ? { method: data.paymentMethod, reference: data.paymentRef || null, acknowledgedAt: new Date().toISOString() } : null,
       }
       if (institutionType === 'school') {
         const details = {
@@ -459,6 +474,7 @@ function RegisterForm() {
             committeeFrequency: data.committeeFrequency || null,
             themes: data.themes,
             comments: data.comments || null,
+            coordinatorSignature: data.coordinatorSignature || null,
             ...declarationMeta,
           } : {}),
         }
@@ -1175,11 +1191,68 @@ function RegisterForm() {
                   </button>
                   {errors.declaration && <FieldError msg={errors.declaration} />}
                   <div>
-                    <Label>{lang === 'ar' ? 'التوقيع (اكتب اسمك الكامل)' : 'Signature (type your full name)'}</Label>
+                    <Label>{showESDetails ? (lang === 'ar' ? 'توقيع المدير (اكتب الاسم الكامل)' : 'Principal signature (type full name)') : (lang === 'ar' ? 'التوقيع (اكتب اسمك الكامل)' : 'Signature (type your full name)')}</Label>
                     <input type="text" value={data.signatureName} onChange={e => set('signatureName', e.target.value)} className="input" placeholder={lang === 'ar' ? 'الاسم الكامل' : 'Full name'} />
                     {errors.signatureName && <FieldError msg={errors.signatureName} />}
                   </div>
+                  {showESDetails && (
+                    <div>
+                      <Label>{lang === 'ar' ? 'توقيع منسق البرنامج (اكتب الاسم الكامل)' : 'Coordinator signature (type full name)'}</Label>
+                      <input type="text" value={data.coordinatorSignature} onChange={e => set('coordinatorSignature', e.target.value)} className="input" placeholder={lang === 'ar' ? 'الاسم الكامل' : 'Full name'} />
+                      {errors.coordinatorSignature && <FieldError msg={errors.coordinatorSignature} />}
+                    </div>
+                  )}
                 </div>
+              </div>
+            )}
+
+            {/* ── Fees & payment ──────────────────── */}
+            {stepId === 'payment' && (
+              <div>
+                <h2 className="text-xl font-bold text-forest mb-1">{lang === 'ar' ? 'الرسوم والدفع' : 'Fees & Payment'}</h2>
+                <p className="text-gray text-sm mb-5">{lang === 'ar' ? 'تُحدَّد رسوم البرنامج حسب البرنامج ونوع المؤسسة.' : 'The programme fee depends on the programme and institution type.'}</p>
+
+                <div className="rounded-2xl p-4 mb-5 text-sm" style={{ background: '#EDF7F1', border: '1px solid #C8E6D0', color: '#2F5741' }}>
+                  {lang === 'ar'
+                    ? 'بعد التسجيل، سيصدر المشغّل الوطني (Academics) فاتورة رسمية برسوم البرنامج. يُرجى اختيار طريقة الدفع المفضّلة أدناه؛ ستتلقى تفاصيل الفاتورة والدفع بعد التسجيل.'
+                    : 'After registration, the National Operator (Academics) will issue a formal invoice for the programme fee. Please choose your preferred payment method below — you\'ll receive the invoice and payment details after registering.'}
+                </div>
+
+                <Label>{lang === 'ar' ? 'طريقة الدفع المفضّلة' : 'Preferred payment method'}</Label>
+                <div className="grid sm:grid-cols-2 gap-2.5 mb-4">
+                  {[
+                    { v: 'bank_transfer', en: 'Bank transfer', ar: 'تحويل بنكي' },
+                    { v: 'knet', en: 'KNET', ar: 'كي نت' },
+                    { v: 'cheque', en: 'Cheque', ar: 'شيك' },
+                    { v: 'other', en: 'Other (specify in reference)', ar: 'أخرى (حدّد في المرجع)' },
+                  ].map((m) => {
+                    const selected = data.paymentMethod === m.v
+                    return (
+                      <button key={m.v} type="button" onClick={() => set('paymentMethod', m.v)}
+                        className="text-left px-4 py-3 rounded-xl border transition-colors text-sm font-medium"
+                        style={selected ? { borderColor: '#40916C', background: '#EDF7F1', color: '#1B4332' } : { borderColor: '#D4E7DA', color: '#475569' }}>
+                        {lang === 'ar' ? m.ar : m.en}
+                      </button>
+                    )
+                  })}
+                </div>
+                {errors.paymentMethod && <FieldError msg={errors.paymentMethod} />}
+
+                <div className="mb-4">
+                  <Label>{lang === 'ar' ? 'مرجع الدفع (اختياري)' : 'Payment reference (optional)'}</Label>
+                  <input type="text" value={data.paymentRef} onChange={e => set('paymentRef', e.target.value)} className="input" placeholder={lang === 'ar' ? 'رقم التحويل / ملاحظة' : 'Transfer no. / note'} />
+                </div>
+
+                <button type="button" onClick={() => { setData(d => ({ ...d, paymentAck: !d.paymentAck })); setErrors(e => ({ ...e, paymentAck: '' })) }}
+                  className="flex items-start gap-3 text-left w-full rounded-2xl p-4" style={{ background: '#FEF9EC', border: '1px solid #FDE68A' }}>
+                  <span className="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5" style={data.paymentAck ? { background: '#B45309', borderColor: '#B45309' } : { borderColor: '#D6B45B' }}>
+                    {data.paymentAck && <Check className="w-3 h-3 text-white" />}
+                  </span>
+                  <span className="text-sm" style={{ color: '#854D0E' }}>
+                    {lang === 'ar' ? 'أقرّ بأن رسوم البرنامج مستحقة الدفع وسأسدّدها وفق فاتورة المشغّل الوطني.' : 'I acknowledge that the programme fee is payable and I will settle it per the National Operator\'s invoice.'}
+                  </span>
+                </button>
+                {errors.paymentAck && <FieldError msg={errors.paymentAck} />}
               </div>
             )}
 
