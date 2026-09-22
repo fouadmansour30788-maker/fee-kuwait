@@ -151,6 +151,7 @@ const STEP_LABELS: Record<string, { en: string; ar: string }> = {
   institution: { en: 'Institution',  ar: 'المؤسسة' },
   programme:   { en: 'Programme',    ar: 'البرنامج' },
   details:     { en: 'Details',      ar: 'التفاصيل' },
+  payment:     { en: 'Payment',      ar: 'الدفع' },
   review:      { en: 'Review',       ar: 'المراجعة' },
 }
 // Pre-screening sections shown in the wizard (General information is collected by
@@ -673,7 +674,7 @@ function RegisterForm() {
               </div>
               <span className="text-[10px] font-semibold whitespace-nowrap hidden sm:block"
                 style={{ color: i === step ? '#74C69D' : 'rgba(255,255,255,0.3)' }}>
-                {lang === 'ar' ? STEP_LABELS[sid].ar : STEP_LABELS[sid].en}
+                {lang === 'ar' ? (STEP_LABELS[sid]?.ar ?? sid) : (STEP_LABELS[sid]?.en ?? sid)}
               </span>
             </div>
             {/* Connector */}
