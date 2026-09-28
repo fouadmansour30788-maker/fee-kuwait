@@ -12,7 +12,7 @@ function flatten(obj: Record<string, unknown>, prefix = ''): { label: string; va
     if (v === null || v === undefined || v === '') continue
     if (Array.isArray(v)) { if (v.length) out.push({ label: label(k), value: v.join(', ') }); continue }
     if (typeof v === 'object') { out.push(...flatten(v as Record<string, unknown>, label(k))); continue }
-    out.push({ label: label(k), value: String(v) })
+    out.push({ label: label(k), value: typeof v === 'boolean' ? (v ? 'Yes' : 'No') : String(v) })
   }
   return out
 }

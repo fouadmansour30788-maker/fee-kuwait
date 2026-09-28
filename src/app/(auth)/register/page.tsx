@@ -62,6 +62,11 @@ interface FormData {
   envDirName: string
   envDirEmail: string
   contactEmail: string
+  // Previous Green Key certification
+  prevCertified: string // 'yes' | 'no' | ''
+  prevGkNumber: string
+  prevFirstIssued: string
+  prevLastIssued: string
   // Eco-Schools
   coordinatorName: string
   teacher1: string
@@ -184,6 +189,7 @@ const EMPTY: FormData = {
   website: '', socialLinks: '',
   numRooms: '', numGuestsYear: '', numGuestNightsYear: '',
   gmName: '', gmEmail: '', envDirName: '', envDirEmail: '', contactEmail: '',
+  prevCertified: '', prevGkNumber: '', prevFirstIssued: '', prevLastIssued: '',
   coordinatorName: '', teacher1: '', teacher1Email: '', teacher1Phone: '', teacher2: '', teacher2Email: '', teacher2Phone: '', parentRep: '', parentEmail: '', parentPhone: '',
   whyInterested: '', committeeFrequency: '', themes: [], comments: '',
   declaration: false, signatureName: '', coordinatorSignature: '',
@@ -391,6 +397,13 @@ function RegisterForm() {
         req('envDirEmail', lang === 'ar' ? 'بريد المدير البيئي مطلوب' : 'Environmental Director email is required')
         req('contactEmail', lang === 'ar' ? 'بريد جهة الاتصال مطلوب' : 'Contact person email is required')
         emailOk('gmEmail'); emailOk('envDirEmail'); emailOk('contactEmail')
+        if (!data.prevCertified) e.prevCertified = lang === 'ar' ? 'يرجى الإجابة' : 'Please answer this question'
+        if (data.prevCertified === 'yes') {
+          req('prevGkNumber', lang === 'ar' ? 'رقم المفتاح الأخضر مطلوب' : 'Green Key number is required')
+          req('prevFirstIssued', lang === 'ar' ? 'تاريخ الإصدار الأول مطلوب' : 'Date of first issuance is required')
+          if (data.prevFirstIssued && data.prevLastIssued && data.prevLastIssued < data.prevFirstIssued)
+            e.prevLastIssued = lang === 'ar' ? 'يجب أن يكون بعد تاريخ الإصدار الأول' : 'Must be on or after the first issuance date'
+        }
       }
       if (showESDetails) {
         req('coordinatorName', lang === 'ar' ? 'اسم منسق البرنامج مطلوب' : 'Programme coordinator is required')
@@ -510,6 +523,9 @@ function RegisterForm() {
             generalManager: { name: data.gmName || null, email: data.gmEmail || null },
             environmentalDirector: { name: data.envDirName || null, email: data.envDirEmail || null },
             contactPerson: { name: data.contactName || null, phone: data.contactPhone || null, email: data.contactEmail || null },
+            previousCertification: data.prevCertified === 'yes'
+              ? { certified: true, greenKeyNumber: data.prevGkNumber.trim() || null, firstIssuedAt: data.prevFirstIssued || null, lastIssuedAt: data.prevLastIssued || null }
+              : { certified: false },
             ...declarationMeta,
           } : {}),
         }
@@ -1026,6 +1042,40 @@ function RegisterForm() {
                 {/* Green Key */}
                 {showGKDetails && (
                   <div className="space-y-5">
+                    <div className="rounded-xl p-4 space-y-3" style={{ background: '#F4F9F5', border: '1px solid #C8E6D0' }}>
+                      <Label>{lang === 'ar' ? 'هل حصلت منشأتكم على شهادة المفتاح الأخضر من قبل؟' : 'Has your establishment been Green Key certified before?'}</Label>
+                      <div className="inline-flex items-center gap-2">
+                        {(['yes', 'no'] as const).map((v) => {
+                          const on = data.prevCertified === v
+                          return (
+                            <button key={v} type="button" onClick={() => set('prevCertified', v)} className="px-4 py-1.5 rounded-lg text-xs font-semibold"
+                              style={on ? { background: '#40916C', color: '#fff' } : { background: '#fff', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                              {v === 'yes' ? (lang === 'ar' ? 'نعم' : 'Yes') : (lang === 'ar' ? 'لا' : 'No')}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {errors.prevCertified && <FieldError msg={errors.prevCertified} />}
+                      {data.prevCertified === 'yes' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                          <div>
+                            <Label>{lang === 'ar' ? 'رقم المفتاح الأخضر' : 'Green Key number'}</Label>
+                            <input type="text" value={data.prevGkNumber} onChange={e => set('prevGkNumber', e.target.value)} className="input" placeholder="e.g. KW-GK-0001" />
+                            {errors.prevGkNumber && <FieldError msg={errors.prevGkNumber} />}
+                          </div>
+                          <div>
+                            <Label>{lang === 'ar' ? 'تاريخ الإصدار الأول' : 'Date of first issuance'}</Label>
+                            <input type="date" value={data.prevFirstIssued} onChange={e => set('prevFirstIssued', e.target.value)} className="input" />
+                            {errors.prevFirstIssued && <FieldError msg={errors.prevFirstIssued} />}
+                          </div>
+                          <div>
+                            <Label>{lang === 'ar' ? 'تاريخ آخر إصدار (اختياري)' : 'Date of latest issuance (optional)'}</Label>
+                            <input type="date" value={data.prevLastIssued} onChange={e => set('prevLastIssued', e.target.value)} className="input" />
+                            {errors.prevLastIssued && <FieldError msg={errors.prevLastIssued} />}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label>{lang === 'ar' ? 'الموقع الإلكتروني' : 'Website'}</Label>
