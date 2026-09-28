@@ -157,6 +157,9 @@ export async function submitToCb(applicationId: string): Promise<{ ok?: true; er
     .eq('id', applicationId)
     .single()
   if (!app?.cb_id) return { error: 'Assign a Certification Body first.' }
+  const { submitToCbBlocker } = await import('@/lib/submitReadiness')
+  const blocked = await submitToCbBlocker(applicationId, app.programme ?? '')
+  if (blocked) return { error: blocked }
 
   const { error } = await supabase.from('applications').update({
     status: 'cb_pre_audit_review',

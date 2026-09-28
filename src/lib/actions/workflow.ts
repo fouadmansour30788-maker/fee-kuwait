@@ -11,12 +11,11 @@ import {
 } from '@/lib/workflow'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { listCriterionAssessments } from '@/lib/db/assessments'
-import { listApplicationDocuments } from '@/lib/db/documents'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { complianceStatus } from '@/lib/compliance'
-import { GK_EVIDENCE } from '@/lib/data/greenKeyEvidence'
 import { GUIDELINE_CYCLE } from '@/lib/data/greenKeyCriteria'
 import { getPaymentSummary, formatMoney, PAYMENT_GATED_ACTIONS } from '@/lib/db/invoices'
+import { submitToCbBlocker } from '@/lib/submitReadiness'
 
 // Diagram guards (OQ-3, OQ-4, "all criteria assessed"): some transitions are only
 // allowed when the board is in the right state. Returns an error string to block.
@@ -39,23 +38,8 @@ async function guardAction(applicationId: string, action: string, app: { program
   const assessments = await listCriterionAssessments(applicationId)
 
   if (action === 'Submit Application to CB') {
-    // Requirement: 100% of imperative criteria Ready (or N/A Confirmed), plus the
-    // certification period's share of guideline criteria. Guidelines beyond that
-    // share are NOT required to submit.
-    const na = (ref: string) => assessments[ref]?.internal === 'na'
-    const ready = (ref: string) => assessments[ref]?.internal === 'pass'
-    const impRefs = criteria.filter((c) => !!c.type && c.type.includes('I') && !na(c.ref))
-    const guideRefs = criteria.filter((c) => c.type === 'G' && !na(c.ref))
-    const impReady = impRefs.filter((c) => ready(c.ref)).length
-    const guideReady = guideRefs.filter((c) => ready(c.ref)).length
-    const cyc = GUIDELINE_CYCLE[Math.min(Math.max((app.certification_cycle ?? 1) - 1, 0), GUIDELINE_CYCLE.length - 1)]
-    const guideNeed = Math.ceil((guideRefs.length * cyc.guideline) / 100)
-    if (impReady < impRefs.length) return `Submit is blocked: all imperative criteria must be marked Ready (or N/A Confirmed) by the operator — ${impReady}/${impRefs.length} ready.`
-    if (guideReady < guideNeed) return `Submit is blocked: this certification period needs ${guideNeed} guideline criteria marked Ready — ${guideReady}/${guideNeed} ready.`
-    // Required evidence for the imperative criteria that must be Ready.
-    const docs = await listApplicationDocuments(applicationId)
-    const missing = impRefs.filter((c) => GK_EVIDENCE[c.ref]?.required === 'Yes' && !docs.some((d) => d.criterion_ref === c.ref))
-    if (missing.length) return `Submit is blocked: required evidence is missing for ${missing.length} imperative criteri${missing.length === 1 ? 'on' : 'a'} (${missing.slice(0, 5).map((c) => c.ref).join(', ')}${missing.length > 5 ? '…' : ''}).`
+    const blocked = await submitToCbBlocker(applicationId, app.programme)
+    if (blocked) return blocked
   }
 
   if (action === 'Submit Audit Report') {
