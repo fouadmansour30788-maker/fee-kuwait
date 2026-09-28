@@ -3,6 +3,7 @@ import type { EstablishmentCategory } from '@/lib/data/greenKeyCriteria'
 import { GK_FULL_NOTES } from '@/lib/data/greenKeyCriteriaNotes'
 import { GK_PDF_NOTES } from '@/lib/data/greenKeyPdfNotes'
 import { BF_CRITERIA, BF_SECTIONS } from '@/lib/data/blueFlagCriteria'
+import { ES_CRITERIA, ES_AREA } from '@/lib/data/ecoSchoolsCriteria'
 
 // Minimal shape needed to filter criteria (satisfied by both the pre-screening
 // engine result and the stored pre-screening record).
@@ -28,6 +29,9 @@ export function criteriaForProgramme(programme: string): CriterionRef[] {
       const x = c as { id: string; title: string; section: number; note?: string; type?: string }
       return { ref: x.id, title: x.title, area: BF_SECTIONS.find((s) => s.n === x.section)?.title ?? '', description: x.note, type: x.type }
     })
+  }
+  if (programme === 'eco-schools') {
+    return ES_CRITERIA.map((c) => ({ ref: c.id, title: c.title, area: ES_AREA, description: c.note, type: c.type }))
   }
   return []
 }
