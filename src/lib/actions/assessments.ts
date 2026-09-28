@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { establishmentCanEdit } from '@/lib/workflow'
+import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
+import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { revalidatePath } from 'next/cache'
 
 const RESULTS = ['pending', 'pass', 'no_pass', 'na']
@@ -163,13 +165,14 @@ const STATUSES = ['in_progress', 'complete', 'na', 'not_started']
 
 // The establishment sets its progress status for a criterion (In progress /
 // Complete / N/A, or 'not_started' to clear it). Written via the service role
-// after an ownership check. When marked Complete, the operator(s) are notified.
+// after an ownership check. The operator(s) are notified once — when EVERY
+// applicable criterion is Complete (or N/A) — not on each individual criterion.
 export async function setApplicantStatus(applicationId: string, criterionRef: string, status: string): Promise<{ ok?: true; error?: string }> {
   if (!STATUSES.includes(status)) return { error: 'Invalid status' }
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in' }
-  const { data: own } = await supabase.from('applications').select('status').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
+  const { data: own } = await supabase.from('applications').select('status, programme').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
   if (!own) return { error: 'Not allowed' }
   if (!establishmentCanEdit(own.status)) return { error: 'This application is locked for editing.' }
 
@@ -183,21 +186,35 @@ export async function setApplicantStatus(applicationId: string, criterionRef: st
   }, { onConflict: 'application_id,criterion_ref' })
   if (error) return { error: error.message }
 
-  // Notify the operator(s) when a criterion is completed, so they check it.
-  if (status === 'complete') {
-    const { data: me } = await admin.from('users').select('name_en, email').eq('id', user.id).maybeSingle()
-    const estName = me?.name_en || me?.email || 'An establishment'
-    const { data: staff } = await admin.from('users').select('id').in('role', ['admin', 'super_admin'])
-    if (staff?.length) {
-      await admin.from('notifications').insert(staff.map((s) => ({
-        user_id: s.id,
-        type: 'criterion_complete',
-        title_en: 'Criterion marked complete',
-        title_ar: 'تم إكمال معيار',
-        message_en: `${estName} marked criterion ${criterionRef} as complete — please check.`,
-        message_ar: `${estName} أكمل المعيار ${criterionRef} — يرجى المراجعة.`,
-        action_url: `/applications/${applicationId}`,
-      })))
+  // Notify the operator(s) only once ALL applicable criteria are Complete / N/A.
+  if (status === 'complete' || status === 'na') {
+    const ps = await getPreScreening(applicationId)
+    const criteria = own.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(own.programme)
+    const { data: rows } = await admin.from('criterion_assessments').select('criterion_ref, applicant_status').eq('application_id', applicationId)
+    const done = new Set((rows ?? []).filter((r) => r.applicant_status === 'complete' || r.applicant_status === 'na').map((r) => r.criterion_ref))
+    const allDone = criteria.length > 0 && criteria.every((c) => done.has(c.ref))
+
+    if (allDone) {
+      const url = `/applications/${applicationId}`
+      // Don't repeat the alert while an earlier one is still unread.
+      const { count } = await admin.from('notifications').select('id', { count: 'exact', head: true })
+        .eq('type', 'criteria_all_complete').eq('action_url', url).eq('read', false)
+      if (!count) {
+        const { data: me } = await admin.from('users').select('name_en, email').eq('id', user.id).maybeSingle()
+        const estName = me?.name_en || me?.email || 'An establishment'
+        const { data: staff } = await admin.from('users').select('id').in('role', ['admin', 'super_admin'])
+        if (staff?.length) {
+          await admin.from('notifications').insert(staff.map((s) => ({
+            user_id: s.id,
+            type: 'criteria_all_complete',
+            title_en: 'All criteria completed',
+            title_ar: 'تم إكمال جميع المعايير',
+            message_en: `${estName} has completed all ${criteria.length} criteria — ready for your review.`,
+            message_ar: `${estName} أكمل جميع المعايير (${criteria.length}) — جاهز للمراجعة.`,
+            action_url: url,
+          })))
+        }
+      }
     }
   }
 
