@@ -46,6 +46,9 @@ export default function InvoicesPanel({ applicationId, invoices }: { application
       <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>
         Billed {formatMoney(total)} · paid {formatMoney(paid)}{total > paid ? ` · outstanding ${formatMoney(total - paid)}` : ''}
       </p>
+      <p className="text-[11px] mb-4 -mt-2" style={{ color: '#92400E' }}>
+        The Certification Body can only issue the certification decision once every invoice here is marked Paid.
+      </p>
 
       {open && (
         <form onSubmit={add} className="grid sm:grid-cols-4 gap-3 items-end rounded-xl p-4 mb-4" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>

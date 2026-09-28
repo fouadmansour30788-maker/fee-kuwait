@@ -118,6 +118,10 @@ export async function recordCbDecision(applicationId: string, formData: FormData
   const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
   if (!me || me.role !== 'certification_body') return
   if (!(await can('issue_certificate'))) return
+  if (decision === 'certified' || decision === 'certified_rectification') {
+    const { getPaymentSummary } = await import('@/lib/db/invoices')
+    if (!(await getPaymentSummary(applicationId)).fullyPaid) return
+  }
 
   await supabase.from('applications').update({
     cb_decision: decision,

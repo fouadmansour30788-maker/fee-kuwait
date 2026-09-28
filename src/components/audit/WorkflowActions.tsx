@@ -12,9 +12,10 @@ const toneBg: Record<string, string> = { primary: 'linear-gradient(135deg, #1B43
 // The role's available workflow actions for the current status, each expanding
 // to collect any required input (reason / deadline / clarification owner / date /
 // criteria to reopen).
-export default function WorkflowActions({ applicationId, role, status, criteria = [] }: {
+export default function WorkflowActions({ applicationId, role, status, criteria = [], locked = [], lockedReason }: {
   applicationId: string; role: 'operator' | 'cb' | 'auditor' | 'establishment'; status: string
   criteria?: { ref: string; title: string }[]
+  locked?: string[]; lockedReason?: string
 }) {
   const actions = TABLES[role][canonicalStatus(status) as AppStatus] ?? []
   const [open, setOpen] = useState<string | null>(null)
@@ -100,7 +101,10 @@ export default function WorkflowActions({ applicationId, role, status, criteria 
                   <textarea value={input.reason ?? ''} onChange={(e) => setInput((i) => ({ ...i, reason: e.target.value }))} rows={2}
                     placeholder="Reason / note…" className="w-full text-sm px-3 py-2 rounded-lg outline-none resize-none" style={field} />
                 )}
-                <button onClick={() => run(t)} disabled={pending}
+                {locked.includes(t.action) && lockedReason && (
+                  <p className="flex items-start gap-1.5 text-xs rounded-lg px-2.5 py-2" style={{ background: '#FEF3C7', color: '#92400E' }}><AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" /> {lockedReason}</p>
+                )}
+                <button onClick={() => run(t)} disabled={pending || locked.includes(t.action)}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-60"
                   style={{ background: toneBg[t.tone ?? 'primary'] }}>
                   {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Confirm: {t.action}

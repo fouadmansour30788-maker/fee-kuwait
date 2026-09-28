@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Mail, Calendar, Building2, FileText, Download, Inbox, Gavel, CheckCircle2, Award, KeyRound } from 'lucide-react'
+import { ArrowLeft, Mail, Calendar, Building2, FileText, Download, Inbox, Gavel, CheckCircle2, Award, KeyRound, Wallet } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
@@ -9,6 +9,7 @@ import { listCriterionMessages } from '@/lib/db/messages'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { listAuditorsForCb } from '@/lib/db/audit'
+import { getPaymentSummary, formatMoney, PAYMENT_GATED_ACTIONS } from '@/lib/db/invoices'
 import { CB_ACTIONS, type AppStatus } from '@/lib/workflow'
 import CbReviewPanel from '@/components/audit/CbReviewPanel'
 import WorkflowActions from '@/components/audit/WorkflowActions'
@@ -31,7 +32,7 @@ export default async function CbApplicationDetail({
   const { id } = params
   const app = await getApplication(id)
   if (!app) notFound()
-  const [docs, assessments, messages, audits, ps, cbAuditors, trail] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id), getPreScreening(id), listAuditorsForCb(), listAuditTrail(id)])
+  const [docs, assessments, messages, audits, ps, cbAuditors, trail, pay] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id), getPreScreening(id), listAuditorsForCb(), listAuditTrail(id), getPaymentSummary(id)])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const s = statusMeta(app.status)
   const decided = !!app.cb_decision && app.cb_decision !== 'pending'
@@ -104,7 +105,22 @@ export default async function CbApplicationDetail({
             <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>CB decision</h2>
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
           </div>
-          <WorkflowActions applicationId={id} role="cb" status={app.status} />
+          {['cb_final_review', 'cb_final_re_review'].includes(app.status) && (
+            <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm mb-3"
+              style={pay.fullyPaid ? { background: '#ECFDF3', border: '1px solid #A7F3D0', color: '#047857' } : { background: '#FEF3C7', border: '1px solid #FDE68A', color: '#92400E' }}>
+              <Wallet className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <p>
+                {pay.fullyPaid
+                  ? <>Fees fully paid ({formatMoney(pay.paid, pay.currency)}). You can issue the certification decision.</>
+                  : pay.count === 0
+                    ? <>No invoice has been issued yet. Certification is locked until the National Operator invoices the fees and marks them fully paid.</>
+                    : <>Awaiting payment — {formatMoney(pay.outstanding, pay.currency)} outstanding of {formatMoney(pay.billed, pay.currency)}. Certification is locked until the National Operator marks the fees fully paid.</>}
+              </p>
+            </div>
+          )}
+          <WorkflowActions applicationId={id} role="cb" status={app.status}
+            locked={pay.fullyPaid ? [] : PAYMENT_GATED_ACTIONS}
+            lockedReason="Locked until the National Operator marks the fees fully paid." />
         </div>
       )}
 

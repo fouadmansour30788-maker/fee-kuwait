@@ -16,10 +16,21 @@ import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { complianceStatus } from '@/lib/compliance'
 import { GK_EVIDENCE } from '@/lib/data/greenKeyEvidence'
 import { GUIDELINE_CYCLE } from '@/lib/data/greenKeyCriteria'
+import { getPaymentSummary, formatMoney, PAYMENT_GATED_ACTIONS } from '@/lib/db/invoices'
 
 // Diagram guards (OQ-3, OQ-4, "all criteria assessed"): some transitions are only
 // allowed when the board is in the right state. Returns an error string to block.
 async function guardAction(applicationId: string, action: string, app: { programme: string; certification_cycle?: number }): Promise<string | null> {
+  // Certification is locked until the National Operator marks the fees fully paid.
+  if (PAYMENT_GATED_ACTIONS.includes(action)) {
+    const pay = await getPaymentSummary(applicationId)
+    if (!pay.fullyPaid) {
+      return pay.count === 0
+        ? 'Certification is locked: no invoice has been issued for this application yet. The National Operator must invoice the fees and mark them fully paid.'
+        : `Certification is locked until the National Operator marks the fees fully paid — ${formatMoney(pay.outstanding, pay.currency)} outstanding.`
+    }
+  }
+
   const gated = ['Submit Application to CB', 'Submit Audit Report', 'Approve & Issue Certificate']
   if (!gated.includes(action)) return null
 

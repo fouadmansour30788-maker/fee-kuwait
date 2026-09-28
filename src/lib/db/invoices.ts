@@ -1,8 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Invoice, InvoiceRow } from '@/lib/invoices'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { paymentSummary, type Invoice, type InvoiceRow, type PaymentSummary } from '@/lib/invoices'
 
 export type { Invoice, InvoiceRow, InvoiceStatus } from '@/lib/invoices'
-export { INVOICE_STATUS_META, formatMoney, isOverdue } from '@/lib/invoices'
+export type { PaymentSummary } from '@/lib/invoices'
+export { INVOICE_STATUS_META, formatMoney, isOverdue, paymentSummary, PAYMENT_GATED_ACTIONS } from '@/lib/invoices'
+
+// Payment position for one application, read with the service role so the CB
+// (which can't see invoices through RLS) gets the same answer as the operator.
+export async function getPaymentSummary(applicationId: string): Promise<PaymentSummary> {
+  const { data } = await createAdminClient().from('invoices').select('status, amount, currency').eq('application_id', applicationId)
+  return paymentSummary((data ?? []) as Pick<Invoice, 'status' | 'amount' | 'currency'>[])
+}
 
 const COLS = 'id, invoice_number, application_id, applicant_id, programme, description, amount, currency, status, issued_at, due_at, paid_at, created_at'
 
