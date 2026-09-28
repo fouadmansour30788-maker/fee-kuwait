@@ -47,3 +47,34 @@ export async function postCriterionMessage(applicationId: string, criterionRef: 
   revalidatePath(`/cb/applications/${applicationId}`)
   return { ok: true }
 }
+
+// Edit one of your own comments. Only the author may edit; the establishment
+// can't edit once its application is locked (same rule as posting).
+export async function editCriterionMessage(messageId: string, body: string): Promise<{ ok?: true; error?: string }> {
+  const text = body.trim()
+  if (!text) return { error: 'Comment cannot be empty.' }
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+
+  const { data: msg } = await supabase.from('criterion_messages').select('id, author_id, author_role, application_id').eq('id', messageId).single()
+  if (!msg) return { error: 'Comment not found.' }
+  if (msg.author_id !== user.id) return { error: 'You can only edit your own comments.' }
+  if (msg.author_role === 'establishment') {
+    const { data: appRow } = await supabase.from('applications').select('status').eq('id', msg.application_id).single()
+    if (!appRow || !establishmentCanEdit(appRow.status)) return { error: 'This application is locked.' }
+  }
+
+  const { error } = await supabase.from('criterion_messages')
+    .update({ body: text.slice(0, 4000), edited_at: new Date().toISOString() })
+    .eq('id', messageId).eq('author_id', user.id)
+  if (error) return { error: error.message }
+
+  const id = msg.application_id
+  revalidatePath(`/applications/${id}`)
+  revalidatePath(`/business/application/${id}`)
+  revalidatePath(`/school/application/${id}`)
+  revalidatePath(`/auditor/applications/${id}`)
+  revalidatePath(`/cb/applications/${id}`)
+  return { ok: true }
+}

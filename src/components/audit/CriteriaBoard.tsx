@@ -2,9 +2,9 @@
 
 import { Fragment, memo, useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock, Link2, ExternalLink } from 'lucide-react'
+import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock, Link2, ExternalLink, Pencil, Loader2 } from 'lucide-react'
 import { setInternalResult, setApplicantStatus, setCriterionResult, setCriterionNote, setCbPreResult, setCbFinalResult } from '@/lib/actions/assessments'
-import { postCriterionMessage } from '@/lib/actions/messages'
+import { postCriterionMessage, editCriterionMessage } from '@/lib/actions/messages'
 import CriterionUpload from '@/components/documents/CriterionUpload'
 import DocumentRemove from '@/components/documents/DocumentRemove'
 import type { CriterionRef } from '@/lib/criteria'
@@ -207,6 +207,21 @@ function OptionChip({ value, meta }: { value: string; meta: Record<string, Meta>
 function CommentThread({ messages, canComment, onSend }: { messages: CriterionMessage[]; canComment: boolean; onSend: (body: string) => void }) {
   const [text, setText] = useState('')
   function send() { const b = text.trim(); if (!b) return; onSend(b); setText('') }
+  // Editing your own comment.
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const [editErr, setEditErr] = useState('')
+  const [saving, startSave] = useTransition()
+  const router = useRouter()
+  function saveEdit(id: string) {
+    const b = draft.trim(); if (!b) return
+    setEditErr('')
+    startSave(async () => {
+      const r = await editCriterionMessage(id, b)
+      if (r.error) setEditErr(r.error)
+      else { setEditingId(null); router.refresh() }
+    })
+  }
   return (
     <div className="space-y-1.5">
       <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
@@ -218,8 +233,32 @@ function CommentThread({ messages, canComment, onSend }: { messages: CriterionMe
           return (
             <div key={m.id} className={isEst ? 'flex justify-start' : 'flex justify-end'}>
               <div className="rounded-lg px-2 py-1.5 max-w-[88%]" style={{ background: tone.bg, border: `1px solid ${tone.bd}`, borderStyle: internal ? 'dashed' : 'solid' }}>
-                <span className="text-[9px] font-semibold block" style={{ color: tone.fg }}>{ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{internal ? ' · internal' : ''}</span>
-                <span className="text-xs" style={{ color: '#334155' }}>{m.body}</span>
+                <span className="text-[9px] font-semibold flex items-center gap-1" style={{ color: tone.fg }}>
+                  {ROLE_LABEL[m.author_role ?? ''] ?? m.author_role}{internal ? ' · internal' : ''}{m.edited_at ? ' · edited' : ''}
+                  {m.mine && canComment && editingId !== m.id && (
+                    <button type="button" onClick={() => { setEditingId(m.id); setDraft(m.body); setEditErr('') }} title="Edit comment" className="ml-auto opacity-60 hover:opacity-100">
+                      <Pencil className="w-2.5 h-2.5" />
+                    </button>
+                  )}
+                </span>
+                {editingId === m.id ? (
+                  <div className="space-y-1 mt-0.5">
+                    <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} autoFocus
+                      onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(m.id) } if (e.key === 'Escape') setEditingId(null) }}
+                      className="w-full min-w-[160px] text-xs px-2 py-1 rounded-md outline-none resize-y" style={{ background: '#fff', border: '1px solid #CBD5E1', color: '#1E293B' }} />
+                    <div className="flex items-center gap-1">
+                      <button type="button" onClick={() => saveEdit(m.id)} disabled={saving || !draft.trim()} className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md text-white disabled:opacity-50" style={{ background: '#40916C' }}>
+                        {saving ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Check className="w-2.5 h-2.5" />} Save
+                      </button>
+                      <button type="button" onClick={() => setEditingId(null)} className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md" style={{ background: '#F1F5F9', color: '#475569' }}>
+                        <X className="w-2.5 h-2.5" /> Cancel
+                      </button>
+                    </div>
+                    {editErr && <span className="text-[10px] block" style={{ color: '#DC2626' }}>{editErr}</span>}
+                  </div>
+                ) : (
+                  <span className="text-xs whitespace-pre-wrap" style={{ color: '#334155' }}>{m.body}</span>
+                )}
               </div>
             </div>
           )
