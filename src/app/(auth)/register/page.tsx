@@ -15,6 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import { PS_QUESTIONS, PS_SERVICES, evaluatePreScreening } from '@/lib/data/preScreening'
 import type { PSAnswers, PSQuestion } from '@/lib/data/preScreening'
 import { ESTABLISHMENT_CATEGORIES } from '@/lib/data/greenKeyCriteria'
+import { ES_THEMES } from '@/lib/data/ecoSchoolsCriteria'
 
 // ── Types ──────────────────────────────────────────
 type InstitutionType = 'school' | 'business'
@@ -164,21 +165,8 @@ const STEP_LABELS: Record<string, { en: string; ar: string }> = {
 const PS_WIZARD_SECTIONS = ['Eligibility', 'Main category', 'Units & scope', 'Scope & sub-categories', 'Operational filters', 'Declarations']
 const catLabel = (c: string) => ESTABLISHMENT_CATEGORIES.find((x) => x.code === c)?.label ?? c
 
-// The 12 Eco-Schools themes (official list) — shown as a checklist for schools.
-const ECO_SCHOOLS_THEMES = [
-  { en: 'Water', ar: 'المياه' },
-  { en: 'Biodiversity & Nature', ar: 'التنوع البيولوجي والطبيعة' },
-  { en: 'Climate Change', ar: 'تغيّر المناخ' },
-  { en: 'Energy', ar: 'الطاقة' },
-  { en: 'Litter', ar: 'النفايات المتناثرة' },
-  { en: 'Waste', ar: 'النفايات' },
-  { en: 'Food', ar: 'الغذاء' },
-  { en: 'Health & Wellbeing', ar: 'الصحة والرفاهية' },
-  { en: 'Marine and Coast', ar: 'البحار والسواحل' },
-  { en: 'School Grounds', ar: 'ساحات المدرسة' },
-  { en: 'Transport', ar: 'النقل' },
-  { en: 'Global Citizenship', ar: 'المواطنة العالمية' },
-]
+// The 13 Eco-Schools themes (FEE list) — shown as a checklist for schools.
+const ECO_SCHOOLS_THEMES = ES_THEMES
 
 const EMPTY: FormData = {
   name: '', email: '', password: '', confirmPassword: '',
@@ -1244,7 +1232,7 @@ function RegisterForm() {
                       {errors.committeeFrequency && <FieldError msg={errors.committeeFrequency} />}
                     </div>
                     <div>
-                      <Label>{lang === 'ar' ? 'أي من محاور المدارس البيئية الـ12 حققتها مدرستك أو تعمل عليها؟' : 'Which of the 12 Eco-Schools themes has your school achieved or is working on?'}</Label>
+                      <Label>{lang === 'ar' ? 'أي من محاور المدارس البيئية الـ13 حققتها مدرستك أو تعمل عليها؟' : 'Which of the 13 Eco-Schools themes has your school achieved or is working on?'}</Label>
                       <div className="grid grid-cols-2 gap-2 mt-1">
                         {ECO_SCHOOLS_THEMES.map(t => {
                           const on = data.themes.includes(t.en)

@@ -37,3 +37,35 @@ export const ES_CRITERIA: ESCriterion[] = [
     note: 'Eco Code of Values — the Eco Code is a statement of values and demonstrates the internalization of a sustainability culture in the whole institution.\n\nStudents collaborate to devise a statement that represents the school\'s commitment to the environment.\n• It should be memorable and familiar to everyone in the school\n• The format is flexible, it can be a song, drawing, model, poem, etc.\n• The Eco-Code should list the main objectives of your Action Plan\n• It is crucial that pupils play a key role in the development of the Eco Code, as this will give them a greater sense of responsibility towards the values the Eco Code represents\n• The Eco Code should be prominently displayed throughout the school',
   },
 ]
+
+// ── The 13 Eco-Schools themes (FEE presentation p.13) ───────────────
+// Part of Step 2: the school selects the themes it is working on.
+export interface ESTheme { en: string; ar: string; kind: 'main' | 'cross' }
+export const ES_THEMES: ESTheme[] = [
+  { en: 'Biodiversity & Nature', ar: 'التنوع البيولوجي والطبيعة', kind: 'main' },
+  { en: 'Water & Sanitation', ar: 'المياه والصرف الصحي', kind: 'main' },
+  { en: 'Energy', ar: 'الطاقة', kind: 'main' },
+  { en: 'Transport', ar: 'النقل', kind: 'main' },
+  { en: 'Food', ar: 'الغذاء', kind: 'main' },
+  { en: 'Marine & Coast', ar: 'البحار والسواحل', kind: 'main' },
+  { en: 'Litter', ar: 'النفايات المتناثرة', kind: 'main' },
+  { en: 'School Grounds', ar: 'ساحات المدرسة', kind: 'main' },
+  { en: 'Waste', ar: 'النفايات', kind: 'main' },
+  { en: 'Climate Change', ar: 'تغيّر المناخ', kind: 'cross' },
+  { en: 'Health & Wellbeing', ar: 'الصحة والرفاهية', kind: 'cross' },
+  { en: 'Global Citizenship & Culture', ar: 'المواطنة العالمية والثقافة', kind: 'cross' },
+  { en: 'Equality & Equity', ar: 'المساواة والإنصاف', kind: 'cross' },
+]
+
+// The step whose row carries the theme selection.
+export const ES_THEMES_STEP = '2'
+
+// Map older theme labels (registration form before Oct 2026) onto the 13 names.
+const LEGACY_THEME: Record<string, string> = {
+  'Water': 'Water & Sanitation', 'Marine and Coast': 'Marine & Coast', 'Global Citizenship': 'Global Citizenship & Culture',
+}
+export function normalizeThemes(list: unknown): string[] {
+  if (!Array.isArray(list)) return []
+  const valid = new Set(ES_THEMES.map((t) => t.en))
+  return Array.from(new Set(list.map((t) => LEGACY_THEME[String(t)] ?? String(t)).filter((t) => valid.has(t))))
+}

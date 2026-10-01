@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import EcoThemesPicker from '@/components/audit/EcoThemesPicker'
+import { getEcoThemes } from '@/lib/db/ecoThemes'
+import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, FileText, Download, Inbox, KeyRound } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, STATUS_META, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
@@ -35,6 +38,7 @@ export default async function ApplicationDetail({
   const sp = searchParams
   const app = await getApplication(id)
   if (!app) notFound()
+  const ecoThemes = app!.programme === 'eco-schools' ? await getEcoThemes(id) : null
   const [docs, currentAuditor, assessments, bodies, currentCb, messages, audits, ps] = await Promise.all([
     listApplicationDocuments(id), applicationAuditor(id), listCriterionAssessments(id),
     listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id), getPreScreening(id),
@@ -191,7 +195,7 @@ export default async function ApplicationDetail({
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The establishment&apos;s evidence and comments alongside your feedback per indicator. The auditor&apos;s result is shown once assessed. Saved automatically.</p>
-          <CriteriaBoard role="admin" applicationId={id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits} auditorName={currentAuditor?.name_en ?? currentAuditor?.email} />
+          <CriteriaBoard role="admin" applicationId={id} rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={id} selected={ecoThemes} editable={true} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits} auditorName={currentAuditor?.name_en ?? currentAuditor?.email} />
         </div>
       )}
 

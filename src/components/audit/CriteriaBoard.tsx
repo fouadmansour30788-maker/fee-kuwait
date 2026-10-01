@@ -2,7 +2,7 @@
 
 import { Fragment, memo, useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock, Link2, ExternalLink, Pencil, Loader2 } from 'lucide-react'
+import { Check, X, Search, FileText, Download, Send, AlertCircle, Lock, Link2, ExternalLink, Pencil, Loader2, Film } from 'lucide-react'
 import { setInternalResult, setApplicantStatus, setCriterionResult, setCriterionNote, setCbPreResult, setCbFinalResult } from '@/lib/actions/assessments'
 import { postCriterionMessage, editCriterionMessage } from '@/lib/actions/messages'
 import CriterionUpload from '@/components/documents/CriterionUpload'
@@ -299,6 +299,7 @@ interface RowProps {
   onCbFinal: (ref: string, v: string) => void
   onPost: (ref: string, body: string, phase: 'pre_audit' | 'post_audit') => void
   onDesc: (c: CriterionRef) => void
+  extra?: React.ReactNode
 }
 
 // One criterion row, memoized so an interaction only re-renders the affected row.
@@ -306,7 +307,7 @@ interface RowProps {
 // rest of the (139-row) table.
 const Row = memo(function Row({
   c, a, docsList, thread, year, applicationId, applicantId, estCanEdit, isOperator, canComment, editAudit, cbPreEditable, cbFinalEditable, showExternal, selAudit,
-  onStatus, onOp, onAudit, onAuditNote, onCbPre, onCbFinal, onPost, onDesc,
+  onStatus, onOp, onAudit, onAuditNote, onCbPre, onCbFinal, onPost, onDesc, extra,
 }: RowProps) {
   const ev = GK_EVIDENCE[c.ref]
   // Surveillance evidence lives under the Surveillance Activities tab, never on
@@ -321,7 +322,7 @@ const Row = memo(function Row({
       {items.map((d) => (
         <span key={d.id} className="inline-flex items-center gap-1">
           <a href={d.url ?? '#'} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
-            {d.isLink ? <Link2 className="w-3 h-3" /> : <FileText className="w-3 h-3" />} <span className="max-w-[100px] truncate">{d.name}</span> {d.isLink ? <ExternalLink className="w-3 h-3" /> : <Download className="w-3 h-3" />}
+            {d.isLink ? <Link2 className="w-3 h-3" /> : /\.(mp4|mov|m4v|webm|avi|mkv|3gp)$/i.test(d.name) ? <Film className="w-3 h-3" /> : <FileText className="w-3 h-3" />} <span className="max-w-[100px] truncate">{d.name}</span> {d.isLink ? <ExternalLink className="w-3 h-3" /> : <Download className="w-3 h-3" />}
           </a>
           {canUpload && <DocumentRemove documentId={d.id} compact />}
         </span>
@@ -340,6 +341,7 @@ const Row = memo(function Row({
             {c.type && <span className="ml-1.5 text-[10px] font-bold px-1 py-0.5 rounded" style={{ background: c.type.includes('I') ? '#FEF3C7' : '#EEF2F6', color: c.type.includes('I') ? '#92400E' : '#64748B' }}>{c.type}</span>}
           </span>
         </div>
+        {extra}
       </td>
       <td className="px-3 py-3 min-w-[240px] max-w-[380px] align-top">{c.description ? <ExpandableText text={c.description} onOpen={() => onDesc(c)} /> : <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>}</td>
       <td className="px-3 py-3">
@@ -397,7 +399,7 @@ const Row = memo(function Row({
 // Shared collaborative criteria board.
 export default function CriteriaBoard({
   applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false, auditEditable = false, applicantId,
-  audits = [], auditorName, editableCriteria = null, cbPreEditable = false, cbFinalEditable = false,
+  audits = [], auditorName, editableCriteria = null, cbPreEditable = false, cbFinalEditable = false, rowExtras,
 }: {
   applicationId: string
   criteria: CriterionRef[]
@@ -416,6 +418,7 @@ export default function CriteriaBoard({
   editableCriteria?: string[] | null
   cbPreEditable?: boolean   // CB may edit the pre-audit review column
   cbFinalEditable?: boolean // CB may edit the final review column
+  rowExtras?: Record<string, React.ReactNode> // extra content under a criterion's title, by ref
 }) {
   const [rows, setRows] = useState(assessments)
   const [msgs, setMsgs] = useState(messages)
@@ -656,7 +659,7 @@ export default function CriteriaBoard({
                       year={year} applicationId={applicationId} applicantId={applicantId}
                       estCanEdit={estCanEdit && (editableCriteria === null || editableCriteria.includes(c.ref))} isOperator={isOperator} canComment={canComment} editAudit={editAudit}
                       cbPreEditable={cbPreEditable} cbFinalEditable={cbFinalEditable} showExternal={showExternal} selAudit={selAudit}
-                      onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onCbPre={onCbPre} onCbFinal={onCbFinal} onPost={onPost} onDesc={onDesc} />
+                      onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onCbPre={onCbPre} onCbFinal={onCbFinal} onPost={onPost} onDesc={onDesc} extra={rowExtras?.[c.ref]} />
                   ))}
                 </Fragment>
               ))}

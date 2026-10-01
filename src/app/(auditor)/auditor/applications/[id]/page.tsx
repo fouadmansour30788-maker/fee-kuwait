@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import EcoThemesPicker from '@/components/audit/EcoThemesPicker'
+import { getEcoThemes } from '@/lib/db/ecoThemes'
+import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox, Mail, Building2, Calendar, Smartphone, KeyRound } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
@@ -18,6 +21,7 @@ import AuditorSubmit from '@/components/audit/AuditorSubmit'
 export default async function AuditorApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
+  const ecoThemes = app!.programme === 'eco-schools' ? await getEcoThemes(params.id) : null
   const [docs, assessments, messages, audits, ps, timeline] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), listAudits(params.id), getPreScreening(params.id), getApplicationTimeline(params.id)])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const reports = docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF).map((d) => ({ id: d.id, name: d.name, url: d.url }))
@@ -93,7 +97,7 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
           </Link>
         )}
         {criteria.length > 0
-          ? <CriteriaBoard role="auditor" applicationId={params.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
+          ? <CriteriaBoard role="auditor" applicationId={params.id} rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={params.id} selected={ecoThemes} editable={false} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
       </div>
 

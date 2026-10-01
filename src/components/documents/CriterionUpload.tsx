@@ -2,11 +2,12 @@
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Paperclip, Loader2, Link2, Check, X } from 'lucide-react'
+import { Paperclip, Loader2, Link2, Check, X, Film } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { recordDocument } from '@/lib/actions/documents'
 
-const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
+const MAX_BYTES = 5 * 1024 * 1024 // 5 MB (documents / photos)
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024 // 50 MB (video clips)
 
 // Compact evidence uploader tied to a single criterion (and year). Uploads
 // straight to Storage (RLS: applicants write their own) and records the
@@ -17,15 +18,17 @@ export default function CriterionUpload({ applicationId, criterionRef, year, sur
   const [linking, setLinking] = useState(false)
   const [url, setUrl] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const inputId = `up-${criterionRef}`
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > MAX_BYTES) {
-      setError('File exceeds the 5 MB limit.')
-      if (inputRef.current) inputRef.current.value = ''
+    const isVideo = file.type.startsWith('video/')
+    if (file.size > (isVideo ? MAX_VIDEO_BYTES : MAX_BYTES)) {
+      setError(isVideo ? 'Video exceeds the 50 MB limit — for longer videos, add a link (e.g. YouTube / Drive).' : 'File exceeds the 5 MB limit.')
+      e.target.value = ''
       return
     }
     setBusy(true); setError('')
@@ -47,7 +50,7 @@ export default function CriterionUpload({ applicationId, criterionRef, year, sur
     if (ins.error) { setError(ins.error); setBusy(false); return }
 
     setBusy(false)
-    if (inputRef.current) inputRef.current.value = ''
+    e.target.value = ''
     router.refresh()
   }
 
@@ -89,6 +92,11 @@ export default function CriterionUpload({ applicationId, criterionRef, year, sur
       <label htmlFor={inputId} className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg cursor-pointer"
         style={{ background: '#F1F5F9', color: '#40916C', opacity: busy ? 0.6 : 1 }}>
         {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Paperclip className="w-3 h-3" />} {busy ? 'Uploading…' : 'Attach'}
+      </label>
+      <input ref={videoRef} id={`${inputId}-video`} type="file" accept="video/*" onChange={onFile} disabled={busy} className="hidden" />
+      <label htmlFor={`${inputId}-video`} className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg cursor-pointer"
+        style={{ background: '#F1F5F9', color: '#40916C', opacity: busy ? 0.6 : 1 }} title="Upload a video (up to 50 MB)">
+        <Film className="w-3 h-3" /> Video
       </label>
       <button onClick={() => { setLinking(true); setError('') }} disabled={busy} className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#40916C' }}>
         <Link2 className="w-3 h-3" /> Link
