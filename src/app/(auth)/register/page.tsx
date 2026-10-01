@@ -40,6 +40,9 @@ interface FormData {
   institutionName: string
   institutionNameAr: string
   schoolType: string
+  schoolLevels: string[]   // preschool | elementary | intermediate | high
+  schoolGender: string     // mixed | boys | girls
+  specialNeeds: string     // yes | no
   businessType: string
   governorate: string
   address: string
@@ -102,6 +105,18 @@ const SCHOOL_TYPES = [
   { value: 'private',       en: 'Private School',       ar: 'مدرسة خاصة' },
   { value: 'international', en: 'International School',  ar: 'مدرسة دولية' },
 ]
+const SCHOOL_LEVELS = [
+  { value: 'preschool',    en: 'Preschool / Kindergarten', ar: 'رياض الأطفال' },
+  { value: 'elementary',   en: 'Elementary',               ar: 'ابتدائي' },
+  { value: 'intermediate', en: 'Secondary (Intermediate)', ar: 'متوسط' },
+  { value: 'high',         en: 'High School',              ar: 'ثانوي' },
+]
+const SCHOOL_GENDER = [
+  { value: 'mixed', en: 'Mixed (boys & girls)', ar: 'مختلطة' },
+  { value: 'boys',  en: 'Boys only',            ar: 'بنين' },
+  { value: 'girls', en: 'Girls only',           ar: 'بنات' },
+]
+
 const BUSINESS_TYPES = [
   { value: 'hotel',      en: 'Hotel / Resort',      ar: 'فندق / منتجع' },
   { value: 'restaurant', en: 'Restaurant / Café',   ar: 'مطعم / مقهى' },
@@ -171,7 +186,7 @@ const ECO_SCHOOLS_THEMES = ES_THEMES
 const EMPTY: FormData = {
   name: '', email: '', password: '', confirmPassword: '',
   institutionName: '', institutionNameAr: '',
-  schoolType: '', businessType: '', governorate: '',
+  schoolType: '', schoolLevels: [], schoolGender: '', specialNeeds: '', businessType: '', governorate: '',
   address: '', latitude: '', longitude: '', studentsCount: '', numEmployees: '', contactName: '', contactPhone: '',
   programmes: [],
   website: '', socialLinks: '',
@@ -356,6 +371,9 @@ function RegisterForm() {
       required('institutionName', lang === 'ar' ? 'اسم المؤسسة مطلوب' : 'Institution name is required')
       if (institutionType === 'school') {
         required('schoolType', lang === 'ar' ? 'نوع المدرسة مطلوب' : 'School type is required')
+        if (data.schoolLevels.length === 0) e.schoolLevels = lang === 'ar' ? 'يرجى اختيار مرحلة دراسية واحدة على الأقل' : 'Select at least one school level'
+        required('schoolGender', lang === 'ar' ? 'يرجى اختيار نوع المدرسة (مختلطة / بنين / بنات)' : 'Please choose mixed, boys only or girls only')
+        required('specialNeeds', lang === 'ar' ? 'يرجى الإجابة' : 'Please answer this question')
         required('contactName', lang === 'ar' ? 'اسم المدير مطلوب' : 'Principal name is required')
       } else {
         required('businessType', lang === 'ar' ? 'نوع المنشأة مطلوب' : 'Establishment type is required')
@@ -473,6 +491,9 @@ function RegisterForm() {
       if (institutionType === 'school') {
         const details = {
           ...common,
+          levels: SCHOOL_LEVELS.filter(l => data.schoolLevels.includes(l.value)).map(l => l.en),
+          gender: SCHOOL_GENDER.find(g => g.value === data.schoolGender)?.en ?? null,
+          specialNeedsSchool: data.specialNeeds === 'yes',
           ...(showESDetails ? {
             socialLinks: data.socialLinks || null,
             coordinatorName: data.coordinatorName || null,
@@ -881,6 +902,59 @@ function RegisterForm() {
                       <FieldError msg={errors.schoolType || errors.businessType || ''} />
                     )}
                   </div>
+
+                  {institutionType === 'school' && (
+                    <>
+                      {/* School levels (multi-select) */}
+                      <div>
+                        <Label>{lang === 'ar' ? 'المراحل الدراسية (اختر كل ما ينطبق)' : 'School levels (select all that apply)'}</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {SCHOOL_LEVELS.map(l => {
+                            const on = data.schoolLevels.includes(l.value)
+                            return (
+                              <button key={l.value} type="button"
+                                onClick={() => { setData(d => ({ ...d, schoolLevels: on ? d.schoolLevels.filter(x => x !== l.value) : [...d.schoolLevels, l.value] })); setErrors(e => ({ ...e, schoolLevels: '' })) }}
+                                className="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-semibold text-center transition-all duration-200"
+                                style={on ? { background: '#40916C', color: '#fff' } : { background: '#F4F9F5', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                                {on && <Check className="w-3 h-3" />}{lang === 'ar' ? l.ar : l.en}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        {errors.schoolLevels && <FieldError msg={errors.schoolLevels} />}
+                      </div>
+
+                      {/* Mixed / boys / girls */}
+                      <div>
+                        <Label>{lang === 'ar' ? 'نوع المدرسة حسب الطلاب' : 'Students'}</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {SCHOOL_GENDER.map(g => (
+                            <button key={g.value} type="button" onClick={() => set('schoolGender', g.value)}
+                              className="py-2.5 px-2 rounded-xl text-xs font-semibold text-center transition-all duration-200"
+                              style={data.schoolGender === g.value ? { background: '#40916C', color: '#fff' } : { background: '#F4F9F5', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                              {lang === 'ar' ? g.ar : g.en}
+                            </button>
+                          ))}
+                        </div>
+                        {errors.schoolGender && <FieldError msg={errors.schoolGender} />}
+                      </div>
+
+                      {/* School for students with disabilities */}
+                      <div>
+                        <Label>{lang === 'ar' ? 'هل المدرسة مخصصة لذوي الإعاقة (ذوي الاحتياجات الخاصة)؟' : 'Is this a school for students with disabilities (special needs)?'}</Label>
+                        <div className="inline-flex items-center gap-2">
+                          {(['yes', 'no'] as const).map(v => (
+                            <button key={v} type="button" onClick={() => set('specialNeeds', v)}
+                              className="px-5 py-2 rounded-xl text-xs font-semibold transition-all duration-200"
+                              style={data.specialNeeds === v ? { background: '#40916C', color: '#fff' } : { background: '#F4F9F5', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                              {v === 'yes' ? (lang === 'ar' ? 'نعم' : 'Yes') : (lang === 'ar' ? 'لا' : 'No')}
+                            </button>
+                          ))}
+                        </div>
+                        {errors.specialNeeds && <FieldError msg={errors.specialNeeds} />}
+                      </div>
+                    </>
+                  )}
 
                   {/* Governorate + Phone */}
                   <div className="grid grid-cols-2 gap-4">
@@ -1376,6 +1450,12 @@ function RegisterForm() {
                     <div className="space-y-1.5 text-sm">
                       <p><span style={{ color: '#7A9080' }}>{lang === 'ar' ? 'الاسم: ' : 'Name: '}</span><span className="font-medium text-forest">{data.institutionName}</span></p>
                       <p><span style={{ color: '#7A9080' }}>{lang === 'ar' ? 'النوع: ' : 'Type: '}</span><span className="font-medium text-forest capitalize">{institutionType === 'school' ? data.schoolType : data.businessType}</span></p>
+                      {institutionType === 'school' && (
+                        <p><span style={{ color: '#7A9080' }}>{lang === 'ar' ? 'المراحل: ' : 'Levels: '}</span><span className="font-medium text-forest">{SCHOOL_LEVELS.filter(l => data.schoolLevels.includes(l.value)).map(l => lang === 'ar' ? l.ar : l.en).join(', ') || '—'}</span>
+                          <span style={{ color: '#7A9080' }}>{' · '}</span><span className="font-medium text-forest">{(SCHOOL_GENDER.find(g => g.value === data.schoolGender)?.[lang === 'ar' ? 'ar' : 'en']) ?? '—'}</span>
+                          {data.specialNeeds === 'yes' && <><span style={{ color: '#7A9080' }}>{' · '}</span><span className="font-medium text-forest">{lang === 'ar' ? 'مدرسة لذوي الإعاقة' : 'School for students with disabilities'}</span></>}
+                        </p>
+                      )}
                       <p><span style={{ color: '#7A9080' }}>{lang === 'ar' ? 'المحافظة: ' : 'Governorate: '}</span><span className="font-medium text-forest">{data.governorate}</span></p>
                       <p><span style={{ color: '#7A9080' }}>{lang === 'ar' ? 'جهة الاتصال: ' : 'Contact: '}</span><span className="font-medium text-forest">{data.contactName} · {data.contactPhone}</span></p>
                     </div>
