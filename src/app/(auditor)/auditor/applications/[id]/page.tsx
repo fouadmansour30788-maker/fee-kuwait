@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import EcoPhasePanel from '@/components/audit/EcoPhasePanel'
+import GreenFlagScorecard from '@/components/audit/GreenFlagScorecard'
+import { getEcoBoard } from '@/lib/db/ecoSchools'
 import EcoThemesPicker from '@/components/audit/EcoThemesPicker'
 import { getEcoThemes } from '@/lib/db/ecoThemes'
 import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
@@ -22,6 +25,7 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
   const app = await getApplication(params.id)
   if (!app) notFound()
   const ecoThemes = app!.programme === 'eco-schools' ? await getEcoThemes(params.id) : null
+  const eco = ecoThemes ? await getEcoBoard(params.id) : null
   const [docs, assessments, messages, audits, ps, timeline] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), listAudits(params.id), getPreScreening(params.id), getApplicationTimeline(params.id)])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const reports = docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF).map((d) => ({ id: d.id, name: d.name, url: d.url }))
@@ -97,9 +101,17 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
           </Link>
         )}
         {criteria.length > 0
-          ? <CriteriaBoard role="auditor" applicationId={params.id} rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={params.id} selected={ecoThemes} editable={false} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
+          ? <CriteriaBoard role="auditor" applicationId={params.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={params.id} selected={ecoThemes} editable={false} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
       </div>
+
+      {eco && (eco.state.score) && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Is the school Green Flag ready? — Scorecard</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Scored by the National Operator. Over 800 points means the school is ready for the Green Flag assessment.</p>
+          <GreenFlagScorecard applicationId={params.id} initial={eco.state.score} editable={false} open={eco.allReady} themes={ecoThemes ?? []} stepDocs={eco.stepDocs} scoredAt={eco.state.scoredAt} />
+        </div>
+      )}
 
       {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>

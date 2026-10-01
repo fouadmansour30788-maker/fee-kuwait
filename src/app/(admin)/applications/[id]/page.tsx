@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import EcoPhasePanel from '@/components/audit/EcoPhasePanel'
+import GreenFlagScorecard from '@/components/audit/GreenFlagScorecard'
+import { getEcoBoard } from '@/lib/db/ecoSchools'
 import EcoThemesPicker from '@/components/audit/EcoThemesPicker'
 import { getEcoThemes } from '@/lib/db/ecoThemes'
 import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
@@ -39,6 +42,7 @@ export default async function ApplicationDetail({
   const app = await getApplication(id)
   if (!app) notFound()
   const ecoThemes = app!.programme === 'eco-schools' ? await getEcoThemes(id) : null
+  const eco = ecoThemes ? await getEcoBoard(id) : null
   const [docs, currentAuditor, assessments, bodies, currentCb, messages, audits, ps] = await Promise.all([
     listApplicationDocuments(id), applicationAuditor(id), listCriterionAssessments(id),
     listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id), getPreScreening(id),
@@ -191,15 +195,27 @@ export default async function ApplicationDetail({
       </div>
 
       {/* Shared criteria board — establishment evidence/comments + operator feedback */}
+      {eco && (
+        <EcoPhasePanel applicationId={id} unlockedAt={eco.state.unlockedAt} gate={eco.gate} canApprove={true} />
+      )}
+
       {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The establishment&apos;s evidence and comments alongside your feedback per indicator. The auditor&apos;s result is shown once assessed. Saved automatically.</p>
-          <CriteriaBoard role="admin" applicationId={id} rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={id} selected={ecoThemes} editable={true} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits} auditorName={currentAuditor?.name_en ?? currentAuditor?.email} />
+          <CriteriaBoard role="admin" applicationId={id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={id} selected={ecoThemes} editable={true} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits} auditorName={currentAuditor?.name_en ?? currentAuditor?.email} />
         </div>
       )}
 
       {/* Certification requirement (auto-calculated) */}
+      {eco && (true) && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Is the school Green Flag ready? — Scorecard</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The final exam: fill it in once all seven steps are Ready. 1000 points in total — over 800 means the school is ready for the Green Flag assessment.</p>
+          <GreenFlagScorecard applicationId={id} initial={eco.state.score} editable={true} open={eco.allReady} themes={ecoThemes ?? []} stepDocs={eco.stepDocs} scoredAt={eco.state.scoredAt} />
+        </div>
+      )}
+
       {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Certification requirement</h2>

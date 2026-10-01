@@ -69,3 +69,11 @@ export function normalizeThemes(list: unknown): string[] {
   const valid = new Set(ES_THEMES.map((t) => t.en))
   return Array.from(new Set(list.map((t) => LEGACY_THEME[String(t)] ?? String(t)).filter((t) => valid.has(t))))
 }
+
+// ── Phased workflow ─────────────────────────────────────────────────
+// The school starts with Steps 1–2. Steps 3–7 stay minimised and locked until
+// the National Operator approves Steps 1–2 (each needs an attachment, and at
+// least ES_MIN_THEMES themes must be selected on Step 2).
+export const ES_GATE_STEPS = ['1', '2']
+export const ES_LOCKED_STEPS = ['3', '4', '5', '6', '7']
+export const ES_MIN_THEMES = 2

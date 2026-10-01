@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import EcoPhasePanel from '@/components/audit/EcoPhasePanel'
+import GreenFlagScorecard from '@/components/audit/GreenFlagScorecard'
+import { getEcoBoard } from '@/lib/db/ecoSchools'
 import EcoThemesPicker from '@/components/audit/EcoThemesPicker'
 import { getEcoThemes } from '@/lib/db/ecoThemes'
 import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
@@ -36,6 +39,7 @@ export default async function CbApplicationDetail({
   const app = await getApplication(id)
   if (!app) notFound()
   const ecoThemes = app!.programme === 'eco-schools' ? await getEcoThemes(id) : null
+  const eco = ecoThemes ? await getEcoBoard(id) : null
   const [docs, assessments, messages, audits, ps, cbAuditors, trail, pay] = await Promise.all([listApplicationDocuments(id), listCriterionAssessments(id), listCriterionMessages(id), listAudits(id), getPreScreening(id), listAuditorsForCb(), listAuditTrail(id), getPaymentSummary(id)])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const s = statusMeta(app.status)
@@ -133,9 +137,17 @@ export default async function CbApplicationDetail({
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The full checklist with the establishment&apos;s evidence, the auditor&apos;s results and remarks, and comments. You can add comments; results are read-only.</p>
-          <CriteriaBoard role="cb" applicationId={id} rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={id} selected={ecoThemes} editable={false} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits}
+          <CriteriaBoard role="cb" applicationId={id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={id} selected={ecoThemes} editable={false} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits}
             cbPreEditable={['cb_pre_audit_review', 'cb_pre_audit_re_review', 'cb_review'].includes(app.status)}
             cbFinalEditable={['cb_final_review', 'cb_final_re_review'].includes(app.status)} />
+        </div>
+      )}
+
+      {eco && (eco.state.score) && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Is the school Green Flag ready? — Scorecard</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Scored by the National Operator. Over 800 points means the school is ready for the Green Flag assessment.</p>
+          <GreenFlagScorecard applicationId={id} initial={eco.state.score} editable={false} open={eco.allReady} themes={ecoThemes ?? []} stepDocs={eco.stepDocs} scoredAt={eco.state.scoredAt} />
         </div>
       )}
 

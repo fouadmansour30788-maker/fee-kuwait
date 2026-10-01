@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { establishmentCanEdit } from '@/lib/workflow'
 import { revalidatePath } from 'next/cache'
+import { isEcoStepLocked, notifyEcoGateIfReady } from '@/lib/db/ecoSchools'
 
 const BUCKET = 'application-docs'
 
@@ -31,6 +32,7 @@ export async function recordDocument(input: {
   const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
   const isStaff = !!me && ['admin', 'super_admin', 'auditor', 'certification_body'].includes(me.role)
   if (app.applicant_id !== user.id && !isStaff) return { error: 'Not allowed' }
+  if (await isEcoStepLocked(input.applicationId, input.criterionRef)) return { error: 'This step opens after the National Operator approves Steps 1–2.' }
 
   const { error } = await admin.from('application_documents').insert({
     application_id: input.applicationId, uploaded_by: user.id,
@@ -40,6 +42,7 @@ export async function recordDocument(input: {
     surveillance_id: input.surveillanceId ?? null,
   })
   if (error) return { error: error.message }
+  if (input.criterionRef === '1' || input.criterionRef === '2') await notifyEcoGateIfReady(input.applicationId)
 
   revalidatePath(`/business/application/${input.applicationId}`)
   revalidatePath(`/school/application/${input.applicationId}`)

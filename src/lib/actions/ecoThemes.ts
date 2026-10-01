@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { establishmentCanEdit } from '@/lib/workflow'
 import { normalizeThemes } from '@/lib/data/ecoSchoolsCriteria'
+import { notifyEcoGateIfReady } from '@/lib/db/ecoSchools'
 
 // Save the Eco-Schools themes (Step 2). The school may change them while its
 // application is editable; the National Operator may change them at any time.
@@ -26,6 +27,7 @@ export async function setEcoThemes(applicationId: string, themes: string[]): Pro
   const { error } = await admin.from('applications').update({ es_themes: normalizeThemes(themes), updated_at: new Date().toISOString() }).eq('id', applicationId)
   if (error) return { error: error.message.includes('es_themes') ? 'Run migration 052 (Eco-Schools themes) first.' : error.message }
 
+  await notifyEcoGateIfReady(applicationId)
   revalidatePath(`/school/application/${applicationId}`)
   revalidatePath(`/applications/${applicationId}`)
   revalidatePath(`/cb/applications/${applicationId}`)

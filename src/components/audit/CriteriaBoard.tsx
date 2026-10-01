@@ -399,7 +399,7 @@ const Row = memo(function Row({
 // Shared collaborative criteria board.
 export default function CriteriaBoard({
   applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false, auditEditable = false, applicantId,
-  audits = [], auditorName, editableCriteria = null, cbPreEditable = false, cbFinalEditable = false, rowExtras,
+  audits = [], auditorName, editableCriteria = null, cbPreEditable = false, cbFinalEditable = false, rowExtras, lockedRefs = [], lockedNote,
 }: {
   applicationId: string
   criteria: CriterionRef[]
@@ -419,6 +419,8 @@ export default function CriteriaBoard({
   cbPreEditable?: boolean   // CB may edit the pre-audit review column
   cbFinalEditable?: boolean // CB may edit the final review column
   rowExtras?: Record<string, React.ReactNode> // extra content under a criterion's title, by ref
+  lockedRefs?: string[]   // rows shown minimised + locked (e.g. Eco-Schools Steps 3–7 before approval)
+  lockedNote?: string
 }) {
   const [rows, setRows] = useState(assessments)
   const [msgs, setMsgs] = useState(messages)
@@ -655,7 +657,21 @@ export default function CriteriaBoard({
                     </td>
                   </tr>
                   {g.rows.map((c) => (
-                    <Row key={c.ref} c={c} a={rows[c.ref] ?? BLANK} docsList={docsByRef.get(c.ref) ?? EMPTY_DOCS} thread={msgsByRef.get(c.ref) ?? EMPTY_MSGS}
+                    lockedRefs.includes(c.ref) ? (
+                      <tr key={c.ref} className="align-top" style={{ background: '#F8FAFC' }}>
+                        <td className="px-3 py-2.5 min-w-[180px]">
+                          <div className="flex items-start gap-1.5 opacity-60">
+                            <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>
+                            <span style={{ color: '#475569' }}>{c.title}</span>
+                          </div>
+                        </td>
+                        <td colSpan={20} className="px-3 py-2.5">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg" style={{ background: '#F1F5F9', color: '#64748B' }}>
+                            <Lock className="w-3.5 h-3.5" /> {lockedNote ?? 'Locked'}
+                          </span>
+                        </td>
+                      </tr>
+                    ) : <Row key={c.ref} c={c} a={rows[c.ref] ?? BLANK} docsList={docsByRef.get(c.ref) ?? EMPTY_DOCS} thread={msgsByRef.get(c.ref) ?? EMPTY_MSGS}
                       year={year} applicationId={applicationId} applicantId={applicantId}
                       estCanEdit={estCanEdit && (editableCriteria === null || editableCriteria.includes(c.ref))} isOperator={isOperator} canComment={canComment} editAudit={editAudit}
                       cbPreEditable={cbPreEditable} cbFinalEditable={cbFinalEditable} showExternal={showExternal} selAudit={selAudit}

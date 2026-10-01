@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { establishmentCanEdit } from '@/lib/workflow'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
+import { isEcoStepLocked, notifyEcoGateIfReady } from '@/lib/db/ecoSchools'
 import { revalidatePath } from 'next/cache'
 
 const RESULTS = ['pending', 'pass', 'no_pass', 'na']
@@ -93,6 +94,7 @@ export async function setInternalResult(applicationId: string, criterionRef: str
   if (!user) return { error: 'Not signed in' }
   const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
   if (!me || !['admin', 'super_admin'].includes(me.role)) return { error: 'Not allowed' }
+  if (await isEcoStepLocked(applicationId, criterionRef)) return { error: 'This step opens after Steps 1–2 are approved.' }
 
   const { error } = await supabase.from('criterion_assessments').upsert({
     application_id: applicationId,
@@ -175,6 +177,7 @@ export async function setApplicantStatus(applicationId: string, criterionRef: st
   const { data: own } = await supabase.from('applications').select('status, programme').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
   if (!own) return { error: 'Not allowed' }
   if (!establishmentCanEdit(own.status)) return { error: 'This application is locked for editing.' }
+  if (await isEcoStepLocked(applicationId, criterionRef)) return { error: 'This step opens after the National Operator approves Steps 1–2.' }
 
   const admin = createAdminClient()
   const { error } = await admin.from('criterion_assessments').upsert({
@@ -185,6 +188,8 @@ export async function setApplicantStatus(applicationId: string, criterionRef: st
     updated_at: new Date().toISOString(),
   }, { onConflict: 'application_id,criterion_ref' })
   if (error) return { error: error.message }
+
+  if (criterionRef === '1' || criterionRef === '2') await notifyEcoGateIfReady(applicationId)
 
   // Notify the operator(s) only once ALL applicable criteria are Complete / N/A.
   if (status === 'complete' || status === 'na') {
