@@ -1,7 +1,7 @@
 // ── Eco-Schools: the Seven Steps ────────────────────────────────────
-// The FEE Eco-Schools methodology. A school must implement all seven steps to be
-// awarded the Green Flag, so every step is Imperative (I). Each step's
-// description sets out the expected implementation and the audit evidence.
+// Source: FEE "Eco-Schools" presentation — "A Seven-Step Change Framework for
+// Continuous Improvement" (p.10) and the step slides (pp.11–18). A school must
+// implement all seven steps for the Green Flag, so every step is Imperative (I).
 
 export interface ESCriterion { id: string; title: string; title_ar: string; note: string; type: 'I' }
 
@@ -9,31 +9,31 @@ export const ES_AREA = 'Eco-Schools Seven Steps'
 
 export const ES_CRITERIA: ESCriterion[] = [
   {
-    id: '1', title: 'Form an Eco-Committee', title_ar: 'تشكيل اللجنة البيئية', type: 'I',
-    note: 'Expectations for implementation\nThe school forms an Eco-Committee that drives the programme. Students make up the majority of members and lead its work, alongside representatives of teachers, non-teaching staff, school management and parents; the wider community (e.g. local authority, partners) may also be involved. The committee meets regularly, keeps minutes of its meetings, and shares decisions with the whole school.\n\nAudit evidence\nMember list showing student majority and representation of the school community; minutes of committee meetings; evidence the minutes/decisions are displayed or shared.',
+    id: '1', title: 'Form an Eco Committee', title_ar: 'تشكيل اللجنة البيئية', type: 'I',
+    note: 'Eco-School Committee for Leadership — representative of the school community. It directs and facilitates the sustainability of the whole institution and develops future sustainability leaders.\n\nThe Eco-Schools Committee is the driving force behind the Eco-Schools process and represents the ideas of the whole school.\n• We recommend having a diverse Eco Committee: Students / Teachers / The Principal / Non-Teaching Staff / Parents / Members of the Board of Management / interested and relevant members of the wider community\n• The majority of the Committee members should be students and meetings/activities should be student-led\n• The Eco Committee meets regularly to discuss environmental, educational, and social actions for the school\n• The Eco Committee ensures that the entire school receives regular updates and is involved in different projects',
   },
   {
-    id: '2', title: 'Carry out an Environmental Review', title_ar: 'إجراء المراجعة البيئية', type: 'I',
-    note: 'Expectations for implementation\nThe Eco-Committee, with students actively involved, carries out an environmental review of the school to assess its current environmental performance across the Eco-Schools themes (e.g. water, energy, waste, biodiversity, school grounds). The review identifies strengths and the priority areas for improvement, and its results are shared with the school community.\n\nAudit evidence\nCompleted environmental review (checklist/audit) with findings; evidence of student involvement; record that the results were communicated.',
+    id: '2', title: 'Carry out a Sustainability Audit', title_ar: 'إجراء التدقيق البيئي (المراجعة البيئية)', type: 'I',
+    note: 'Environmental Review to Identify Issues — understanding the biophysical environment, auditing its level of sustainability and identifying the need for improvements.\n\nThis helps the school to identify its current environmental & educational impact and highlights areas for improvement.\n• The aim is to investigate the environmental, educational, and social issues in your school/community, e.g. through surveys, interviews, observations, measurements\n• Make sure that the wider school community works as closely as possible with the Eco Committee to carry out the Review. It is essential that as many pupils as possible participate in this process\n• The results of your Sustainability Audit will inform your Action Plan\n\nFor the purpose of the Environmental Audit there are 13 main Themes — main themes: Biodiversity & Nature, Water & Sanitation, Energy, Transport, Food, Marine & Coast, Litter, School Grounds, Waste; cross-cutting themes: Climate Change, Health & Wellbeing, Global Citizenship & Culture, Equality & Equity.',
   },
   {
-    id: '3', title: 'Create an Action Plan', title_ar: 'وضع خطة العمل', type: 'I',
-    note: 'Expectations for implementation\nBased on the environmental review, the Eco-Committee draws up an action plan for the chosen themes. The plan sets clear, measurable targets and lists the actions, who is responsible, the timeline, and how progress will be monitored. The plan is displayed and known across the school.\n\nAudit evidence\nWritten action plan with targets, actions, responsibilities, deadlines and monitoring methods; evidence it is displayed (e.g. Eco-board).',
+    id: '3', title: 'Link to the Curriculum', title_ar: 'الربط بالمنهج الدراسي', type: 'I',
+    note: 'Curriculum Linkages to Align with Curriculum Standards — sustainability embedded in curriculum standards, subjects, and non-formal spaces and contexts.\n\nEco-Schools activities are linked to the curriculum, ensuring Eco-Schools is truly integrated within the school community.\n• Embedding the action plan and the main themes within the existing curriculum helps ensure that educational objectives are met (and not only environmental objectives)\n• Pupils should gain an understanding of how real-life environmental and social issues are dealt with in real-life settings',
   },
   {
-    id: '4', title: 'Monitor and Evaluate', title_ar: 'الرصد والتقييم', type: 'I',
-    note: 'Expectations for implementation\nProgress against the action plan targets is measured and recorded regularly, with students involved in collecting the data. Results are evaluated so the school can see what has worked and adjust its actions, and outcomes are shared.\n\nAudit evidence\nMonitoring records (e.g. meter readings, waste weights, surveys) and charts/graphs of progress against targets; evaluation notes and any resulting changes to the plan.',
+    id: '4', title: 'Make an Action Plan', title_ar: 'وضع خطة العمل', type: 'I',
+    note: 'Action Plan to Address Sustainability Issues Through ESD — prioritising plausible actions, setting specific and achievable targets with completion dates and responsibilities.\n\nResults from the environmental review are used to design the Action Plan, forming the core of student action.\n• As a new Eco-School, we recommend focusing on max. 3 themes at a time\n• Create an Action Plan to resolve or improve the identified problems. The plan should include: the necessary tasks, the people responsible and time frame for actions in order to achieve your goals/targets\n• Make your Action Plan SMART (specific, measurable, attainable, realistic and timely)',
   },
   {
-    id: '5', title: 'Link to the Curriculum', title_ar: 'الربط بالمنهج الدراسي', type: 'I',
-    note: 'Expectations for implementation\nEco-Schools themes and activities are integrated into teaching and learning across different subjects and year groups, so environmental learning is part of everyday classroom work rather than an extra-curricular activity only.\n\nAudit evidence\nLesson plans, schemes of work or projects showing environmental content across subjects and grades; samples of student work.',
+    id: '5', title: 'Monitor & Evaluate', title_ar: 'التنفيذ والرصد والتقييم', type: 'I',
+    note: 'Implementation, Monitoring & Evaluation — implement the change, check progress towards set targets, and make amendments where and when necessary.\n\nThis is carried out to find out if the targets set by the action plan are being achieved.\n• Results of monitoring should be regularly updated and displayed for the whole school to see\n• The monitoring methods that you use will depend on the targets and measurement criteria decided on in your Action Plan for the topics you wish to look at and the age and ability of the pupils and other individuals who carry it out\n• Evaluation follows on from monitoring. Evaluating the success of your activities will allow you to make changes to your Action Plan if required',
   },
   {
-    id: '6', title: 'Inform and Involve', title_ar: 'الإعلام والإشراك', type: 'I',
-    note: 'Expectations for implementation\nThe school informs and involves the whole school and the wider community in its Eco-Schools work — for example through an Eco-board, assemblies, newsletters, the school website/social media, events and community campaigns — so that everyone knows about and can take part in the activities.\n\nAudit evidence\nPhotos of the Eco-board and events; newsletters, website/social media posts, press or community activities; evidence of parent/community participation.',
+    id: '6', title: 'Inform & Involve', title_ar: 'الإعلام والإشراك', type: 'I',
+    note: 'Informing and Involving for Participation — publicity and awareness raising to keep the school stakeholders and wider community involved and informed.\n\nThis means getting everyone on board! Actions are not solely confined to the school community, but are encouraged to engage community members and parents, for example.\n• It is essential that the whole school is involved in, and the wider community aware of, the school\'s positive actions\n• Ideas for communication and PR: school assemblies, school notice boards, school newsletters and websites, school plays, dramas and fashion shows based on environmental and social issues, letters to businesses and corporations, local and national press, radio and television',
   },
   {
-    id: '7', title: 'Produce an Eco-Code', title_ar: 'صياغة الميثاق البيئي', type: 'I',
-    note: 'Expectations for implementation\nStudents create an Eco-Code — a short, memorable statement (e.g. a mission statement, poem or song) that expresses the school\'s commitment to the environment and reflects its action plan. The Eco-Code is agreed by the school community and displayed prominently around the school.\n\nAudit evidence\nThe Eco-Code itself; evidence it was created by students; photos of it displayed around the school.',
+    id: '7', title: 'Produce an Eco Code', title_ar: 'صياغة الميثاق البيئي', type: 'I',
+    note: 'Eco Code of Values — the Eco Code is a statement of values and demonstrates the internalization of a sustainability culture in the whole institution.\n\nStudents collaborate to devise a statement that represents the school\'s commitment to the environment.\n• It should be memorable and familiar to everyone in the school\n• The format is flexible, it can be a song, drawing, model, poem, etc.\n• The Eco-Code should list the main objectives of your Action Plan\n• It is crucial that pupils play a key role in the development of the Eco Code, as this will give them a greater sense of responsibility towards the values the Eco Code represents\n• The Eco Code should be prominently displayed throughout the school',
   },
 ]
