@@ -14,7 +14,7 @@ import { listCriterionAssessments } from '@/lib/db/assessments'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { complianceStatus } from '@/lib/compliance'
 import { GUIDELINE_CYCLE } from '@/lib/data/greenKeyCriteria'
-import { getPaymentSummary, formatMoney, PAYMENT_GATED_ACTIONS } from '@/lib/db/invoices'
+import { getPaymentSummary, PAYMENT_GATED_ACTIONS } from '@/lib/db/invoices'
 import { submitToCbBlocker } from '@/lib/submitReadiness'
 
 // Diagram guards (OQ-3, OQ-4, "all criteria assessed"): some transitions are only
@@ -26,7 +26,7 @@ async function guardAction(applicationId: string, action: string, app: { program
     if (!pay.fullyPaid) {
       return pay.count === 0
         ? 'Certification is locked: no invoice has been issued for this application yet. The National Operator must invoice the fees and mark them fully paid.'
-        : `Certification is locked until the National Operator marks the fees fully paid — ${formatMoney(pay.outstanding, pay.currency)} outstanding.`
+        : 'Certification is locked until the National Operator marks the fees fully paid.'
     }
   }
 

@@ -9,7 +9,7 @@ import { listCriterionMessages } from '@/lib/db/messages'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { listAuditorsForCb } from '@/lib/db/audit'
-import { getPaymentSummary, formatMoney, PAYMENT_GATED_ACTIONS } from '@/lib/db/invoices'
+import { getPaymentSummary, PAYMENT_GATED_ACTIONS } from '@/lib/db/invoices'
 import { CB_ACTIONS, type AppStatus } from '@/lib/workflow'
 import CbReviewPanel from '@/components/audit/CbReviewPanel'
 import WorkflowActions from '@/components/audit/WorkflowActions'
@@ -111,10 +111,10 @@ export default async function CbApplicationDetail({
               <Wallet className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <p>
                 {pay.fullyPaid
-                  ? <>Fees fully paid ({formatMoney(pay.paid, pay.currency)}). You can issue the certification decision.</>
+                  ? <>Fees fully paid. You can issue the certification decision.</>
                   : pay.count === 0
                     ? <>No invoice has been issued yet. Certification is locked until the National Operator invoices the fees and marks them fully paid.</>
-                    : <>Awaiting payment — {formatMoney(pay.outstanding, pay.currency)} outstanding of {formatMoney(pay.billed, pay.currency)}. Certification is locked until the National Operator marks the fees fully paid.</>}
+                    : <>Awaiting payment. Certification is locked until the National Operator marks the fees fully paid.</>}
               </p>
             </div>
           )}
