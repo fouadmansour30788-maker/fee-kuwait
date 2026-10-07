@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import EcoPhasePanel from '@/components/audit/EcoPhasePanel'
-import { ecoRowExtras, ecoHeaderExtra } from '@/components/audit/ecoBoardExtras'
+import { ecoRowExtras, ecoHeaderExtra, EcoResults } from '@/components/audit/ecoBoardExtras'
 import { getEcoBoard } from '@/lib/db/ecoSchools'
 import { getEcoThemes } from '@/lib/db/ecoThemes'
 import { notFound } from 'next/navigation'
@@ -103,7 +103,15 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
       </div>
 
-      {criteria.length > 0 && (
+      {eco && (
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Green Flag results</h2>
+          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Score compared with the eligibility score: over 800 of 1000 points.</p>
+          <EcoResults eco={eco} />
+        </div>
+      )}
+
+      {criteria.length > 0 && !eco && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Certification requirement</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Auto-calculated from the programme criteria and your results.</p>
