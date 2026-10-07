@@ -105,6 +105,16 @@ export default async function ApplicationDetail({
         </div>
       )}
 
+      {/* Workflow actions (whiteboard state machine) */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: app.status === 'pending_eligibility' ? '#93C5FD' : '#E2E8F0', boxShadow: app.status === 'pending_eligibility' ? '0 0 0 3px #DBEAFE' : undefined }}>
+        <div className="flex items-center gap-2 mb-1">
+          <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>{app.status === 'pending_eligibility' ? 'Eligibility review' : 'Workflow'}</h2>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+        </div>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>{app.status === 'pending_eligibility' ? 'Review the registration and pre-screening, then approve eligibility to open the full application — or reject it with a reason.' : 'Actions available to the National Operator at this stage.'}</p>
+        <WorkflowActions applicationId={id} role="operator" status={app.status} criteria={criteria.map((c) => ({ ref: c.ref, title: c.title }))} />
+      </div>
+
       {/* Journey & history */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
         <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Journey &amp; history</h2>
@@ -229,16 +239,6 @@ export default async function ApplicationDetail({
           <ReopenRevision applicationId={id} ncCount={ncCount} deadline={app.status === 'revision' ? app.revision_deadline : null} />
         </div>
       )}
-
-      {/* Workflow actions (whiteboard state machine) */}
-      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-        <div className="flex items-center gap-2 mb-1">
-          <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Workflow</h2>
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
-        </div>
-        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Actions available to the National Operator at this stage.</p>
-        <WorkflowActions applicationId={id} role="operator" status={app.status} criteria={criteria.map((c) => ({ ref: c.ref, title: c.title }))} />
-      </div>
 
       {/* Re-open a locked/closed application for the establishment to edit again */}
       {!establishmentCanEdit(app.status) && (
