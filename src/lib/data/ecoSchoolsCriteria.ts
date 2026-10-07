@@ -40,21 +40,22 @@ export const ES_CRITERIA: ESCriterion[] = [
 
 // ── The 13 Eco-Schools themes (FEE presentation p.13) ───────────────
 // Part of Step 2: the school selects the themes it is working on.
-export interface ESTheme { en: string; ar: string; kind: 'main' | 'cross' }
+export interface ESTheme { en: string; ar: string; kind: 'main' | 'cross'; icon: string }
+// Official Eco-Schools theme icons (from the FEE Eco-Schools presentation), in /public/eco-themes.
 export const ES_THEMES: ESTheme[] = [
-  { en: 'Biodiversity & Nature', ar: 'التنوع البيولوجي والطبيعة', kind: 'main' },
-  { en: 'Water & Sanitation', ar: 'المياه والصرف الصحي', kind: 'main' },
-  { en: 'Energy', ar: 'الطاقة', kind: 'main' },
-  { en: 'Transport', ar: 'النقل', kind: 'main' },
-  { en: 'Food', ar: 'الغذاء', kind: 'main' },
-  { en: 'Marine & Coast', ar: 'البحار والسواحل', kind: 'main' },
-  { en: 'Litter', ar: 'النفايات المتناثرة', kind: 'main' },
-  { en: 'School Grounds', ar: 'ساحات المدرسة', kind: 'main' },
-  { en: 'Waste', ar: 'النفايات', kind: 'main' },
-  { en: 'Climate Change', ar: 'تغيّر المناخ', kind: 'cross' },
-  { en: 'Health & Wellbeing', ar: 'الصحة والرفاهية', kind: 'cross' },
-  { en: 'Global Citizenship & Culture', ar: 'المواطنة العالمية والثقافة', kind: 'cross' },
-  { en: 'Equality & Equity', ar: 'المساواة والإنصاف', kind: 'cross' },
+  { en: 'Biodiversity & Nature', ar: 'التنوع البيولوجي والطبيعة', kind: 'main', icon: '/eco-themes/biodiversity.png' },
+  { en: 'Water & Sanitation', ar: 'المياه والصرف الصحي', kind: 'main', icon: '/eco-themes/water.png' },
+  { en: 'Energy', ar: 'الطاقة', kind: 'main', icon: '/eco-themes/energy.png' },
+  { en: 'Transport', ar: 'النقل', kind: 'main', icon: '/eco-themes/transport.png' },
+  { en: 'Food', ar: 'الغذاء', kind: 'main', icon: '/eco-themes/food.png' },
+  { en: 'Marine & Coast', ar: 'البحار والسواحل', kind: 'main', icon: '/eco-themes/marine.png' },
+  { en: 'Litter', ar: 'النفايات المتناثرة', kind: 'main', icon: '/eco-themes/litter.png' },
+  { en: 'School Grounds', ar: 'ساحات المدرسة', kind: 'main', icon: '/eco-themes/grounds.png' },
+  { en: 'Waste', ar: 'النفايات', kind: 'main', icon: '/eco-themes/waste.png' },
+  { en: 'Climate Change', ar: 'تغيّر المناخ', kind: 'cross', icon: '/eco-themes/climate.png' },
+  { en: 'Health & Wellbeing', ar: 'الصحة والرفاهية', kind: 'cross', icon: '/eco-themes/health.png' },
+  { en: 'Global Citizenship & Culture', ar: 'المواطنة العالمية والثقافة', kind: 'cross', icon: '/eco-themes/citizenship.png' },
+  { en: 'Equality & Equity', ar: 'المساواة والإنصاف', kind: 'cross', icon: '/eco-themes/equality.png' },
 ]
 
 // The step whose row carries the theme selection.

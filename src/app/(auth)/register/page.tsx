@@ -1317,6 +1317,8 @@ function RegisterForm() {
                               <span className="w-4 h-4 rounded border flex items-center justify-center flex-shrink-0" style={on ? { background: '#fff', borderColor: '#fff' } : { borderColor: '#C8E6D0' }}>
                                 {on && <Check className="w-3 h-3" style={{ color: '#40916C' }} />}
                               </span>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={t.icon} alt="" className="w-7 h-7 rounded-full flex-shrink-0" style={{ filter: on ? 'none' : 'grayscale(0.6)' }} />
                               {lang === 'ar' ? t.ar : t.en}
                             </button>
                           )

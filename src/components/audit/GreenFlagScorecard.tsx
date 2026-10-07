@@ -8,6 +8,8 @@ import {
   type ScoreAnswers, type ScoreAnswer,
 } from '@/lib/data/greenFlagScorecard'
 import { saveGreenFlagSection } from '@/lib/actions/ecoSchools'
+import { ES_THEMES } from '@/lib/data/ecoSchoolsCriteria'
+import { ThemeTile } from '@/components/audit/EcoThemesPicker'
 
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Other', 'Not disclosed']
 const field = { border: '1px solid #E2E8F0', color: '#1E293B' } as const
@@ -92,8 +94,8 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
                 )}
 
                 {q.kind === 'themes' && (
-                  <div className="flex flex-wrap gap-1">
-                    {themes.length ? themes.map((t) => <span key={t} className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>{t}</span>)
+                  <div className="flex flex-wrap gap-2">
+                    {themes.length ? ES_THEMES.filter((t) => themes.includes(t.en)).map((t) => <div key={t.en} className="w-[88px]"><ThemeTile t={t} on size="sm" /></div>)
                       : <span className="text-xs" style={{ color: '#94A3B8' }}>No themes selected on Step 2</span>}
                   </div>
                 )}
