@@ -1,10 +1,8 @@
 import Link from 'next/link'
 import EcoPhasePanel from '@/components/audit/EcoPhasePanel'
-import GreenFlagScorecard from '@/components/audit/GreenFlagScorecard'
+import { ecoRowExtras, ecoHeaderExtra } from '@/components/audit/ecoBoardExtras'
 import { getEcoBoard } from '@/lib/db/ecoSchools'
-import EcoThemesPicker from '@/components/audit/EcoThemesPicker'
 import { getEcoThemes } from '@/lib/db/ecoThemes'
-import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox, Clock } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES } from '@/lib/db/applications'
@@ -128,15 +126,7 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Attach evidence and add a comment for each indicator, and see your reviewer&apos;s feedback.</p>
-          <CriteriaBoard role="establishment" applicationId={app.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={params.id} selected={ecoThemes} editable={!locked} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} audits={audits} editableCriteria={editableCriteria} />
-        </div>
-      )}
-
-      {eco && (eco.state.score) && (
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Is the school Green Flag ready? — Scorecard</h2>
-          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Your Green Flag score, assessed by the National Operator. Over 800 points means your school is ready for the Green Flag assessment.</p>
-          <GreenFlagScorecard applicationId={params.id} initial={eco.state.score} editable={false} open={eco.allReady} themes={ecoThemes ?? []} stepDocs={eco.stepDocs} scoredAt={eco.state.scoredAt} />
+          <CriteriaBoard role="establishment" applicationId={app.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={eco ? ecoRowExtras({ applicationId: params.id, eco, themes: ecoThemes ?? [], themesEditable: !locked, scoreEditable: false }) : undefined} headerExtra={eco ? ecoHeaderExtra(eco, false) : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} audits={audits} editableCriteria={editableCriteria} />
         </div>
       )}
 

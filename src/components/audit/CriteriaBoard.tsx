@@ -341,7 +341,6 @@ const Row = memo(function Row({
             {c.type && <span className="ml-1.5 text-[10px] font-bold px-1 py-0.5 rounded" style={{ background: c.type.includes('I') ? '#FEF3C7' : '#EEF2F6', color: c.type.includes('I') ? '#92400E' : '#64748B' }}>{c.type}</span>}
           </span>
         </div>
-        {extra}
       </td>
       <td className="px-3 py-3 min-w-[240px] max-w-[380px] align-top">{c.description ? <ExpandableText text={c.description} onOpen={() => onDesc(c)} /> : <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>}</td>
       <td className="px-3 py-3">
@@ -399,7 +398,7 @@ const Row = memo(function Row({
 // Shared collaborative criteria board.
 export default function CriteriaBoard({
   applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false, auditEditable = false, applicantId,
-  audits = [], auditorName, editableCriteria = null, cbPreEditable = false, cbFinalEditable = false, rowExtras, lockedRefs = [], lockedNote,
+  audits = [], auditorName, editableCriteria = null, cbPreEditable = false, cbFinalEditable = false, rowExtras, lockedRefs = [], lockedNote, headerExtra,
 }: {
   applicationId: string
   criteria: CriterionRef[]
@@ -421,6 +420,7 @@ export default function CriteriaBoard({
   rowExtras?: Record<string, React.ReactNode> // extra content under a criterion's title, by ref
   lockedRefs?: string[]   // rows shown minimised + locked (e.g. Eco-Schools Steps 3–7 before approval)
   lockedNote?: string
+  headerExtra?: React.ReactNode   // extra summary strip above the table
 }) {
   const [rows, setRows] = useState(assessments)
   const [msgs, setMsgs] = useState(messages)
@@ -630,6 +630,8 @@ export default function CriteriaBoard({
         </div>
       )}
 
+      {headerExtra}
+
       <div className="rounded-2xl border overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm" style={{ minWidth: 1280 }}>
@@ -675,8 +677,19 @@ export default function CriteriaBoard({
                       year={year} applicationId={applicationId} applicantId={applicantId}
                       estCanEdit={estCanEdit && (editableCriteria === null || editableCriteria.includes(c.ref))} isOperator={isOperator} canComment={canComment} editAudit={editAudit}
                       cbPreEditable={cbPreEditable} cbFinalEditable={cbFinalEditable} showExternal={showExternal} selAudit={selAudit}
-                      onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onCbPre={onCbPre} onCbFinal={onCbFinal} onPost={onPost} onDesc={onDesc} extra={rowExtras?.[c.ref]} />
-                  ))}
+                      onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onCbPre={onCbPre} onCbFinal={onCbFinal} onPost={onPost} onDesc={onDesc} />
+                  )).flatMap((el, i) => {
+                    // Step extras (e.g. Eco-Schools themes + Green Flag questions) in a full-width row under the step.
+                    const ref = g.rows[i].ref
+                    const extra = !lockedRefs.includes(ref) ? rowExtras?.[ref] : undefined
+                    return extra ? [el, (
+                      <tr key={`${ref}-extra`}>
+                        <td colSpan={cols} className="px-3 pb-3 pt-0" style={{ borderTop: 'none' }}>
+                          <div className="space-y-2 pl-6">{extra}</div>
+                        </td>
+                      </tr>
+                    )] : [el]
+                  })}
                 </Fragment>
               ))}
               {filtered.length === 0 && (

@@ -1,10 +1,8 @@
 import Link from 'next/link'
 import EcoPhasePanel from '@/components/audit/EcoPhasePanel'
-import GreenFlagScorecard from '@/components/audit/GreenFlagScorecard'
+import { ecoRowExtras, ecoHeaderExtra } from '@/components/audit/ecoBoardExtras'
 import { getEcoBoard } from '@/lib/db/ecoSchools'
-import EcoThemesPicker from '@/components/audit/EcoThemesPicker'
 import { getEcoThemes } from '@/lib/db/ecoThemes'
-import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText, Download, Inbox, Mail, Building2, Calendar, Smartphone, KeyRound } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
@@ -101,17 +99,9 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
           </Link>
         )}
         {criteria.length > 0
-          ? <CriteriaBoard role="auditor" applicationId={params.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={ecoThemes ? { [ES_THEMES_STEP]: <EcoThemesPicker applicationId={params.id} selected={ecoThemes} editable={false} /> } : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
+          ? <CriteriaBoard role="auditor" applicationId={params.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={eco ? ecoRowExtras({ applicationId: params.id, eco, themes: ecoThemes ?? [], themesEditable: false, scoreEditable: false }) : undefined} headerExtra={eco ? ecoHeaderExtra(eco, false) : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
       </div>
-
-      {eco && (eco.state.score) && (
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
-          <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Is the school Green Flag ready? — Scorecard</h2>
-          <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Scored by the National Operator. Over 800 points means the school is ready for the Green Flag assessment.</p>
-          <GreenFlagScorecard applicationId={params.id} initial={eco.state.score} editable={false} open={eco.allReady} themes={ecoThemes ?? []} stepDocs={eco.stepDocs} scoredAt={eco.state.scoredAt} />
-        </div>
-      )}
 
       {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>

@@ -50,23 +50,45 @@ export async function approveEcoSteps(applicationId: string): Promise<{ ok?: tru
   return { ok: true }
 }
 
-// Operator saves the "Is your school Green Flag ready?" scorecard. Opens once
-// every step is marked Ready (or N/A Confirmed). The total is computed here.
-export async function saveGreenFlagScore(applicationId: string, answers: ScoreAnswers): Promise<{ ok?: true; total?: number; error?: string }> {
+// Operator saves ONE step's Green Flag questions (shown under that step on the
+// criteria board). Merged into the stored scorecard; the total is recomputed here.
+// Opens once every step is marked Ready (or N/A Confirmed).
+export async function saveGreenFlagSection(applicationId: string, sectionId: string, answers: ScoreAnswers): Promise<{ ok?: true; total?: number; error?: string }> {
   const gate = await requireOperator()
   if ('error' in gate) return { error: gate.error }
+  const sec = GREEN_FLAG_SECTIONS.find((s) => s.id === sectionId)
+  if (!sec) return { error: 'Unknown section.' }
   const admin = createAdminClient()
-  const { data: app } = await admin.from('applications').select('programme').eq('id', applicationId).single()
+  const { data: app, error: readErr } = await admin.from('applications').select('programme, es_score').eq('id', applicationId).single()
+  if (readErr) return { error: readErr.message.includes('es_score') ? 'Run migration 053 (Eco-Schools phases) first.' : readErr.message }
   if (!app || app.programme !== 'eco-schools') return { error: 'Not an Eco-Schools application.' }
+  if (!(await allStepsReady(applicationId))) return { error: 'The Green Flag questions open once every step is marked Ready.' }
 
+  const merged: ScoreAnswers = { ...((app.es_score as ScoreAnswers | null) ?? {}) }
+  for (const q of sec.questions) delete merged[q.id]
+  Object.assign(merged, cleanAnswers(answers, sec.questions.map((q) => q.id)))
+  const total = totalScore(merged)
+
+  const { error } = await admin.from('applications').update({
+    es_score: merged, es_score_total: total, es_scored_at: new Date().toISOString(), es_scored_by: gate.userId, updated_at: new Date().toISOString(),
+  }).eq('id', applicationId)
+  if (error) return { error: error.message }
+  revalidate(applicationId)
+  return { ok: true, total }
+}
+
+async function allStepsReady(applicationId: string): Promise<boolean> {
   const steps = criteriaForProgramme('eco-schools')
-  const { data: rows } = await admin.from('criterion_assessments').select('criterion_ref, internal_result').eq('application_id', applicationId)
+  const { data: rows } = await createAdminClient().from('criterion_assessments').select('criterion_ref, internal_result').eq('application_id', applicationId)
   const ready = new Set((rows ?? []).filter((r) => r.internal_result === 'pass' || r.internal_result === 'na').map((r) => r.criterion_ref))
-  if (!steps.every((s) => ready.has(s.ref))) return { error: 'The scorecard opens once every step is marked Ready.' }
+  return steps.every((s) => ready.has(s.ref))
+}
 
-  // Keep only known questions and valid values.
+// Keep only known questions (optionally limited to `onlyIds`) and valid values.
+function cleanAnswers(answers: ScoreAnswers, onlyIds?: string[]): ScoreAnswers {
   const clean: ScoreAnswers = {}
   for (const sec of GREEN_FLAG_SECTIONS) for (const q of sec.questions) {
+    if (onlyIds && !onlyIds.includes(q.id)) continue
     const a = answers?.[q.id]
     if (!a) continue
     const out: ScoreAnswers[string] = {}
@@ -80,12 +102,5 @@ export async function saveGreenFlagScore(applicationId: string, answers: ScoreAn
     }
     if (Object.keys(out).length) clean[q.id] = out
   }
-  const total = totalScore(clean)
-
-  const { error } = await admin.from('applications').update({
-    es_score: clean, es_score_total: total, es_scored_at: new Date().toISOString(), es_scored_by: gate.userId, updated_at: new Date().toISOString(),
-  }).eq('id', applicationId)
-  if (error) return { error: error.message.includes('es_score') ? 'Run migration 053 (Eco-Schools phases) first.' : error.message }
-  revalidate(applicationId)
-  return { ok: true, total }
+  return clean
 }
