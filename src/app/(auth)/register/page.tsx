@@ -113,7 +113,7 @@ const UNIVERSITY_TYPES = [
 // Which educational programmes each kind of institution can apply for.
 const EDU_PROGRAMMES: Record<EduKind, string[]> = {
   school: ['eco-schools', 'leaf', 'yre'],
-  university: ['eco-campus', 'yre'],
+  university: [], // universities register for Eco-Campus through their own form
 }
 const SCHOOL_LEVELS = [
   { value: 'preschool',    en: 'Preschool / Kindergarten', ar: 'رياض الأطفال' },
@@ -165,12 +165,6 @@ const PROGRAMMES = [
     desc_en: 'For young journalists aged 13–25 in schools or universities.',
     desc_ar: 'للصحفيين الشباب 13–25 في المدارس أو الجامعات.',
     color: '#74C69D', Icon: Newspaper, eligible: ['school', 'business'], bizTypes: ['other'],
-  },
-  {
-    id: 'eco-campus', en: 'Eco-Campus', ar: 'الحرم البيئي',
-    desc_en: 'For universities and higher education institutions.',
-    desc_ar: 'للجامعات ومؤسسات التعليم العالي.',
-    color: '#40916C', Icon: GraduationCap, eligible: ['school'],
   },
 ]
 
@@ -630,7 +624,7 @@ function RegisterForm() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           {[
-            { type: 'school' as const, Icon: School, color: '#52B788', en: 'Educational Institute', ar: 'مؤسسة تعليمية', subEn: 'Eco-Schools, LEAF, YRE, Eco Campus', subAr: 'مدارس بيئية، LEAF، YRE، Eco Campus' },
+            { type: 'school' as const, Icon: School, color: '#52B788', en: 'Educational Institute', ar: 'مؤسسة تعليمية', subEn: 'Eco-Schools, LEAF, YRE', subAr: 'مدارس بيئية، LEAF، YRE' },
             { type: 'business' as const, Icon: Building2, color: '#C8A951', en: 'A Hospitality Establishment', ar: 'منشأة ضيافة', subEn: 'Blue Flag, Green Key', subAr: 'علم أزرق، مفتاح أخضر' },
           ].map(({ type, Icon, color, en, ar, subEn, subAr }) => (
             <button
@@ -667,7 +661,7 @@ function RegisterForm() {
         <div className="grid grid-cols-2 gap-4">
           {[
             { kind: 'school' as const, Icon: School, color: '#52B788', en: 'School', ar: 'مدرسة', subEn: 'Eco-Schools, LEAF, YRE', subAr: 'المدارس البيئية، LEAF، YRE' },
-            { kind: 'university' as const, Icon: GraduationCap, color: '#74C69D', en: 'University / College', ar: 'جامعة / كلية', subEn: 'Eco-Campus, YRE', subAr: 'الحرم البيئي، YRE' },
+            { kind: 'university' as const, Icon: GraduationCap, color: '#74C69D', en: 'University / College', ar: 'جامعة / كلية', subEn: 'Eco-Campus — separate registration', subAr: 'الحرم البيئي — تسجيل منفصل' },
           ].map(({ kind, Icon, color, en, ar, subEn, subAr }) => (
             <button key={kind}
               onClick={() => { setEduKind(kind); setData(d => ({ ...d, programmes: d.programmes.filter(p => EDU_PROGRAMMES[kind].includes(p)) })) }}
@@ -684,6 +678,33 @@ function RegisterForm() {
         <button onClick={() => setTypeChosen(false)} className="mt-6 mx-auto flex items-center gap-1.5 text-xs font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>
           <ChevronLeft className="w-3.5 h-3.5" /> {lang === 'ar' ? 'رجوع' : 'Back'}
         </button>
+      </div>
+    )
+  }
+
+  // ── Universities: Eco-Campus has its own registration form ──
+  if (isUni && !submitted) {
+    return (
+      <div className="w-full max-w-md mx-auto pt-8 text-center">
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ background: 'rgba(116,198,157,0.15)' }}>
+          <GraduationCap className="w-8 h-8" style={{ color: '#74C69D' }} />
+        </div>
+        <h1 className="text-2xl font-bold text-white mb-3 tracking-tight">
+          {lang === 'ar' ? 'تسجيل الجامعات — الحرم البيئي' : 'Universities — Eco-Campus registration'}
+        </h1>
+        <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.55)' }}>
+          {lang === 'ar'
+            ? 'تسجّل الجامعات والكليات في برنامج الحرم البيئي عبر استمارة تسجيل خاصة بها. يرجى التواصل مع FEE الكويت للبدء.'
+            : 'Universities and colleges register for Eco-Campus through a dedicated registration form. Please contact FEE Kuwait to get started.'}
+        </p>
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          <Link href="/contact" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
+            <Mail className="w-4 h-4" /> {lang === 'ar' ? 'تواصل معنا' : 'Contact us'}
+          </Link>
+          <button onClick={() => setEduKind(null)} className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium" style={{ color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.15)' }}>
+            <ChevronLeft className="w-4 h-4" /> {lang === 'ar' ? 'رجوع' : 'Back'}
+          </button>
+        </div>
       </div>
     )
   }
