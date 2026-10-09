@@ -16,6 +16,8 @@ import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { getApplicationTimeline } from '@/lib/db/timeline'
 import JourneyTimeline from '@/components/timeline/JourneyTimeline'
 import PreScreeningReview from '@/components/prescreening/PreScreeningReview'
+import RegistrationCard from '@/components/admin/RegistrationCard'
+import { getRegistrationForApplication } from '@/lib/db/registrations'
 import ArchiveAudit from '@/components/audit/ArchiveAudit'
 import { establishmentCanEdit } from '@/lib/workflow'
 import WorkflowActions from '@/components/audit/WorkflowActions'
@@ -45,7 +47,7 @@ export default async function ApplicationDetail({
     listApplicationDocuments(id), applicationAuditor(id), listCriterionAssessments(id),
     listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id), getPreScreening(id),
   ])
-  const [trail, timeline, invoices] = await Promise.all([listAuditTrail(id), getApplicationTimeline(id), listInvoicesForApplication(id)])
+  const [trail, timeline, invoices, registration] = await Promise.all([listAuditTrail(id), getApplicationTimeline(id), listInvoicesForApplication(id), getRegistrationForApplication(app.entity_type, app.entity_id, app.applicant_id)])
   const criteria = app.programme === 'green-key' && preScreeningApproved(ps) && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
 
@@ -114,6 +116,9 @@ export default async function ApplicationDetail({
         <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>{app.status === 'pending_eligibility' ? 'Review the registration and pre-screening, then approve eligibility to open the full application — or reject it with a reason.' : 'Actions available to the National Operator at this stage.'}</p>
         <WorkflowActions applicationId={id} role="operator" status={app.status} criteria={criteria.map((c) => ({ ref: c.ref, title: c.title }))} />
       </div>
+
+      {/* Registration form answers (what the school / establishment submitted) */}
+      {registration && <RegistrationCard r={registration} title="Registration form" />}
 
       {/* Journey & history */}
       <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
