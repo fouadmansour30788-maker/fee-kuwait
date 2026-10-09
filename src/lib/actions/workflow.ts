@@ -181,6 +181,18 @@ export async function applyWorkflowAction(
   const { error } = await admin.from('applications').update(patch).eq('id', applicationId)
   if (error) return { error: error.message }
 
+  // Approving eligibility is the single operator gate: it also activates the
+  // establishment's registration, otherwise the portal keeps the application
+  // closed ("Registration under review"). Same as reviewPreScreening, which only
+  // runs for Green Key — Eco-Schools and the other programmes come through here.
+  if (action === 'Approve Eligibility' && app.applicant_id) {
+    const now = new Date().toISOString()
+    const table = app.entity_type === 'school' ? 'schools' : 'businesses'
+    const { data: ent } = await admin.from(table).update({ status: 'active', updated_at: now }).eq('user_id', app.applicant_id).select('id')
+    if (!ent || ent.length === 0) await admin.from(table === 'schools' ? 'businesses' : 'schools').update({ status: 'active', updated_at: now }).eq('user_id', app.applicant_id)
+    revalidatePath('/members')
+  }
+
   // Freeze a version snapshot when the application is handed on.
   const SNAPSHOT_ACTIONS: Record<string, string> = {
     'Submit Application to CB': 'Submitted to CB',
