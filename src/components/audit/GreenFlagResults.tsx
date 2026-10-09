@@ -29,7 +29,7 @@ export default function GreenFlagResults({ sections, total, scored, scoredAt }: 
   if (!scored) {
     return (
       <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B' }}>
-        <Clock className="w-4 h-4" /> No Green Flag score yet. The National Operator scores each step once all seven steps are Ready. Eligibility: over {GREEN_FLAG_PASS} / {GREEN_FLAG_MAX} points.
+        <Clock className="w-4 h-4" /> No Green Flag answers yet. The school answers the Green Flag questions under each step. Eligibility: over {GREEN_FLAG_PASS} / {GREEN_FLAG_MAX} points.
       </div>
     )
   }
@@ -44,7 +44,7 @@ export default function GreenFlagResults({ sections, total, scored, scoredAt }: 
           {ready ? 'Eligible — ready to be assessed for the Eco-Schools Green Flag.' : `Not yet eligible — ${gap} more point${gap === 1 ? '' : 's'} needed to pass ${GREEN_FLAG_PASS}.`}
         </p>
         <span className="text-sm" style={{ color: C.ink2 }}><b style={{ color: C.ink }}>{total}</b> / {GREEN_FLAG_MAX} pts · eligibility &gt; {GREEN_FLAG_PASS}</span>
-        {scoredAt && <span className="text-[11px]" style={{ color: C.muted }}>Scored {new Date(scoredAt).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}</span>}
+        {scoredAt && <span className="text-[11px]" style={{ color: C.muted }}>Last updated {new Date(scoredAt).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })}</span>}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">

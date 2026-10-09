@@ -3,8 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
-import { getEcoGate } from '@/lib/db/ecoSchools'
-import { criteriaForProgramme } from '@/lib/criteria'
+import { getEcoGate, isEcoStepLocked } from '@/lib/db/ecoSchools'
+import { establishmentCanEdit, PARTIAL_EDIT_STATUSES } from '@/lib/workflow'
 import { GREEN_FLAG_SECTIONS, totalScore, type ScoreAnswers } from '@/lib/data/greenFlagScorecard'
 
 async function requireOperator(): Promise<{ userId: string } | { error: string }> {
@@ -50,19 +50,27 @@ export async function approveEcoSteps(applicationId: string): Promise<{ ok?: tru
   return { ok: true }
 }
 
-// Operator saves ONE step's Green Flag questions (shown under that step on the
+// The school saves ONE step's Green Flag questions (shown under that step on the
 // criteria board). Merged into the stored scorecard; the total is recomputed here.
-// Opens once every step is marked Ready (or N/A Confirmed).
+// Allowed while the application is editable and the step is open to the school
+// (Steps 3–7 after the operator approves Steps 1–2; only reopened steps during a
+// rectification period).
 export async function saveGreenFlagSection(applicationId: string, sectionId: string, answers: ScoreAnswers): Promise<{ ok?: true; total?: number; error?: string }> {
-  const gate = await requireOperator()
-  if ('error' in gate) return { error: gate.error }
   const sec = GREEN_FLAG_SECTIONS.find((s) => s.id === sectionId)
   if (!sec) return { error: 'Unknown section.' }
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+
   const admin = createAdminClient()
-  const { data: app, error: readErr } = await admin.from('applications').select('programme, es_score').eq('id', applicationId).single()
+  const { data: app, error: readErr } = await admin.from('applications')
+    .select('programme, applicant_id, status, reopened_criteria, es_score').eq('id', applicationId).single()
   if (readErr) return { error: readErr.message.includes('es_score') ? 'Run migration 053 (Eco-Schools phases) first.' : readErr.message }
   if (!app || app.programme !== 'eco-schools') return { error: 'Not an Eco-Schools application.' }
-  if (!(await allStepsReady(applicationId))) return { error: 'The Green Flag questions open once every step is marked Ready.' }
+  if (app.applicant_id !== user.id) return { error: 'Only the school can answer the Green Flag questions.' }
+  if (!establishmentCanEdit(app.status)) return { error: 'The application is locked — answers can no longer be changed.' }
+  if (PARTIAL_EDIT_STATUSES.includes(app.status) && !(app.reopened_criteria ?? []).includes(sec.step)) return { error: 'This step is not reopened for changes.' }
+  if (await isEcoStepLocked(applicationId, sec.step)) return { error: 'This step opens after the National Operator approves Steps 1–2.' }
 
   const merged: ScoreAnswers = { ...((app.es_score as ScoreAnswers | null) ?? {}) }
   for (const q of sec.questions) delete merged[q.id]
@@ -70,18 +78,11 @@ export async function saveGreenFlagSection(applicationId: string, sectionId: str
   const total = totalScore(merged)
 
   const { error } = await admin.from('applications').update({
-    es_score: merged, es_score_total: total, es_scored_at: new Date().toISOString(), es_scored_by: gate.userId, updated_at: new Date().toISOString(),
+    es_score: merged, es_score_total: total, es_scored_at: new Date().toISOString(), es_scored_by: user.id, updated_at: new Date().toISOString(),
   }).eq('id', applicationId)
   if (error) return { error: error.message }
   revalidate(applicationId)
   return { ok: true, total }
-}
-
-async function allStepsReady(applicationId: string): Promise<boolean> {
-  const steps = criteriaForProgramme('eco-schools')
-  const { data: rows } = await createAdminClient().from('criterion_assessments').select('criterion_ref, internal_result').eq('application_id', applicationId)
-  const ready = new Set((rows ?? []).filter((r) => r.internal_result === 'pass' || r.internal_result === 'na').map((r) => r.criterion_ref))
-  return steps.every((s) => ready.has(s.ref))
 }
 
 // Keep only known questions (optionally limited to `onlyIds`) and valid values.

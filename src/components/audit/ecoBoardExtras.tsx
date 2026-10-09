@@ -8,33 +8,39 @@ import type { EcoBoard } from '@/lib/db/ecoSchools'
 
 // Eco-Schools content shown inside the criteria board: under each step its
 // Green Flag questions (and the themes picker on Step 2), plus the score strip
-// above the table. `scoreEditable` = operator; others see saved answers only.
-export function ecoRowExtras({ applicationId, eco, themes, themesEditable, scoreEditable }: {
+// above the table. The school answers the questions of the steps listed in
+// `scoreEditableSteps`; the operator, CB and auditor see the answers read-only.
+export function ecoRowExtras({ applicationId, eco, themes, themesEditable, scoreEditableSteps = [] }: {
   applicationId: string
   eco: EcoBoard
   themes: string[]
   themesEditable: boolean
-  scoreEditable: boolean
+  scoreEditableSteps?: string[]
 }): Record<string, ReactNode> {
-  const showScores = scoreEditable || !!eco.state.score
   const out: Record<string, ReactNode> = {}
   for (const sec of GREEN_FLAG_SECTIONS) {
     out[sec.step] = (
       <>
         {sec.step === ES_THEMES_STEP && <EcoThemesPicker applicationId={applicationId} selected={themes} editable={themesEditable} />}
-        {showScores && (
-          <GreenFlagSection applicationId={applicationId} sectionId={sec.id} initial={eco.state.score} editable={scoreEditable}
-            open={eco.allReady} themes={themes} stepDocs={eco.stepDocs} />
-        )}
+        <GreenFlagSection applicationId={applicationId} sectionId={sec.id} initial={eco.state.score}
+          editable={scoreEditableSteps.includes(sec.step)} themes={themes} stepDocs={eco.stepDocs} />
       </>
     )
   }
   return out
 }
 
-export function ecoHeaderExtra(eco: EcoBoard, scoreEditable: boolean): ReactNode {
-  if (!scoreEditable && !eco.state.score) return null
-  return <GreenFlagTotal total={eco.state.scoreTotal} scoredAt={eco.state.scoredAt} open={eco.allReady} />
+// Steps whose Green Flag questions the school may answer right now: the unlocked
+// steps (1–2 until the operator approves them), limited to reopened steps during
+// a rectification period.
+export function ecoEditableSteps(eco: EcoBoard, locked: boolean, editableCriteria: string[] | null): string[] {
+  if (locked) return []
+  return GREEN_FLAG_SECTIONS.map((s) => s.step)
+    .filter((st) => !eco.lockedRefs.includes(st) && (editableCriteria === null || editableCriteria.includes(st)))
+}
+
+export function ecoHeaderExtra(eco: EcoBoard): ReactNode {
+  return <GreenFlagTotal total={eco.state.scoreTotal} scoredAt={eco.state.scoredAt} />
 }
 
 // Green Flag results panel (replaces the imperative/guideline panel for Eco-Schools).

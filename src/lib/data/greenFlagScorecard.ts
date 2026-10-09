@@ -2,7 +2,8 @@
 // Source: FEE / Eco-Schools "Is your school Green Flag ready? (Alignment)"
 // questionnaire. Seven sections (one per Seven Steps step), 1000 points in total;
 // over 800 means the school is ready to be assessed for the Green Flag.
-// The National Operator fills it in once every step is Ready (the "final exam").
+// The school answers each step's questions as it works through the steps; the
+// operator, CB and auditor see the answers and score read-only.
 // Client-safe: no server imports.
 
 export type ScoreQKind = 'choice' | 'number' | 'text' | 'date' | 'upload' | 'gender' | 'agerange' | 'themes'
