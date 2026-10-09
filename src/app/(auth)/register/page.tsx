@@ -493,6 +493,7 @@ function RegisterForm() {
         : {}
       // Location + workforce apply to every registration (not just programme details).
       const common = {
+        accountName: data.name || null,
         latitude: data.latitude ? Number(data.latitude) : null,
         longitude: data.longitude ? Number(data.longitude) : null,
         numEmployees: data.numEmployees ? Number(data.numEmployees) : null,
@@ -556,6 +557,7 @@ function RegisterForm() {
         const { data: row } = await supabase.from('businesses').insert({
           user_id: uid, name_en: data.institutionName, name_ar: data.institutionNameAr || null,
           type: data.businessType || null, governorate: data.governorate || null, address: data.address || null,
+          contact_name: data.contactName || null, contact_phone: data.contactPhone || null, contact_email: data.contactEmail || null,
           details,
         }).select('id').single()
         entityId = row?.id ?? null
