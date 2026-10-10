@@ -416,6 +416,16 @@ export default function AboutPage() {
               ).map((p, i) => <p key={i}>{p}</p>)}
             </div>
           </FadeInSection>
+          <FadeInSection delay={0.2}>
+            <div className="text-center mt-10">
+              <Link href="/about/academics"
+                className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)', boxShadow: '0 10px 28px rgba(64,145,108,0.30)' }}>
+                {lang === 'ar' ? 'تعرّف أكثر على Academics' : 'Learn More About Academics'}
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
+              </Link>
+            </div>
+          </FadeInSection>
         </div>
       </section>
 
