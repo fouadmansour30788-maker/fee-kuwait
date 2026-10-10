@@ -6,16 +6,18 @@ import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
 import { GREEN_FLAG_SECTIONS, sectionScore } from '@/lib/data/greenFlagScorecard'
 import GreenFlagResults from '@/components/audit/GreenFlagResults'
 import type { EcoBoard } from '@/lib/db/ecoSchools'
+import { darken } from '@/lib/utils/color'
 
-// The Seven Steps, each with a friendly icon + colour for the board's step column.
-const STEP_STYLE: Record<string, { Icon: LucideIcon; color: string }> = {
-  '1': { Icon: Users, color: '#2D6A4F' },          // Eco-Committee
-  '2': { Icon: Search, color: '#40916C' },         // Sustainability Audit
-  '3': { Icon: BookOpen, color: '#B08D2E' },       // Curriculum
-  '4': { Icon: ClipboardList, color: '#52B788' },  // Action Plan
-  '5': { Icon: LineChart, color: '#1B4332' },      // Monitor & Evaluate
-  '6': { Icon: Megaphone, color: '#C8A951' },      // Inform & Involve
-  '7': { Icon: ScrollText, color: '#2D6A4F' },     // Eco-Code
+// The Seven Steps, each with its own icon + colour (palette of the "How to apply
+// for your certification" wheel) for the step badge and its Green Flag questions.
+export const STEP_STYLE: Record<string, { Icon: LucideIcon; color: string }> = {
+  '1': { Icon: Users, color: '#E2A92B' },          // Eco-Committee — yellow
+  '2': { Icon: Search, color: '#E08A2E' },         // Sustainability Audit — orange
+  '3': { Icon: BookOpen, color: '#CF6A2C' },       // Curriculum — burnt orange
+  '4': { Icon: ClipboardList, color: '#B4566A' },  // Action Plan — rose
+  '5': { Icon: LineChart, color: '#6E5C8E' },      // Monitor & Evaluate — purple
+  '6': { Icon: Megaphone, color: '#3F86C6' },      // Inform & Involve — blue
+  '7': { Icon: ScrollText, color: '#4E9A5B' },     // Eco-Code — green
 }
 
 export function ecoStepBadges(): Record<string, ReactNode> {
@@ -24,7 +26,7 @@ export function ecoStepBadges(): Record<string, ReactNode> {
       <span className="w-11 h-11 rounded-full flex items-center justify-center shadow-sm" style={{ background: color, boxShadow: `0 4px 12px ${color}40` }}>
         <Icon className="w-5 h-5 text-white" strokeWidth={2.2} />
       </span>
-      <span className="text-[10px] font-extrabold uppercase tracking-wider mt-1" style={{ color }}>Step {ref}</span>
+      <span className="text-[10px] font-extrabold uppercase tracking-wider mt-1" style={{ color: darken(color, 0.36) }}>Step {ref}</span>
     </span>
   )]))
 }
@@ -45,7 +47,7 @@ export function ecoRowExtras({ applicationId, eco, themes, themesEditable, score
     out[sec.step] = (
       <>
         {sec.step === ES_THEMES_STEP && <EcoThemesPicker applicationId={applicationId} selected={themes} editable={themesEditable} />}
-        <GreenFlagSection applicationId={applicationId} sectionId={sec.id} initial={eco.state.score}
+        <GreenFlagSection applicationId={applicationId} sectionId={sec.id} initial={eco.state.score} accent={STEP_STYLE[sec.step]?.color}
           editable={scoreEditableSteps.includes(sec.step)} themes={themes} stepDocs={eco.stepDocs} />
       </>
     )

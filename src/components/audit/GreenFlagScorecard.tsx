@@ -10,6 +10,7 @@ import {
 import { saveGreenFlagSection } from '@/lib/actions/ecoSchools'
 import { ES_THEMES } from '@/lib/data/ecoSchoolsCriteria'
 import { ThemeTile } from '@/components/audit/EcoThemesPicker'
+import { darken } from '@/lib/utils/color'
 
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Other', 'Not disclosed']
 const field = { border: '1px solid #E2E8F0', color: '#1E293B' } as const
@@ -37,8 +38,9 @@ export function GreenFlagTotal({ total, scoredAt }: { total: number | null; scor
 // One step's Green Flag questions, shown in a full-width row under that step on
 // the criteria board. The school answers/saves them while the step is open to it;
 // the operator, CB and auditor see the saved answers read-only.
-export default function GreenFlagSection({ applicationId, sectionId, initial, editable, themes, stepDocs }: {
+export default function GreenFlagSection({ applicationId, sectionId, initial, editable, themes, stepDocs, accent = '#40916C' }: {
   applicationId: string
+  accent?: string   // the step's colour
   sectionId: string
   initial: ScoreAnswers | null
   editable: boolean
@@ -52,6 +54,7 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
   const [pending, start] = useTransition()
   const router = useRouter()
   const got = useMemo(() => sectionScore(sec, answers), [sec, answers])
+  const strong = darken(accent, 0.36)   // readable fill for white text / coloured text
   const canEdit = editable
   const answered = sec.questions.filter((q) => q.kind !== 'upload' && q.kind !== 'themes' && answers[q.id]).length
   const toAnswer = sec.questions.filter((q) => q.kind !== 'upload' && q.kind !== 'themes').length
@@ -70,17 +73,17 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: '1.5px solid #B7E4C7', background: '#F7FCF8', boxShadow: '0 2px 10px rgba(64,145,108,0.08)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ border: `1.5px solid ${accent}55`, borderLeft: `6px solid ${accent}`, background: `${accent}0D`, boxShadow: `0 2px 10px ${accent}1A` }}>
       <button type="button" onClick={() => setExpanded((e) => !e)} className="w-full flex items-center gap-3 px-4 py-3 text-left flex-wrap">
-        <ChevronDown className="w-5 h-5 transition-transform flex-shrink-0" style={{ color: '#40916C', transform: expanded ? 'none' : 'rotate(-90deg)' }} />
-        <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#FDF6E3', border: '1px solid #E8D5A3' }}>
-          <Trophy className="w-5 h-5" style={{ color: '#B08D2E' }} />
+        <ChevronDown className="w-5 h-5 transition-transform flex-shrink-0" style={{ color: accent, transform: expanded ? 'none' : 'rotate(-90deg)' }} />
+        <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: accent }}>
+          <Trophy className="w-5 h-5 text-white" />
         </span>
         <span className="flex-1 min-w-[220px]">
           <span className="block text-base font-bold" style={{ color: '#1B4332' }}>Green Flag questions — {sec.title}</span>
           <span className="flex items-center gap-2 mt-1.5">
             <span className="h-2 rounded-full overflow-hidden flex-1 max-w-[220px]" style={{ background: '#E2F0E6' }}>
-              <span className="block h-full rounded-full" style={{ width: `${toAnswer ? (answered / toAnswer) * 100 : 0}%`, background: 'linear-gradient(90deg, #52B788, #1B4332)' }} />
+              <span className="block h-full rounded-full" style={{ width: `${toAnswer ? (answered / toAnswer) * 100 : 0}%`, background: accent }} />
             </span>
             <span className="text-sm font-semibold" style={{ color: answered === toAnswer ? '#047857' : '#5B7568' }}>{answered} / {toAnswer} answered</span>
           </span>
@@ -95,19 +98,19 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
             <CheckCircle2 className="w-4 h-4" /> All answered
           </span>
         )}
-        <span className="inline-flex items-center gap-1.5 text-base font-extrabold px-3.5 py-1.5 rounded-full" style={{ background: '#1B4332', color: '#fff' }}>
-          <Award className="w-4 h-4" style={{ color: '#E8D5A3' }} /> {got} <span className="text-sm font-semibold opacity-75">/ {sec.max} pts</span>
+        <span className="inline-flex items-center gap-1.5 text-base font-extrabold px-3.5 py-1.5 rounded-full" style={{ background: strong, color: '#fff' }}>
+          <Award className="w-4 h-4" /> {got} <span className="text-sm font-semibold opacity-75">/ {sec.max} pts</span>
         </span>
       </button>
 
       {expanded && (
-        <div className="px-5 pb-5 pt-4 space-y-5 border-t" style={{ borderColor: '#D8F3DC' }}>
+        <div className="px-5 pb-5 pt-4 space-y-5 border-t bg-white" style={{ borderColor: `${accent}33` }}>
           {sec.questions.map((q) => {
             const a = answers[q.id] ?? {}
             return (
               <div key={q.id} className="space-y-1.5">
                 <p className="text-base font-semibold flex items-start gap-2.5" style={{ color: '#1E293B' }}>
-                  <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold flex-shrink-0" style={done(q.id, q.kind) ? { background: '#40916C', color: '#fff' } : { background: '#E2F0E6', color: '#2D6A4F' }}>{q.n}</span>
+                  <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold flex-shrink-0" style={done(q.id, q.kind) ? { background: strong, color: '#fff' } : { background: `${accent}1F`, color: strong }}>{q.n}</span>
                   <span className="pt-0.5">{q.text}</span>
                 </p>
                 {q.hint && <p className="text-xs pl-[38px]" style={{ color: '#64748B' }}>💡 {q.hint}</p>}
@@ -132,9 +135,9 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
                       if (!canEdit && !on) return null
                       return (
                         <label key={i} className={`flex items-start gap-2.5 text-sm rounded-xl px-3 py-2.5 transition-colors ${canEdit ? 'cursor-pointer hover:bg-[#F1FAF3]' : ''}`}
-                          style={on ? { background: '#D8F3DC', border: '1.5px solid #52B788' } : { border: '1px solid #E2EDE5', background: '#fff' }}>
+                          style={on ? { background: `${accent}1A`, border: `1.5px solid ${accent}` } : { border: '1px solid #E2EDE5', background: '#fff' }}>
                           {canEdit && <input type="radio" name={`${applicationId}-${q.id}`} checked={on} onChange={() => set(q.id, { choice: i })} className="mt-0.5 w-4 h-4 accent-green-700" />}
-                          <span className="font-extrabold whitespace-nowrap text-xs px-2 py-0.5 rounded-full" style={on ? { background: '#1B4332', color: '#fff' } : { background: '#ECFDF3', color: '#2D6A4F' }}>{opt.pts} pts</span>
+                          <span className="font-extrabold whitespace-nowrap text-xs px-2 py-0.5 rounded-full" style={on ? { background: strong, color: '#fff' } : { background: `${accent}1A`, color: strong }}>{opt.pts} pts</span>
                           <span style={{ color: opt.earlyYears ? '#6366F1' : '#334155', fontStyle: opt.earlyYears ? 'italic' : 'normal' }}>
                             {opt.earlyYears && 'Only for Early Years: '}{opt.text}
                           </span>
@@ -172,7 +175,7 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
 
           {canEdit && (
             <div className="flex items-center gap-3 flex-wrap pt-2 pl-[38px]">
-              <button onClick={save} disabled={pending} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold text-white disabled:opacity-60 shadow-sm" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
+              <button onClick={save} disabled={pending} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold text-white disabled:opacity-60 shadow-sm" style={{ background: strong }}>
                 {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save {sec.title} answers
               </button>
               {msg && <span className="flex items-center gap-1.5 text-xs" style={{ color: msg.ok ? '#047857' : '#DC2626' }}>{msg.ok ? <Check className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />} {msg.text}</span>}
