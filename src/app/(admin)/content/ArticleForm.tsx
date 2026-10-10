@@ -2,6 +2,7 @@ import { Save } from 'lucide-react'
 import { saveArticle } from '@/lib/actions/news'
 import type { Article } from '@/lib/db/news'
 import MediaEditor from './MediaEditor'
+import { CoverImageField } from './ImageUpload'
 
 const PROGRAMMES = ['', 'eco-schools', 'blue-flag', 'green-key', 'leaf', 'yre', 'eco-campus']
 
@@ -39,7 +40,7 @@ export default function ArticleForm({ article }: { article: Article | null }) {
           <Area label="المقتطف (Arabic)" name="excerpt_ar" value={article?.excerpt_ar} rows={2} dir="rtl" />
         </div>
         <div className="grid md:grid-cols-3 gap-4">
-          <Field label="Cover image URL" name="image_url" value={article?.image_url} placeholder="https://…" />
+          <CoverImageField value={article?.image_url} />
           <div>
             <label className="block text-xs font-semibold mb-1.5" style={{ color: '#475569' }}>Programme</label>
             <select name="programme" defaultValue={article?.programme ?? ''} className="w-full text-sm px-3 py-2.5 rounded-xl outline-none bg-white" style={{ border: '1px solid #E2E8F0', color: '#1E293B' }}>
