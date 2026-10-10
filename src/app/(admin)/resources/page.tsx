@@ -1,8 +1,12 @@
 import Link from 'next/link'
-import { LayoutDashboard, FileCheck, ClipboardList, Users, Award, FileBarChart, Newspaper, UserCog, BookOpen, Mail, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, FileCheck, ClipboardList, Users, Award, FileBarChart, Newspaper, UserCog, BookOpen, Mail, ChevronRight, FolderOpen } from 'lucide-react'
 import CriteriaReference from '@/components/resources/CriteriaReference'
 import MessageTemplates from '@/components/resources/MessageTemplates'
 import BrandCard from '@/components/resources/BrandCard'
+import ResourceManager from '@/components/resources/ResourceManager'
+import { listResources } from '@/lib/db/resources'
+
+export const dynamic = 'force-dynamic'
 
 const LINKS = [
   { href: '/dashboard', label: 'Operations dashboard', desc: 'Live figures, trends & recommendations', Icon: LayoutDashboard, color: '#2563EB' },
@@ -15,7 +19,8 @@ const LINKS = [
   { href: '/staff', label: 'Team', desc: 'Roles & access', Icon: UserCog, color: '#7C3AED' },
 ]
 
-export default function OperatorResourcesPage() {
+export default async function OperatorResourcesPage() {
+  const resources = await listResources()
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
@@ -37,6 +42,16 @@ export default function OperatorResourcesPage() {
             <p className="text-[11px] mt-0.5" style={{ color: '#94A3B8' }}>{l.desc}</p>
           </Link>
         ))}
+      </div>
+
+      {/* Programme resources — shared with schools / establishments */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
+        <div className="flex items-center gap-2 mb-1">
+          <FolderOpen className="w-5 h-5" style={{ color: '#40916C' }} />
+          <h2 className="text-base font-bold" style={{ color: '#0F172A' }}>Programme resources</h2>
+        </div>
+        <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Guides, toolkits, templates and links for Green Key, Eco-Schools and the other programmes. Published items appear under Resources &amp; tools for the matching schools and establishments.</p>
+        <ResourceManager resources={resources} />
       </div>
 
       <BrandCard note="Logos, brand guidelines and programme templates on SharePoint — sign in to open." />

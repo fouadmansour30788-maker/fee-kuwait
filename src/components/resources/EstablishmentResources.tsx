@@ -4,6 +4,8 @@ import RequirementCalculator from './RequirementCalculator'
 import ReadinessSelfCheck from './ReadinessSelfCheck'
 import SavingsEstimator from './SavingsEstimator'
 import BrandCard from './BrandCard'
+import ProgrammeResources from './ProgrammeResources'
+import type { ResourceItem } from '@/lib/resources'
 
 function Section({ Icon, color, title, subtitle, children }: { Icon: LucideIcon; color: string; title: string; subtitle: string; children: React.ReactNode }) {
   return (
@@ -18,13 +20,15 @@ function Section({ Icon, color, title, subtitle, children }: { Icon: LucideIcon;
   )
 }
 
-export default function EstablishmentResources() {
+export default function EstablishmentResources({ resources = [] }: { resources?: ResourceItem[] }) {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: '#0F2318' }}>Resources &amp; tools</h1>
         <p className="text-sm mt-0.5" style={{ color: '#5B7568' }}>Interactive tools to help you prepare, plus FEE brand assets and guides.</p>
       </div>
+
+      <ProgrammeResources resources={resources} />
 
       <Section Icon={Calculator} color="#2563EB" title="Requirement calculator" subtitle="How many imperative and guideline criteria you need to meet, by programme and certificate age.">
         <RequirementCalculator />
