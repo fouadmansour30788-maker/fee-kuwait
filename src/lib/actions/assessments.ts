@@ -7,6 +7,7 @@ import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
 import { criteriaForProgramme, applicableCriteria } from '@/lib/criteria'
 import { isEcoStepLocked, notifyEcoGateIfReady } from '@/lib/db/ecoSchools'
 import { revalidatePath } from 'next/cache'
+import { isYearClosed } from '@/lib/db/academicYears'
 
 const RESULTS = ['pending', 'pass', 'no_pass', 'na']
 const CB_PRE = ['pending', 'approved_audit', 'clarification', 'rectification']
@@ -146,6 +147,7 @@ export async function setApplicantResult(applicationId: string, criterionRef: st
   const { data: own } = await supabase.from('applications').select('status').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
   if (!own) return { error: 'Not allowed' }
   if (!establishmentCanEdit(own.status)) return { error: 'This application is locked for editing.' }
+  if (await isYearClosed(applicationId)) return { error: 'This academic year is closed — it is read-only.' }
 
   const admin = createAdminClient()
   const { error } = await admin.from('criterion_assessments').upsert({
@@ -177,6 +179,7 @@ export async function setApplicantStatus(applicationId: string, criterionRef: st
   const { data: own } = await supabase.from('applications').select('status, programme').eq('id', applicationId).eq('applicant_id', user.id).maybeSingle()
   if (!own) return { error: 'Not allowed' }
   if (!establishmentCanEdit(own.status)) return { error: 'This application is locked for editing.' }
+  if (await isYearClosed(applicationId)) return { error: 'This academic year is closed — it is read-only.' }
   if (await isEcoStepLocked(applicationId, criterionRef)) return { error: 'This step opens after the National Operator approves Steps 1–2.' }
 
   const admin = createAdminClient()

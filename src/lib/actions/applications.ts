@@ -9,6 +9,7 @@ import { establishmentCanEdit } from '@/lib/workflow'
 import { sendEmail } from '@/lib/email'
 import { siteUrl } from '@/lib/qr'
 import { REVIEW_SUBMISSION_FIELD } from '@/lib/db/reviewSubmission'
+import { isYearClosed } from '@/lib/db/academicYears'
 
 const PROGRAMMES = ['eco-schools', 'blue-flag', 'green-key', 'leaf', 'yre', 'eco-campus']
 
@@ -102,6 +103,7 @@ export async function submitForReview(applicationId: string, declared: boolean):
   const prog = PROGRAMME_LABEL[app.programme] ?? app.programme
   const progAr = app.programme === 'eco-schools' ? 'المدارس البيئية' : 'المفتاح الأخضر'
   if (!establishmentCanEdit(app.status)) return { error: 'The application is not open for submission at this stage.' }
+  if (await isYearClosed(applicationId)) return { error: 'This academic year is closed — it is read-only.' }
 
   const { data: me } = await admin.from('users').select('name_en, email, role').eq('id', user.id).maybeSingle()
   const { data: ent } = await admin.from(app.programme === 'eco-schools' ? 'schools' : 'businesses').select('name_en').eq('user_id', user.id).maybeSingle()

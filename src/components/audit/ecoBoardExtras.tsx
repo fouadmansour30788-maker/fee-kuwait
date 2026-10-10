@@ -35,18 +35,19 @@ export function ecoStepBadges(): Record<string, ReactNode> {
 // Green Flag questions (and the themes picker on Step 2), plus the score strip
 // above the table. The school answers the questions of the steps listed in
 // `scoreEditableSteps`; the operator, CB and auditor see the answers read-only.
-export function ecoRowExtras({ applicationId, eco, themes, themesEditable, scoreEditableSteps = [] }: {
+export function ecoRowExtras({ applicationId, eco, themes, themesEditable, scoreEditableSteps = [], previousThemes }: {
   applicationId: string
   eco: EcoBoard
   themes: string[]
   themesEditable: boolean
   scoreEditableSteps?: string[]
+  previousThemes?: Record<string, string>   // themes from earlier academic years → year
 }): Record<string, ReactNode> {
   const out: Record<string, ReactNode> = {}
   for (const sec of GREEN_FLAG_SECTIONS) {
     out[sec.step] = (
       <>
-        {sec.step === ES_THEMES_STEP && <EcoThemesPicker applicationId={applicationId} selected={themes} editable={themesEditable} />}
+        {sec.step === ES_THEMES_STEP && <EcoThemesPicker applicationId={applicationId} selected={themes} editable={themesEditable} previous={previousThemes} />}
         <GreenFlagSection applicationId={applicationId} sectionId={sec.id} initial={eco.state.score} accent={STEP_STYLE[sec.step]?.color}
           editable={scoreEditableSteps.includes(sec.step)} themes={themes} stepDocs={eco.stepDocs} />
       </>

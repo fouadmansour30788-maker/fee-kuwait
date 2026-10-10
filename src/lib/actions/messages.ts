@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { establishmentCanEdit } from '@/lib/workflow'
 import { revalidatePath } from 'next/cache'
+import { isYearClosed } from '@/lib/db/academicYears'
 
 // Post a message to a criterion's thread. The author role is derived from the
 // signed-in user; auditor messages are marked auditor_internal so RLS keeps them
@@ -27,6 +28,7 @@ export async function postCriterionMessage(applicationId: string, criterionRef: 
   if (authorRole === 'establishment') {
     const { data: appRow } = await supabase.from('applications').select('status').eq('id', applicationId).single()
     if (!appRow || !establishmentCanEdit(appRow.status)) return { error: 'This application is locked.' }
+    if (await isYearClosed(applicationId)) return { error: 'This academic year is closed — it is read-only.' }
   }
 
   const { error } = await supabase.from('criterion_messages').insert({
@@ -63,6 +65,7 @@ export async function editCriterionMessage(messageId: string, body: string): Pro
   if (msg.author_role === 'establishment') {
     const { data: appRow } = await supabase.from('applications').select('status').eq('id', msg.application_id).single()
     if (!appRow || !establishmentCanEdit(appRow.status)) return { error: 'This application is locked.' }
+    if (await isYearClosed(msg.application_id)) return { error: 'This academic year is closed — it is read-only.' }
   }
 
   const { error } = await supabase.from('criterion_messages')

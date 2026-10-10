@@ -4,7 +4,7 @@ import { ecoRowExtras, ecoHeaderExtra, ecoStepBadges, EcoResults } from '@/compo
 import { getEcoBoard } from '@/lib/db/ecoSchools'
 import { getEcoThemes } from '@/lib/db/ecoThemes'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, FileText, Download, Inbox, KeyRound } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Mail, Calendar, Building2, FileText, Download, Inbox, KeyRound, CalendarRange, Lock } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, STATUS_META, CB_DECISION_LABEL, listAuditTrail } from '@/lib/db/applications'
 import { listApplicationDocuments, formatBytes, AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { applicationAuditor, listCertificationBodies, applicationCb } from '@/lib/db/audit'
@@ -18,6 +18,9 @@ import JourneyTimeline from '@/components/timeline/JourneyTimeline'
 import PreScreeningReview from '@/components/prescreening/PreScreeningReview'
 import RegistrationCard from '@/components/admin/RegistrationCard'
 import { getRegistrationForApplication } from '@/lib/db/registrations'
+import AcademicYearsPanel from '@/components/admin/AcademicYearsPanel'
+import { getYearInfo, listSchoolYears, previousYearThemes } from '@/lib/db/academicYears'
+import { formatAcademicYear } from '@/lib/academicYear'
 import ArchiveAudit from '@/components/audit/ArchiveAudit'
 import { establishmentCanEdit } from '@/lib/workflow'
 import WorkflowActions from '@/components/audit/WorkflowActions'
@@ -43,6 +46,11 @@ export default async function ApplicationDetail({
   if (!app) notFound()
   const ecoThemes = app!.programme === 'eco-schools' ? await getEcoThemes(id) : null
   const eco = ecoThemes ? await getEcoBoard(id) : null
+  // Eco-Schools: one application per academic year (operator opens the next one).
+  const yearInfo = eco ? await getYearInfo(id) : null
+  const [years, prevThemes] = yearInfo
+    ? await Promise.all([listSchoolYears(app!.applicant_id), previousYearThemes(app!.applicant_id, id)])
+    : [[], {}]
   const [docs, currentAuditor, assessments, bodies, currentCb, messages, audits, ps] = await Promise.all([
     listApplicationDocuments(id), applicationAuditor(id), listCriterionAssessments(id),
     listCertificationBodies(), applicationCb(id), listCriterionMessages(id), listAudits(id), getPreScreening(id),
@@ -83,6 +91,11 @@ export default async function ApplicationDetail({
                 <KeyRound className="w-3.5 h-3.5" /> {app.green_key_number}
               </span>
             )}
+            {yearInfo && (
+              <span className="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-lg" style={yearInfo.closedAt ? { background: '#F1F5F9', color: '#64748B' } : { background: '#D8F3DC', color: '#1B4332' }}>
+                {yearInfo.closedAt ? <Lock className="w-3.5 h-3.5" /> : <CalendarRange className="w-3.5 h-3.5" />} {formatAcademicYear(yearInfo.academicYear)}{yearInfo.closedAt ? ' · closed' : ''}
+              </span>
+            )}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-5 pt-5 border-t" style={{ borderColor: '#F1F5F9' }}>
             {[
@@ -105,6 +118,11 @@ export default async function ApplicationDetail({
         <div className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm" style={{ background: '#ECFDF3', border: '1px solid #A7F3D0', color: '#047857' }}>
           <CheckCircle2 className="w-4 h-4" /> Application updated.
         </div>
+      )}
+
+      {yearInfo && years.length > 0 && (
+        <AcademicYearsPanel applicationId={id} linkBase="/applications/"
+          years={years.map((y) => ({ id: y.id, academicYear: y.academicYear, closedAt: y.closedAt, statusLabel: statusMeta(y.status).label }))} />
       )}
 
       {/* Workflow actions (whiteboard state machine) */}
@@ -216,7 +234,7 @@ export default async function ApplicationDetail({
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#E2E8F0' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F172A' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>The establishment&apos;s evidence and comments alongside your feedback per indicator. The auditor&apos;s result is shown once assessed. Saved automatically.</p>
-          <CriteriaBoard role="admin" applicationId={id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={eco ? ecoRowExtras({ applicationId: id, eco, themes: ecoThemes ?? [], themesEditable: true }) : undefined} headerExtra={eco ? ecoHeaderExtra(eco) : undefined} stepBadges={eco ? ecoStepBadges() : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits} auditorName={currentAuditor?.name_en ?? currentAuditor?.email} />
+          <CriteriaBoard role="admin" applicationId={id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={eco ? ecoRowExtras({ applicationId: id, eco, themes: ecoThemes ?? [], themesEditable: true, previousThemes: prevThemes }) : undefined} headerExtra={eco ? ecoHeaderExtra(eco) : undefined} stepBadges={eco ? ecoStepBadges() : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal applicantId={app.applicant_id} audits={audits} auditorName={currentAuditor?.name_en ?? currentAuditor?.email} />
         </div>
       )}
 

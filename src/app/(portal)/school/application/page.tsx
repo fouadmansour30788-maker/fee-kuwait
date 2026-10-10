@@ -1,12 +1,23 @@
 import Link from 'next/link'
-import { FileText, Inbox, ChevronRight, Clock, KeyRound } from 'lucide-react'
+import { FileText, Inbox, ChevronRight, Clock, KeyRound, Lock, CalendarRange } from 'lucide-react'
 import { myApplications, myEntity } from '@/lib/db/establishment'
 import { PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
 import NewApplicationForm from '@/components/applications/NewApplicationForm'
+import { createClient } from '@/lib/supabase/server'
+import { listSchoolYears } from '@/lib/db/academicYears'
+import { formatAcademicYear } from '@/lib/academicYear'
 
 export default async function SchoolApplicationPage() {
-  const [apps, ent] = await Promise.all([myApplications(), myEntity()])
+  const { data: { user } } = await createClient().auth.getUser()
+  const [rawApps, ent, years] = await Promise.all([myApplications(), myEntity(), user ? listSchoolYears(user.id) : Promise.resolve([])])
   const approved = ent?.status === 'active'
+  // Eco-Schools: one application per academic year — newest year first, closed years last.
+  const yearOf = new Map(years.map((y) => [y.id, y]))
+  const apps = [...rawApps].sort((a, b) => {
+    const ya = yearOf.get(a.id), yb = yearOf.get(b.id)
+    if (!ya || !yb) return 0
+    return (ya.closedAt ? 1 : 0) - (yb.closedAt ? 1 : 0) || yb.academicYear.localeCompare(ya.academicYear)
+  })
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -41,15 +52,24 @@ export default async function SchoolApplicationPage() {
             <div className="divide-y" style={{ borderColor: '#EEF5F0' }}>
               {apps.map((a) => {
                 const s = statusMeta(a.status)
+                const y = yearOf.get(a.id)
+                const closed = !!y?.closedAt
                 return (
-                  <Link key={a.id} href={`/school/application/${a.id}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors">
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#F4F9F5' }}>
-                      <FileText className="w-4 h-4" style={{ color: '#40916C' }} />
+                  <Link key={a.id} href={`/school/application/${a.id}`} className={`flex items-center gap-4 px-5 hover:bg-slate-50 transition-colors ${closed ? 'py-2.5 opacity-70' : 'py-3.5'}`}>
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: closed ? '#F1F5F9' : '#F4F9F5' }}>
+                      {closed ? <Lock className="w-4 h-4" style={{ color: '#94A3B8' }} /> : <FileText className="w-4 h-4" style={{ color: '#40916C' }} />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>{PROGRAMME_LABEL[a.programme] ?? a.programme}</p>
+                      <p className="text-sm font-semibold flex items-center gap-2 flex-wrap" style={{ color: closed ? '#64748B' : '#1E293B' }}>
+                        {PROGRAMME_LABEL[a.programme] ?? a.programme}
+                        {y && (
+                          <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full" style={closed ? { background: '#F1F5F9', color: '#64748B' } : { background: '#D8F3DC', color: '#1B4332' }}>
+                            <CalendarRange className="w-3 h-3" /> {formatAcademicYear(y.academicYear)}{closed ? ' · closed' : ''}
+                          </span>
+                        )}
+                      </p>
                       <p className="text-xs" style={{ color: '#94A3B8' }}>
-                        Submitted {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}
+                        {closed ? 'Read-only' : `Submitted ${a.submitted_at ? new Date(a.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}`}
                       </p>
                     </div>
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: s.bg, color: s.color }}>{s.label}</span>

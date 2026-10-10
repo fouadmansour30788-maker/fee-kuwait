@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { establishmentCanEdit } from '@/lib/workflow'
 import { revalidatePath } from 'next/cache'
 import { isEcoStepLocked, notifyEcoGateIfReady } from '@/lib/db/ecoSchools'
+import { isYearClosed } from '@/lib/db/academicYears'
 
 const BUCKET = 'application-docs'
 
@@ -33,6 +34,7 @@ export async function recordDocument(input: {
   const isStaff = !!me && ['admin', 'super_admin', 'auditor', 'certification_body'].includes(me.role)
   if (app.applicant_id !== user.id && !isStaff) return { error: 'Not allowed' }
   if (await isEcoStepLocked(input.applicationId, input.criterionRef)) return { error: 'This step opens after the National Operator approves Steps 1–2.' }
+  if (!isStaff && await isYearClosed(input.applicationId)) return { error: 'This academic year is closed — it is read-only.' }
 
   const { error } = await admin.from('application_documents').insert({
     application_id: input.applicationId, uploaded_by: user.id,
@@ -75,6 +77,7 @@ export async function deleteDocument(documentId: string): Promise<{ ok?: true; e
     if (!app || app.applicant_id !== user.id) return { error: 'Not allowed' }
     if (doc.uploaded_by !== user.id) return { error: 'You can only remove documents you uploaded.' }
     if (!establishmentCanEdit(app.status)) return { error: 'The application is locked — documents can no longer be changed.' }
+    if (await isYearClosed(doc.application_id)) return { error: 'This academic year is closed — it is read-only.' }
   }
 
   // Links have no storage object.

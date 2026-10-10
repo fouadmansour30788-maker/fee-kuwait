@@ -14,7 +14,7 @@ const PAPER = {
 }
 
 // One theme tile — the official icon, like a sticker in the exercise book.
-export function ThemeTile({ t, on, onClick, size = 'md' }: { t: ESTheme; on: boolean; onClick?: () => void; size?: 'sm' | 'md' }) {
+export function ThemeTile({ t, on, onClick, size = 'md', tag }: { t: ESTheme; on: boolean; onClick?: () => void; size?: 'sm' | 'md'; tag?: string }) {
   const img = size === 'sm' ? 'w-10 h-10' : 'w-14 h-14'
   const Tag = onClick ? 'button' : 'div'
   return (
@@ -26,6 +26,7 @@ export function ThemeTile({ t, on, onClick, size = 'md' }: { t: ESTheme; on: boo
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={t.icon} alt="" className={`${img} rounded-full`} style={{ filter: on ? 'none' : 'grayscale(0.85)', opacity: on ? 1 : 0.6 }} />
       <span className="text-[10px] leading-tight text-center font-semibold" style={{ color: on ? '#14532D' : '#64748B' }}>{t.en}</span>
+      {tag && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: '#FDF6E3', color: '#8A6410', border: '1px solid #E8D5A3' }} title="Worked on in an earlier academic year">Done {tag}</span>}
       {on && (
         <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: '#2D9A5A', boxShadow: '0 0 0 2px #fff' }}>
           <Check className="w-3 h-3 text-white" />
@@ -37,7 +38,12 @@ export function ThemeTile({ t, on, onClick, size = 'md' }: { t: ESTheme; on: boo
 
 // Step 2 — the Eco-Schools themes the school is working on. Editable by the
 // school (while its application is open) and the operator; read-only otherwise.
-export default function EcoThemesPicker({ applicationId, selected, editable }: { applicationId: string; selected: string[]; editable: boolean }) {
+export default function EcoThemesPicker({ applicationId, selected, editable, previous = {} }: {
+  applicationId: string
+  selected: string[]
+  editable: boolean
+  previous?: Record<string, string>   // theme → earlier academic year it was worked on (e.g. '2025–26')
+}) {
   const [picked, setPicked] = useState<string[]>(selected)
   const [msg, setMsg] = useState<{ ok?: boolean; text: string } | null>(null)
   const [pending, start] = useTransition()
@@ -80,12 +86,13 @@ export default function EcoThemesPicker({ applicationId, selected, editable }: {
                 <Pencil className="w-3 h-3" /> {kind === 'main' ? 'Main themes' : 'Cross-cutting themes'}
               </p>
               <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))' }}>
-                {items.map((t) => <ThemeTile key={t.en} t={t} on={picked.includes(t.en)} onClick={editable ? () => toggle(t.en) : undefined} />)}
+                {items.map((t) => <ThemeTile key={t.en} t={t} on={picked.includes(t.en)} tag={previous[t.en]} onClick={editable ? () => toggle(t.en) : undefined} />)}
               </div>
             </div>
           )
         })}
         {!editable && picked.length === 0 && <p className="text-xs" style={{ color: '#94A3B8' }}>No themes selected yet</p>}
+        {editable && Object.keys(previous).length > 0 && <p className="text-[11px]" style={{ color: '#8A6410' }}>Themes marked “Done” were worked on in an earlier academic year — pick new ones to grow, or continue a theme if you need to.</p>}
 
         {editable && (
           <div className="flex items-center gap-2 flex-wrap pt-1">

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { establishmentCanEdit } from '@/lib/workflow'
 import { normalizeThemes } from '@/lib/data/ecoSchoolsCriteria'
 import { notifyEcoGateIfReady } from '@/lib/db/ecoSchools'
+import { isYearClosed } from '@/lib/db/academicYears'
 
 // Save the Eco-Schools themes (Step 2). The school may change them while its
 // application is editable; the National Operator may change them at any time.
@@ -22,6 +23,7 @@ export async function setEcoThemes(applicationId: string, themes: string[]): Pro
   if (!isStaff) {
     if (app.applicant_id !== user.id) return { error: 'Not allowed' }
     if (!establishmentCanEdit(app.status)) return { error: 'This application is locked.' }
+    if (await isYearClosed(applicationId)) return { error: 'This academic year is closed — it is read-only.' }
   }
 
   const { error } = await admin.from('applications').update({ es_themes: normalizeThemes(themes), updated_at: new Date().toISOString() }).eq('id', applicationId)

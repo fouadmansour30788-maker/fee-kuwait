@@ -4,7 +4,7 @@ import { ecoRowExtras, ecoHeaderExtra, ecoStepBadges, ecoEditableSteps, EcoResul
 import { getEcoBoard } from '@/lib/db/ecoSchools'
 import { getEcoThemes } from '@/lib/db/ecoThemes'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, FileText, Download, Inbox, Clock } from 'lucide-react'
+import { ArrowLeft, FileText, Download, Inbox, Clock, CalendarRange, Lock } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES } from '@/lib/db/applications'
 import { establishmentCanEdit, PARTIAL_EDIT_STATUSES, ESTABLISHMENT_ACTIONS, canonicalStatus, type AppStatus } from '@/lib/workflow'
 import WorkflowActions from '@/components/audit/WorkflowActions'
@@ -26,17 +26,26 @@ import InvoicesReadonly from '@/components/invoices/InvoicesReadonly'
 import { listInvoicesForApplication } from '@/lib/db/invoices'
 import SubmitForReview from '@/components/audit/SubmitForReview'
 import { lastReviewSubmission } from '@/lib/db/reviewSubmission'
+import { getYearInfo, listSchoolYears, previousYearThemes } from '@/lib/db/academicYears'
+import { formatAcademicYear } from '@/lib/academicYear'
 
 export default async function SchoolApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
   if (!app) notFound()
   const ecoThemes = app!.programme === 'eco-schools' ? await getEcoThemes(params.id) : null
   const eco = ecoThemes ? await getEcoBoard(params.id) : null
+  // Eco-Schools: one application per academic year; closed years are read-only.
+  const yearInfo = eco ? await getYearInfo(params.id) : null
+  const yearClosed = !!yearInfo?.closedAt
+  const [years, prevThemes] = yearInfo
+    ? await Promise.all([listSchoolYears(app!.applicant_id), previousYearThemes(app!.applicant_id, params.id)])
+    : [[], {}]
+  const currentYear = years.find((y) => !y.closedAt)
   const [docs, assessments, messages, ent, audits, ps, timeline, invoices] = await Promise.all([listApplicationDocuments(params.id), listCriterionAssessments(params.id), listCriterionMessages(params.id), myEntity(), listAudits(params.id), getPreScreening(params.id), getApplicationTimeline(params.id), listInvoicesForApplication(params.id)])
   const psApproved = preScreeningApproved(ps)
   const criteria = app.programme === 'green-key' && psApproved && ps ? applicableCriteria(ps) : criteriaForProgramme(app.programme)
   const showExternal = AUDIT_PUBLISHED_STATUSES.includes(app.status)
-  const locked = !establishmentCanEdit(app.status) || ent?.status !== 'active'
+  const locked = !establishmentCanEdit(app.status) || ent?.status !== 'active' || yearClosed
   const editableCriteria = PARTIAL_EDIT_STATUSES.includes(app.status) ? (app.reopened_criteria ?? []) : null
   const generalDocs = docs.filter((d) => !d.criterion_ref)
   const reports = showExternal ? docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF) : []
@@ -76,7 +85,21 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
             <h1 className="text-xl font-bold" style={{ color: '#0F2318' }}>{PROGRAMME_LABEL[app.programme] ?? app.programme}</h1>
             <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
             {app.green_key_number && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>{app.green_key_number}</span>}
+            {yearInfo && (
+              <span className="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1 rounded-full" style={yearClosed ? { background: '#F1F5F9', color: '#64748B' } : { background: '#D8F3DC', color: '#1B4332' }}>
+                {yearClosed ? <Lock className="w-3.5 h-3.5" /> : <CalendarRange className="w-3.5 h-3.5" />} Academic year {formatAcademicYear(yearInfo.academicYear)}
+              </span>
+            )}
           </div>
+          {yearClosed && (
+            <div className="mt-4 rounded-xl px-4 py-3 text-sm flex items-center gap-2 flex-wrap" style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', color: '#475569' }}>
+              <Lock className="w-4 h-4" />
+              <span><strong>This academic year is closed</strong> — you can view it, but it can no longer be changed.</span>
+              {currentYear && currentYear.id !== params.id && (
+                <Link href={`/school/application/${currentYear.id}`} className="font-semibold underline" style={{ color: '#2D6A4F' }}>Go to {formatAcademicYear(currentYear.academicYear)} →</Link>
+              )}
+            </div>
+          )}
           <p className="text-sm mt-1" style={{ color: '#5B7568' }}>
             Submitted {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}
           </p>
@@ -123,16 +146,29 @@ export default async function SchoolApplicationDetail({ params }: { params: { id
         <JourneyTimeline events={timeline} />
       </div>
 
-      {eco && (
+      {eco && !yearClosed && (
         <EcoPhasePanel applicationId={params.id} unlockedAt={eco.state.unlockedAt} gate={eco.gate} canApprove={false} />
       )}
 
-      {criteria.length > 0 && (
+      {criteria.length > 0 && !yearClosed && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
           <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Criteria board</h2>
           <p className="text-xs mb-4" style={{ color: '#5B7568' }}>Attach evidence and add a comment for each indicator, and see your reviewer&apos;s feedback.</p>
-          <CriteriaBoard role="establishment" applicationId={app.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={eco ? ecoRowExtras({ applicationId: params.id, eco, themes: ecoThemes ?? [], themesEditable: !locked, scoreEditableSteps: ecoEditableSteps(eco, locked, editableCriteria) }) : undefined} headerExtra={eco ? ecoHeaderExtra(eco) : undefined} stepBadges={eco ? ecoStepBadges() : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} audits={audits} editableCriteria={editableCriteria} />
+          <CriteriaBoard role="establishment" applicationId={app.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={eco ? ecoRowExtras({ applicationId: params.id, eco, themes: ecoThemes ?? [], themesEditable: !locked, scoreEditableSteps: ecoEditableSteps(eco, locked, editableCriteria), previousThemes: prevThemes }) : undefined} headerExtra={eco ? ecoHeaderExtra(eco) : undefined} stepBadges={eco ? ecoStepBadges() : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} audits={audits} editableCriteria={editableCriteria} />
         </div>
+      )}
+
+      {/* Closed academic year — minimised and read-only */}
+      {criteria.length > 0 && yearClosed && yearInfo && (
+        <details className="bg-white rounded-2xl border group" style={{ borderColor: '#E2E8F0' }}>
+          <summary className="flex items-center gap-2 px-6 py-4 cursor-pointer select-none text-base font-bold" style={{ color: '#475569' }}>
+            <Lock className="w-4 h-4" /> {formatAcademicYear(yearInfo.academicYear)} — Seven Steps (read-only)
+            <span className="ml-auto text-xs font-semibold" style={{ color: '#94A3B8' }}>Click to view</span>
+          </summary>
+          <div className="px-6 pb-6">
+            <CriteriaBoard role="establishment" applicationId={app.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={eco ? ecoRowExtras({ applicationId: params.id, eco, themes: ecoThemes ?? [], themesEditable: !locked, scoreEditableSteps: ecoEditableSteps(eco, locked, editableCriteria), previousThemes: prevThemes }) : undefined} headerExtra={eco ? ecoHeaderExtra(eco) : undefined} stepBadges={eco ? ecoStepBadges() : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} audits={audits} editableCriteria={editableCriteria} />
+          </div>
+        </details>
       )}
 
       {showSubmit && <SubmitForReview applicationId={app.id} lastSubmittedAt={lastSubmittedAt} done={doneCount} total={criteria.length} unit="steps" />}

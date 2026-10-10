@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { getEcoGate, isEcoStepLocked } from '@/lib/db/ecoSchools'
 import { establishmentCanEdit, PARTIAL_EDIT_STATUSES } from '@/lib/workflow'
 import { GREEN_FLAG_SECTIONS, totalScore, type ScoreAnswers } from '@/lib/data/greenFlagScorecard'
+import { isYearClosed } from '@/lib/db/academicYears'
 
 async function requireOperator(): Promise<{ userId: string } | { error: string }> {
   const supabase = createClient()
@@ -69,6 +70,7 @@ export async function saveGreenFlagSection(applicationId: string, sectionId: str
   if (!app || app.programme !== 'eco-schools') return { error: 'Not an Eco-Schools application.' }
   if (app.applicant_id !== user.id) return { error: 'Only the school can answer the Green Flag questions.' }
   if (!establishmentCanEdit(app.status)) return { error: 'The application is locked — answers can no longer be changed.' }
+  if (await isYearClosed(applicationId)) return { error: 'This academic year is closed — it is read-only.' }
   if (PARTIAL_EDIT_STATUSES.includes(app.status) && !(app.reopened_criteria ?? []).includes(sec.step)) return { error: 'This step is not reopened for changes.' }
   if (await isEcoStepLocked(applicationId, sec.step)) return { error: 'This step opens after the National Operator approves Steps 1–2.' }
 
