@@ -1,18 +1,19 @@
 'use client'
 
 import Link from 'next/link'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, type Variants } from 'framer-motion'
 import { useRef } from 'react'
 import {
   ArrowRight, CheckCircle2, ClipboardList, SearchCheck, BadgeCheck, ExternalLink,
-  School, Waves, KeyRound, Leaf, Newspaper, GraduationCap,
+  School, Waves, KeyRound, Leaf, Newspaper, GraduationCap, Building2, Globe2,
 } from 'lucide-react'
 import { useLang } from '@/context/LangContext'
+import CountUp from '@/components/ui/CountUp'
 import { getProgramme } from '@/lib/utils/programmes'
 import type { Programme } from '@/types'
 
 const ICON_MAP: Record<string, React.ElementType> = {
-  School, Waves, KeyRound, Leaf, Newspaper, GraduationCap,
+  School, Waves, KeyRound, Leaf, Newspaper, GraduationCap, Building2, Globe2,
 }
 
 interface ProgrammeContent {
@@ -177,6 +178,8 @@ const CONTENT: Record<Programme, ProgrammeContent> = {
   },
 }
 
+const HERO_ITEM: Variants = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } } }
+
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
@@ -200,16 +203,32 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
       {/* ── Hero ───────────────────────────────────────── */}
       <section className="relative py-28 overflow-hidden" style={{ background: `linear-gradient(135deg, #071510 0%, ${prog.color}22 100%)` }}>
         <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at top right, ${prog.color}25, transparent 60%)` }} />
+        {/* Drifting glow orbs in the programme colour */}
+        {[
+          { size: 380, x: '72%', y: '-20%', d: 14 },
+          { size: 260, x: '-8%', y: '55%', d: 18 },
+          { size: 180, x: '45%', y: '70%', d: 11 },
+        ].map((o, i) => (
+          <motion.div key={i} aria-hidden className="absolute rounded-full pointer-events-none blur-3xl"
+            style={{ width: o.size, height: o.size, left: o.x, top: o.y, background: `${prog.color}${i === 1 ? '30' : '22'}` }}
+            animate={{ x: [0, 30, -20, 0], y: [0, -25, 15, 0], scale: [1, 1.08, 0.95, 1] }}
+            transition={{ duration: o.d, repeat: Infinity, ease: 'easeInOut' }} />
+        ))}
         <div className="container-fee relative z-10 max-w-3xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <Link href="/programmes" className="inline-flex items-center gap-1.5 text-white/40 text-sm mb-8 hover:text-white/70 transition-colors">
-              ← {lang === 'ar' ? 'جميع البرامج' : 'All Programmes'}
-            </Link>
+          <motion.div initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12 } } }}>
+            <motion.div variants={HERO_ITEM}>
+              <Link href="/programmes" className="inline-flex items-center gap-1.5 text-white/40 text-sm mb-8 hover:text-white/70 transition-colors">
+                ← {lang === 'ar' ? 'جميع البرامج' : 'All Programmes'}
+              </Link>
+            </motion.div>
 
-            <div className="flex items-center gap-4 mb-6">
-              <div
+            <motion.div variants={HERO_ITEM} className="flex items-center gap-4 mb-6">
+              <motion.div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden bg-white"
-                style={{ border: `1px solid ${prog.color}40` }}
+                style={{ border: `1px solid ${prog.color}40`, boxShadow: `0 0 0 0 ${prog.color}` }}
+                initial={{ scale: 0.4, rotate: -12, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1, y: [0, -6, 0] }}
+                transition={{ scale: { type: 'spring', stiffness: 260, damping: 14, delay: 0.2 }, rotate: { type: 'spring', stiffness: 260, damping: 14, delay: 0.2 }, opacity: { delay: 0.2 }, y: { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 } }}
               >
                 {prog.logo ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -217,30 +236,32 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
                 ) : (
                   <Icon className="w-8 h-8" style={{ color: prog.color }} />
                 )}
-              </div>
+              </motion.div>
               <span
                 className="text-sm font-bold px-4 py-1.5 rounded-full"
                 style={{ color: prog.color, background: `${prog.color}15`, border: `1px solid ${prog.color}30` }}
               >
                 {lang === 'ar' ? content.badge_ar : content.badge_en}
               </span>
-            </div>
+            </motion.div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-white leading-[1.1] tracking-tight mb-4">
+            <motion.h1 variants={HERO_ITEM} className="text-4xl md:text-5xl font-bold text-white leading-[1.1] tracking-tight mb-4">
               {lang === 'ar' ? prog.name_ar : prog.name_en}
-            </h1>
-            <p className="text-white/50 text-base mb-8">
+            </motion.h1>
+            <motion.p variants={HERO_ITEM} className="text-white/50 text-base mb-8">
               {lang === 'ar' ? content.who_ar : content.who_en}
-            </p>
+            </motion.p>
 
-            <Link
-              href={content.apply_link}
-              className="inline-flex items-center gap-2 px-8 py-4 font-semibold rounded-2xl text-white text-base shadow-lg transition-all duration-200 hover:scale-[1.03]"
-              style={{ background: prog.color }}
-            >
-              {lang === 'ar' ? 'ابدأ التقديم' : 'Start Application'}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <motion.div variants={HERO_ITEM}>
+              <Link
+                href={content.apply_link}
+                className="group inline-flex items-center gap-2 px-8 py-4 font-semibold rounded-2xl text-white text-base shadow-lg transition-all duration-200 hover:scale-[1.03]"
+                style={{ background: prog.color, boxShadow: `0 12px 30px ${prog.color}55` }}
+              >
+                {lang === 'ar' ? 'ابدأ التقديم' : 'Start Application'}
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
+              </Link>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -249,20 +270,28 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
       {prog.globalUrl && (
         <section className="section-white pt-10 -mb-6">
           <div className="container-fee">
-            <div className="card p-6 md:p-7 flex flex-col md:flex-row md:items-center gap-5 md:gap-8"
-              style={{ borderColor: `${prog.color}30` }}>
+            <motion.div className="card p-6 md:p-7 flex flex-col md:flex-row md:items-center gap-5 md:gap-8"
+              style={{ borderColor: `${prog.color}30` }}
+              initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -3, boxShadow: `0 16px 40px ${prog.color}22` }}>
               {prog.globalStat && (
-                <div className="flex items-center gap-6 md:gap-8">
-                  {prog.globalStat.count && (
-                    <div>
-                      <p className="text-3xl md:text-4xl font-bold" style={{ color: prog.color }}>{prog.globalStat.count}</p>
-                      <p className="text-gray text-xs mt-0.5">{lang === 'ar' ? prog.globalStat.unit_ar : prog.globalStat.unit_en}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-3xl md:text-4xl font-bold" style={{ color: prog.color }}>{prog.globalStat.countries}</p>
-                    <p className="text-gray text-xs mt-0.5">{lang === 'ar' ? 'دولة' : 'countries'}</p>
-                  </div>
+                <div className="flex items-center gap-6 md:gap-10 flex-wrap">
+                  {[
+                    ...(prog.globalStat.count ? [{ v: prog.globalStat.count, label: lang === 'ar' ? prog.globalStat.unit_ar : prog.globalStat.unit_en, I: Building2, spin: false }] : []),
+                    { v: prog.globalStat.countries, label: lang === 'ar' ? 'دولة' : 'countries', I: Globe2, spin: true },
+                  ].map(({ v, label, I, spin }, i) => (
+                    <motion.div key={label} className="flex items-center gap-3"
+                      initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.7 + i * 0.15, type: 'spring', stiffness: 200, damping: 16 }}>
+                      <motion.span className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: `${prog.color}14` }}
+                        animate={spin ? { rotate: 360 } : undefined} transition={spin ? { duration: 24, repeat: Infinity, ease: 'linear' } : undefined}>
+                        <I className="w-6 h-6" style={{ color: prog.color }} />
+                      </motion.span>
+                      <div>
+                        <CountUp value={v} className="block text-3xl md:text-4xl font-bold tabular-nums" style={{ color: prog.color }} />
+                        <p className="text-gray text-xs mt-0.5">{label}</p>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               )}
               <div className="md:ms-auto flex flex-col gap-1.5">
@@ -275,7 +304,7 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
                   <ExternalLink className="w-4 h-4" />
                 </a>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
       )}
@@ -314,10 +343,13 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
             {(lang === 'ar' ? content.benefits_ar : content.benefits_en).map((benefit, i) => (
               <FadeIn key={i} delay={i * 0.07}>
-                <div className="flex items-start gap-3 p-5 card">
-                  <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: prog.color }} />
+                <motion.div className="group flex items-start gap-3 p-5 card h-full" whileHover={{ y: -4, boxShadow: `0 14px 32px ${prog.color}20` }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
+                  <motion.span initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ type: 'spring', stiffness: 320, damping: 14, delay: 0.15 + i * 0.07 }}
+                    className="flex-shrink-0 mt-0.5 transition-transform group-hover:scale-125">
+                    <CheckCircle2 className="w-5 h-5" style={{ color: prog.color }} />
+                  </motion.span>
                   <p className="text-charcoal text-sm leading-relaxed">{benefit}</p>
-                </div>
+                </motion.div>
               </FadeIn>
             ))}
           </div>
@@ -364,7 +396,10 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
           </FadeIn>
 
           <div className="relative max-w-3xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <motion.div aria-hidden className="hidden md:block absolute top-10 left-[16.6%] right-[16.6%] h-0.5 origin-left rtl:origin-right"
+              style={{ background: `linear-gradient(90deg, ${prog.color}55, ${prog.color})` }}
+              initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.2 }} />
+            <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
                   icon: ClipboardList,
@@ -396,12 +431,17 @@ export default function ProgrammeDetail({ programmeId }: { programmeId: Programm
                   <FadeIn key={i} delay={i * 0.12}>
                     <div className="flex flex-col items-center text-center">
                       <div className="relative mb-6">
-                        <div
-                          className="w-20 h-20 rounded-full flex items-center justify-center"
-                          style={{ background: `${prog.color}12`, border: `2px solid ${prog.color}40` }}
+                        <motion.div
+                          className="w-20 h-20 rounded-full flex items-center justify-center bg-white"
+                          style={{ border: `2px solid ${prog.color}40` }}
+                          initial={{ scale: 0.5, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true, margin: '-80px' }}
+                          transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.3 + i * 0.35 }}
+                          whileHover={{ scale: 1.08, rotate: 4 }}
                         >
-                          <StepIcon className="w-9 h-9" style={{ color: prog.color }} />
-                        </div>
+                          <div className="w-full h-full rounded-full flex items-center justify-center" style={{ background: `${prog.color}12` }}>
+                            <StepIcon className="w-9 h-9" style={{ color: prog.color }} />
+                          </div>
+                        </motion.div>
                         <span
                           className="absolute -top-1 -right-1 w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center"
                           style={{ background: prog.color }}
