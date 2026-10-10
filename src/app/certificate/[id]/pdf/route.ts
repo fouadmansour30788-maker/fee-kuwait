@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage } from 'pdf-lib'
 import { getCertificate } from '@/lib/db/certificates'
-import { siteUrl } from '@/lib/qr'
+import { siteUrl, qrDataUrl } from '@/lib/qr'
 import { certAuthCode } from '@/lib/certAuth'
+import { ES_OPERATOR_LINES, esValidity } from '../EcoSchoolsCertificate'
+import type { CertificateDetail } from '@/lib/db/certificates'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,9 +40,79 @@ function wrap(text: string, font: PDFFont, size: number, maxW: number): string[]
   return lines
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+// Standard PDF fonts only cover Latin text — drop anything they can't encode
+// (e.g. Arabic) instead of failing the whole download.
+function encodable(f: PDFFont, t: string): string {
+  try { f.encodeText(t); return t } catch { return t.replace(/[^\x20-\x7E\u00A0-\u00FF\u2013\u2014\u2018\u2019\u201C\u201D]/g, '').trim() }
+}
+
+const pdfResponse = (bytes: Uint8Array, filename: string) => new NextResponse(Buffer.from(bytes), {
+  headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${filename}"`, 'Cache-Control': 'no-store' },
+})
+
+// Eco-Schools "Green Flag Accredited" — the official A4 landscape artwork with
+// the school name, validity dates and National Operator in the template's spots
+// (same proportions as the on-screen certificate in EcoSchoolsCertificate.tsx).
+async function ecoSchoolsPdf(cert: CertificateDetail, origin: string): Promise<Uint8Array> {
+  const doc = await PDFDocument.create()
+  const page = doc.addPage([841.89, 595.28]) // A4 landscape
+  const { width: W, height: H } = page.getSize()
+  const top = (frac: number) => H * (1 - frac)  // template measures from the top
+  const ink = rgb(0.11, 0.12, 0.114)
+  const font = await doc.embedFont(StandardFonts.Helvetica)
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold)
+
+  const bg = await fetchImage(doc, `${origin}/cert/es-green-flag.jpg`, 'jpg')
+  if (bg) page.drawImage(bg, { x: 0, y: 0, width: W, height: H })
+
+  // School name — centred on the line under the header; wraps upwards, shrinks if long.
+  const name = encodable(bold, (cert.holder ?? '—').toUpperCase())
+  const maxW = W * 0.724
+  let size = W * 0.025
+  let lines = wrap(name, bold, size, maxW)
+  while (lines.length > 2 && size > 12) { size -= 1; lines = wrap(name, bold, size, maxW) }
+  let y = top(0.376)
+  for (const line of [...lines].reverse()) {
+    page.drawText(line, { x: W * 0.501 - bold.widthOfTextAtSize(line, size) / 2, y, size, font: bold, color: ink })
+    y += size * 1.15
+  }
+
+  // Dates — under "Valid for:"
+  const dates = esValidity(cert.issued_at, cert.expires_at)
+  const dSize = W * 0.017
+  page.drawText(dates, { x: W / 2 - font.widthOfTextAtSize(dates, dSize) / 2, y: top(0.606) - dSize * 0.9, size: dSize, font, color: ink })
+
+  // National Operator — right-aligned under the right signature line
+  const oSize = W * 0.0162
+  ES_OPERATOR_LINES.forEach((l, i) => {
+    page.drawText(l, { x: W * 0.946 - font.widthOfTextAtSize(l, oSize), y: top(0.772) - oSize * 0.9 - i * oSize * 1.45, size: oSize, font, color: ink })
+  })
+
+  // Verify QR + certificate number (top-right, under the header)
+  const qrSize = W * 0.074
+  const qrX = W * (1 - 0.026) - qrSize
+  const qrTop = top(0.24)
+  try {
+    const qr = await doc.embedPng(await qrDataUrl(`${siteUrl()}/verify/${encodeURIComponent(cert.certificate_number)}`))
+    page.drawImage(qr, { x: qrX, y: qrTop - qrSize, width: qrSize, height: qrSize })
+  } catch { /* QR is a convenience — the certificate is still valid without it */ }
+  const muted = rgb(0.39, 0.45, 0.55)
+  const small = W * 0.0062
+  const caption = ['Scan to verify', cert.certificate_number]
+  caption.forEach((t, i) => {
+    page.drawText(t, { x: qrX + qrSize / 2 - font.widthOfTextAtSize(t, small) / 2, y: qrTop - qrSize - small * 1.4 * (i + 1), size: small, font, color: muted })
+  })
+  return doc.save()
+}
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const cert = await getCertificate(params.id)
   if (!cert) return new NextResponse('Not found', { status: 404 })
+
+  if (cert.programme === 'eco-schools') {
+    const bytes = await ecoSchoolsPdf(cert, req.nextUrl.origin)
+    return pdfResponse(bytes, `EcoSchools-GreenFlag-Certificate-${cert.certificate_number.replace(/[^\w-]/g, '_')}.pdf`)
+  }
 
   const doc = await PDFDocument.create()
   const page = doc.addPage([595.28, 841.89]) // A4 portrait

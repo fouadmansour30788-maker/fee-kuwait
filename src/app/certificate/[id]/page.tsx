@@ -4,6 +4,7 @@ import { getCertificate } from '@/lib/db/certificates'
 import { qrDataUrl, siteUrl } from '@/lib/qr'
 import { certAuthCode } from '@/lib/certAuth'
 import PrintButton from './PrintButton'
+import EcoSchoolsCertificate from './EcoSchoolsCertificate'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +31,24 @@ export default async function CertificatePage({ params }: { params: { id: string
   const verifyUrl = `${siteUrl()}/verify/${encodeURIComponent(cert.certificate_number)}`
   const qr = await qrDataUrl(verifyUrl)
   const authCode = certAuthCode({ number: cert.certificate_number, holder: cert.holder, issuedAt: cert.issued_at, expiresAt: cert.expires_at })
+
+  // Eco-Schools — the official "Green Flag Accredited" template (A4 landscape).
+  if (cert.programme === 'eco-schools') {
+    return (
+      <div style={{ minHeight: '100vh', background: '#EEF2F5', padding: 24 }}>
+        <style>{`@media print { .no-print { display: none !important } body { background: #fff } #cert { box-shadow: none !important; margin: 0 !important; width: 297mm !important; max-width: none !important } @page { size: A4 landscape; margin: 0 } * { -webkit-print-color-adjust: exact; print-color-adjust: exact } }`}</style>
+        <div className="no-print" style={{ maxWidth: 1120, margin: '0 auto 16px', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+          <a href={`/certificate/${params.id}/pdf`}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, padding: '8px 16px', borderRadius: 10, background: '#fff', color: '#334155', border: '1px solid #E2E8F0', textDecoration: 'none' }}>
+            ⬇ Download PDF
+          </a>
+          <PrintButton />
+        </div>
+        <EcoSchoolsCertificate cert={cert} qr={qr} />
+        <p className="no-print" style={{ textAlign: 'center', fontSize: 12, color: '#94A3B8', marginTop: 16 }}>Verify at {verifyUrl} · Auth {authCode}</p>
+      </div>
+    )
+  }
 
   return (
     <div className={lato.className} style={{ minHeight: '100vh', background: '#EEF2F5', padding: 24 }}>
