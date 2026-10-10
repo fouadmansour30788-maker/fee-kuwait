@@ -1,15 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Image as ImageIcon, Film, LinkIcon, GalleryHorizontal, Plus, Trash2, GripVertical } from 'lucide-react'
+import { Image as ImageIcon, Film, LinkIcon, GalleryHorizontal, Trash2, GripVertical } from 'lucide-react'
 import type { MediaItem, MediaType } from '@/lib/db/news'
-import { ImageUploadButton, Thumb } from './ImageUpload'
+import { PhotoUrlField, SlideshowField } from './ImageUpload'
 
 const TYPES: { type: MediaType; label: string; Icon: React.ElementType; hint: string }[] = [
-  { type: 'image',     label: 'Photo',     Icon: ImageIcon,          hint: 'Image URL (https://…) or upload' },
+  { type: 'image',     label: 'Photo',     Icon: ImageIcon,          hint: 'Image URL, Google Drive / OneDrive link, or upload' },
   { type: 'video',     label: 'Video',     Icon: Film,               hint: 'YouTube / Vimeo / .mp4 URL' },
   { type: 'link',      label: 'Link',      Icon: LinkIcon,           hint: 'Destination URL (https://…)' },
-  { type: 'slideshow', label: 'Slideshow', Icon: GalleryHorizontal,  hint: 'One image URL per line — or upload photos' },
+  { type: 'slideshow', label: 'Slideshow', Icon: GalleryHorizontal,  hint: 'One image URL or Drive / OneDrive link per line — or upload photos' },
 ]
 const META = Object.fromEntries(TYPES.map((t) => [t.type, t])) as Record<MediaType, typeof TYPES[number]>
 
@@ -76,28 +76,14 @@ export default function MediaEditor({ initial }: { initial: MediaItem[] }) {
             </div>
 
             {it.type === 'slideshow' ? (
-              <>
-                <textarea
-                  value={(it.urls ?? []).join('\n')}
-                  onChange={(e) => patch(i, { urls: e.target.value.split('\n') })}
-                  rows={3} placeholder={hint}
-                  className={inputCls + ' resize-y font-mono text-[13px]'} style={inputStyle} />
-                <div className="flex items-center gap-2 flex-wrap">
-                  <ImageUploadButton multiple onUploaded={(u) => patch(i, { urls: [...(it.urls ?? []).filter((x) => x.trim()), ...u] })} />
-                  {(it.urls ?? []).filter((x) => x.trim()).map((u, k) => <Thumb key={k} url={u} />)}
-                </div>
-              </>
+              <SlideshowField urls={it.urls ?? []} onChange={(urls) => patch(i, { urls })} placeholder={hint} />
+            ) : it.type === 'image' ? (
+              <PhotoUrlField value={it.url ?? ''} onChange={(url) => patch(i, { url })} placeholder={hint} />
             ) : (
-              <>
-                <div className="flex items-center gap-2">
-                  <input
-                    value={it.url ?? ''}
-                    onChange={(e) => patch(i, { url: e.target.value })}
-                    placeholder={hint} className={inputCls + ' min-w-0'} style={inputStyle} />
-                  {it.type === 'image' && <ImageUploadButton onUploaded={(u) => patch(i, { url: u[0] })} />}
-                </div>
-                {it.type === 'image' && it.url && <Thumb url={it.url} />}
-              </>
+              <input
+                value={it.url ?? ''}
+                onChange={(e) => patch(i, { url: e.target.value })}
+                placeholder={hint} className={inputCls} style={inputStyle} />
             )}
 
             <div className="grid sm:grid-cols-2 gap-2">

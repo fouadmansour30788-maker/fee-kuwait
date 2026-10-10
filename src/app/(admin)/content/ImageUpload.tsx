@@ -3,6 +3,8 @@
 import { useRef, useState } from 'react'
 import { Upload, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { importImageFromShareLink } from '@/lib/actions/media'
+import { shareSource } from '@/lib/shareLinks'
 
 const MAX_BYTES = 10 * 1024 * 1024 // 10 MB per image
 
@@ -53,6 +55,31 @@ export function ImageUploadButton({ onUploaded, multiple = false, label }: { onU
   )
 }
 
+// Turns pasted Google Drive / OneDrive / SharePoint / Dropbox share links into a
+// stored copy (share links open a viewer page, not the image).
+export function useShareImport() {
+  const [status, setStatus] = useState<{ busy?: boolean; ok?: string; error?: string }>({})
+  async function resolve(url: string): Promise<string> {
+    const src = shareSource(url)
+    if (!src) return url
+    setStatus({ busy: true })
+    const r = await importImageFromShareLink(url.trim())
+    if (r.error || !r.url) { setStatus({ error: r.error ?? 'Import failed.' }); return url }
+    setStatus({ ok: `Imported from ${r.source}` })
+    return r.url
+  }
+  async function resolveAll(urls: string[]): Promise<string[]> {
+    const out: string[] = []
+    for (const u of urls) out.push(u.trim() ? await resolve(u) : u)
+    return out
+  }
+  const note = status.busy
+    ? <span className="inline-flex items-center gap-1 text-[11px]" style={{ color: '#475569' }}><Loader2 className="w-3 h-3 animate-spin" /> Importing image from share link…</span>
+    : status.error ? <span className="text-[11px]" style={{ color: '#DC2626' }}>{status.error}</span>
+    : status.ok ? <span className="text-[11px]" style={{ color: '#047857' }}>✓ {status.ok} — stored on the site</span> : null
+  return { resolve, resolveAll, note, busy: !!status.busy }
+}
+
 export function Thumb({ url }: { url: string }) {
   if (!/^https?:\/\//i.test(url)) return null
   // eslint-disable-next-line @next/next/no-img-element
@@ -62,15 +89,59 @@ export function Thumb({ url }: { url: string }) {
 // Article cover image: paste a URL or upload from the computer.
 export function CoverImageField({ value }: { value?: string | null }) {
   const [url, setUrl] = useState(value ?? '')
+  const share = useShareImport()
+  const importIfShare = async (v: string) => { if (shareSource(v)) setUrl(await share.resolve(v)) }
   return (
     <div>
       <label className="block text-xs font-semibold mb-1.5" style={{ color: '#475569' }}>Cover image</label>
       <div className="flex items-center gap-2">
-        <input name="image_url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://… or upload"
+        <input name="image_url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…, a Drive/OneDrive link, or upload"
+          onBlur={(e) => importIfShare(e.target.value)} onPaste={(e) => { const v = e.clipboardData.getData('text'); if (shareSource(v)) { e.preventDefault(); setUrl(v); importIfShare(v) } }}
           className="w-full min-w-0 text-sm px-3 py-2.5 rounded-xl outline-none" style={{ border: '1px solid #E2E8F0', color: '#1E293B' }} />
         <ImageUploadButton onUploaded={(u) => setUrl(u[0])} label="Upload" />
       </div>
-      {url && <div className="mt-2"><Thumb url={url} /></div>}
+      {share.note && <div className="mt-1">{share.note}</div>}
+      {url && !shareSource(url) && <div className="mt-2"><Thumb url={url} /></div>}
     </div>
+  )
+}
+
+const mediaInput = 'w-full min-w-0 text-sm px-3 py-2 rounded-lg outline-none'
+const mediaInputStyle = { border: '1px solid #E2E8F0', color: '#1E293B' } as const
+
+// Photo media item: URL, share link (imported), or upload — with a preview.
+export function PhotoUrlField({ value, onChange, placeholder }: { value: string; onChange: (url: string) => void; placeholder: string }) {
+  const share = useShareImport()
+  const importIfShare = async (v: string) => { if (shareSource(v)) onChange(await share.resolve(v)) }
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+          onBlur={(e) => importIfShare(e.target.value)} onPaste={(e) => { const v = e.clipboardData.getData('text'); if (shareSource(v)) { e.preventDefault(); onChange(v); importIfShare(v) } }}
+          className={mediaInput} style={mediaInputStyle} />
+        <ImageUploadButton onUploaded={(u) => onChange(u[0])} />
+      </div>
+      {share.note}
+      {value && !shareSource(value) && <Thumb url={value} />}
+    </>
+  )
+}
+
+// Slideshow media item: one URL / share link per line (share links imported on
+// leaving the box), or upload several photos at once.
+export function SlideshowField({ urls, onChange, placeholder }: { urls: string[]; onChange: (urls: string[]) => void; placeholder: string }) {
+  const share = useShareImport()
+  const clean = urls.filter((x) => x.trim())
+  return (
+    <>
+      <textarea value={urls.join('\n')} onChange={(e) => onChange(e.target.value.split('\n'))} rows={3} placeholder={placeholder}
+        onBlur={async (e) => { const lines = e.target.value.split('\n'); if (lines.some((l) => shareSource(l))) onChange(await share.resolveAll(lines)) }}
+        className={mediaInput + ' resize-y font-mono text-[13px]'} style={mediaInputStyle} />
+      {share.note}
+      <div className="flex items-center gap-2 flex-wrap">
+        <ImageUploadButton multiple onUploaded={(u) => onChange([...clean, ...u])} />
+        {clean.filter((u) => !shareSource(u)).map((u, k) => <Thumb key={k} url={u} />)}
+      </div>
+    </>
   )
 }
