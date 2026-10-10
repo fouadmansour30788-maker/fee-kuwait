@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getApplication, PROGRAMME_LABEL, statusMeta } from '@/lib/db/applications'
+import { getApplication, PROGRAMME_LABEL, statusMeta, AUDIT_PUBLISHED_STATUSES } from '@/lib/db/applications'
+import { AUDIT_REPORT_REF } from '@/lib/db/documents'
 import { listCriterionAssessments } from '@/lib/db/assessments'
 import { listApplicationDocuments } from '@/lib/db/documents'
 import { getPreScreening, preScreeningApproved } from '@/lib/db/preScreening'
@@ -18,10 +19,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return new Response('Not signed in', { status: 401 })
   const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
-  if (!me || !['admin', 'super_admin', 'certification_body', 'auditor'].includes(me.role)) return new Response('Not allowed', { status: 403 })
+  const isStaff = !!me && ['admin', 'super_admin', 'certification_body', 'auditor'].includes(me.role)
 
   const app = await getApplication(params.id)
   if (!app) return new Response('Not found', { status: 404 })
+  // The establishment may export its own Green Key board — limited to what its
+  // board shows (audit results only once published to it, its own documents).
+  const isOwner = app.applicant_id === user.id
+  if (!isStaff && !(isOwner && app.programme === 'green-key')) return new Response('Not allowed', { status: 403 })
+  const showAudit = isStaff || AUDIT_PUBLISHED_STATUSES.includes(app.status)
 
   const [assessments, docs, ps] = await Promise.all([
     listCriterionAssessments(params.id), listApplicationDocuments(params.id), getPreScreening(params.id),
@@ -31,6 +37,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   // Group documents by criterion reference.
   const docsByRef = new Map<string, typeof docs>()
   for (const d of docs) {
+    if (!isStaff && d.uploaded_by !== app.applicant_id && !(showAudit && d.criterion_ref === AUDIT_REPORT_REF)) continue
     const k = d.criterion_ref ?? '—'
     if (!docsByRef.has(k)) docsByRef.set(k, [])
     docsByRef.get(k)!.push(d)
@@ -47,7 +54,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const s = statusMeta(app.status)
   const today = new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' })
 
-  const headers = ['Section', 'Criterion', 'Type', 'Requirement', 'Est. Progress', 'Operator Readiness', 'CB Pre-Audit', 'Auditor Conformity', 'CB Final Review', 'Auditor remark', 'Attached documents']
+  const headers = ['Section', 'Criterion', 'Type', 'Requirement', 'Est. Progress', 'Operator Readiness', 'CB Pre-Audit',
+    ...(showAudit ? ['Auditor Conformity', 'CB Final Review', 'Auditor remark'] : []), 'Attached documents']
 
   const rows = criteria.map((c) => {
     const a = assessments[c.ref]
@@ -59,9 +67,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       <td>${esc(a?.applicantStatus ? (STATUS[a.applicantStatus] ?? a.applicantStatus) : 'Not started')}</td>
       <td>${esc(RESULT[a?.internal ?? 'pending'])}</td>
       <td>${esc(CB_PRE[a?.cbPre ?? 'pending'])}</td>
-      <td>${esc(RESULT[a?.external ?? 'pending'])}</td>
+      ${showAudit ? `<td>${esc(RESULT[a?.external ?? 'pending'])}</td>
       <td>${esc(CB_FINAL[a?.cbFinal ?? 'pending'])}</td>
-      <td>${esc(a?.note ?? '')}</td>
+      <td>${esc(a?.note ?? '')}</td>` : ''}
       <td>${docCell(c.ref)}</td>
     </tr>`
   }).join('')
@@ -88,6 +96,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     <thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody>
   </table>
+  ${docsByRef.get(AUDIT_REPORT_REF)?.length ? `<p style="font-family:Arial;font-size:11px;"><b>Audit report:</b> ${docCell(AUDIT_REPORT_REF)}</p>` : ''}
   <p style="font-family:Arial;font-size:10px;color:#64748B;">Document links stay valid — you must be signed in to Eco Flow Portal in your browser to open them.</p>
 </body></html>`
 

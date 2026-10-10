@@ -72,6 +72,12 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
             <h1 className="text-xl font-bold" style={{ color: '#0F2318' }}>{PROGRAMME_LABEL[app.programme] ?? app.programme}</h1>
             <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
             {app.green_key_number && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>{app.green_key_number}</span>}
+            {app.programme === 'green-key' && (
+              <a href={`/api/applications/${app.id}/export`} className="ms-auto inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg"
+                style={{ background: '#F1F5F9', color: '#1D6F42' }} title="Download your criteria board, progress and documents as an Excel file">
+                <Download className="w-4 h-4" /> Export (Excel)
+              </a>
+            )}
           </div>
           <p className="text-sm mt-1" style={{ color: '#5B7568' }}>
             Submitted {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '—'}
