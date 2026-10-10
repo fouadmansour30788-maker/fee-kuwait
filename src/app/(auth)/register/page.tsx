@@ -116,10 +116,14 @@ const EDU_PROGRAMMES: Record<EduKind, string[]> = {
   university: [], // universities register for Eco-Campus through their own form
 }
 const SCHOOL_LEVELS = [
-  { value: 'preschool',    en: 'Preschool / Kindergarten', ar: 'رياض الأطفال' },
-  { value: 'elementary',   en: 'Elementary',               ar: 'ابتدائي' },
-  { value: 'intermediate', en: 'Secondary (Intermediate)', ar: 'متوسط' },
-  { value: 'high',         en: 'High School',              ar: 'ثانوي' },
+  { value: 'preschool',    en: 'Pre-Primary Education',     ar: 'التعليم ما قبل الابتدائي',
+    sub_en: 'Preschool / Nursery / Kindergarten / Early Years', sub_ar: 'الحضانة / رياض الأطفال / الطفولة المبكرة' },
+  { value: 'elementary',   en: 'Primary Education',         ar: 'التعليم الابتدائي',
+    sub_en: 'Primary School / Elementary School', sub_ar: 'المدرسة الابتدائية' },
+  { value: 'intermediate', en: 'Lower Secondary Education', ar: 'التعليم المتوسط',
+    sub_en: 'Middle School / Intermediate School / Junior High School', sub_ar: 'المدرسة المتوسطة / الإعدادية' },
+  { value: 'high',         en: 'Upper Secondary Education', ar: 'التعليم الثانوي',
+    sub_en: 'High School / Senior Secondary School', sub_ar: 'المدرسة الثانوية' },
 ]
 const SCHOOL_GENDER = [
   { value: 'mixed', en: 'Mixed (boys & girls)', ar: 'مختلطة' },
@@ -1004,15 +1008,19 @@ function RegisterForm() {
                       {/* School levels (multi-select) */}
                       <div>
                         <Label>{lang === 'ar' ? 'المراحل الدراسية (اختر كل ما ينطبق)' : 'School levels (select all that apply)'}</Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {SCHOOL_LEVELS.map(l => {
                             const on = data.schoolLevels.includes(l.value)
                             return (
                               <button key={l.value} type="button"
                                 onClick={() => { setData(d => ({ ...d, schoolLevels: on ? d.schoolLevels.filter(x => x !== l.value) : [...d.schoolLevels, l.value] })); setErrors(e => ({ ...e, schoolLevels: '' })) }}
-                                className="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-semibold text-center transition-all duration-200"
-                                style={on ? { background: '#40916C', color: '#fff' } : { background: '#F4F9F5', color: '#40916C', border: '1px solid #C8E6D0' }}>
-                                {on && <Check className="w-3 h-3" />}{lang === 'ar' ? l.ar : l.en}
+                                className="flex items-start gap-2 py-2.5 px-3 rounded-xl text-start transition-all duration-200"
+                                style={on ? { background: '#40916C', color: '#fff', border: '1px solid #40916C' } : { background: '#F4F9F5', color: '#40916C', border: '1px solid #C8E6D0' }}>
+                                <span className="w-4 h-4 mt-0.5 flex-shrink-0 rounded flex items-center justify-center" style={{ border: `1.5px solid ${on ? '#fff' : '#9CC9AE'}` }}>{on && <Check className="w-3 h-3" />}</span>
+                                <span>
+                                  <span className="block text-sm font-semibold">{lang === 'ar' ? l.ar : l.en}</span>
+                                  <span className="block text-[11px] mt-0.5" style={{ opacity: on ? 0.9 : 0.75 }}>({lang === 'ar' ? l.sub_ar : l.sub_en})</span>
+                                </span>
                               </button>
                             )
                           })}
