@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import EcoPhasePanel from '@/components/audit/EcoPhasePanel'
-import { ecoRowExtras, ecoHeaderExtra, EcoResults } from '@/components/audit/ecoBoardExtras'
+import { ecoRowExtras, ecoHeaderExtra, ecoStepBadges, EcoResults } from '@/components/audit/ecoBoardExtras'
 import { getEcoBoard } from '@/lib/db/ecoSchools'
 import { getEcoThemes } from '@/lib/db/ecoThemes'
 import { notFound } from 'next/navigation'
@@ -99,7 +99,7 @@ export default async function AuditorApplicationDetail({ params }: { params: { i
           </Link>
         )}
         {criteria.length > 0
-          ? <CriteriaBoard role="auditor" applicationId={params.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={eco ? ecoRowExtras({ applicationId: params.id, eco, themes: ecoThemes ?? [], themesEditable: false }) : undefined} headerExtra={eco ? ecoHeaderExtra(eco) : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
+          ? <CriteriaBoard role="auditor" applicationId={params.id} lockedRefs={eco?.lockedRefs} lockedNote="Opens after the National Operator approves Steps 1–2" rowExtras={eco ? ecoRowExtras({ applicationId: params.id, eco, themes: ecoThemes ?? [], themesEditable: false }) : undefined} headerExtra={eco ? ecoHeaderExtra(eco) : undefined} stepBadges={eco ? ecoStepBadges() : undefined} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal auditEditable={inProgress} applicantId={app.applicant_id} audits={audits} />
           : <p className="text-sm" style={{ color: '#94A3B8' }}>No criteria checklist for this programme yet.</p>}
       </div>
 

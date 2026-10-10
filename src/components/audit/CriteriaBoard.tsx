@@ -300,6 +300,7 @@ interface RowProps {
   onPost: (ref: string, body: string, phase: 'pre_audit' | 'post_audit') => void
   onDesc: (c: CriterionRef) => void
   extra?: React.ReactNode
+  badge?: React.ReactNode   // friendly step badge (icon + "Step n") replacing the plain ref
 }
 
 // One criterion row, memoized so an interaction only re-renders the affected row.
@@ -307,7 +308,7 @@ interface RowProps {
 // rest of the (139-row) table.
 const Row = memo(function Row({
   c, a, docsList, thread, year, applicationId, applicantId, estCanEdit, isOperator, canComment, editAudit, cbPreEditable, cbFinalEditable, showExternal, selAudit,
-  onStatus, onOp, onAudit, onAuditNote, onCbPre, onCbFinal, onPost, onDesc, extra,
+  onStatus, onOp, onAudit, onAuditNote, onCbPre, onCbFinal, onPost, onDesc, extra, badge,
 }: RowProps) {
   const ev = GK_EVIDENCE[c.ref]
   // Surveillance evidence lives under the Surveillance Activities tab, never on
@@ -333,14 +334,21 @@ const Row = memo(function Row({
 
   return (
     <tr className="align-top">
-      <td className="px-3 py-3 min-w-[180px]">
-        <div className="flex items-start gap-1.5">
-          <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>
-          <span className="min-w-0">
-            <span style={{ color: '#1E293B' }}>{c.title}</span>
-            {c.type && <span className="ml-1.5 text-[10px] font-bold px-1 py-0.5 rounded" style={{ background: c.type.includes('I') ? '#FEF3C7' : '#EEF2F6', color: c.type.includes('I') ? '#92400E' : '#64748B' }}>{c.type}</span>}
-          </span>
-        </div>
+      <td className={badge ? 'px-3 py-4 min-w-[230px]' : 'px-3 py-3 min-w-[180px]'}>
+        {badge ? (
+          <div className="flex items-center gap-3">
+            {badge}
+            <span className="text-base font-bold leading-snug" style={{ color: '#14342A' }}>{c.title}</span>
+          </div>
+        ) : (
+          <div className="flex items-start gap-1.5">
+            <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>
+            <span className="min-w-0">
+              <span style={{ color: '#1E293B' }}>{c.title}</span>
+              {c.type && <span className="ml-1.5 text-[10px] font-bold px-1 py-0.5 rounded" style={{ background: c.type.includes('I') ? '#FEF3C7' : '#EEF2F6', color: c.type.includes('I') ? '#92400E' : '#64748B' }}>{c.type}</span>}
+            </span>
+          </div>
+        )}
       </td>
       <td className="px-3 py-3 min-w-[240px] max-w-[380px] align-top">{c.description ? <ExpandableText text={c.description} onOpen={() => onDesc(c)} /> : <span className="text-xs" style={{ color: '#CBD5E1' }}>—</span>}</td>
       <td className="px-3 py-3">
@@ -398,7 +406,7 @@ const Row = memo(function Row({
 // Shared collaborative criteria board.
 export default function CriteriaBoard({
   applicationId, criteria, assessments, docs, messages, role, showExternal, locked = false, auditEditable = false, applicantId,
-  audits = [], auditorName, editableCriteria = null, cbPreEditable = false, cbFinalEditable = false, rowExtras, lockedRefs = [], lockedNote, headerExtra,
+  audits = [], auditorName, editableCriteria = null, cbPreEditable = false, cbFinalEditable = false, rowExtras, lockedRefs = [], lockedNote, headerExtra, stepBadges,
 }: {
   applicationId: string
   criteria: CriterionRef[]
@@ -421,6 +429,7 @@ export default function CriteriaBoard({
   lockedRefs?: string[]   // rows shown minimised + locked (e.g. Eco-Schools Steps 3–7 before approval)
   lockedNote?: string
   headerExtra?: React.ReactNode   // extra summary strip above the table
+  stepBadges?: Record<string, React.ReactNode>   // friendly per-step badges (Eco-Schools), by ref
 }) {
   const [rows, setRows] = useState(assessments)
   const [msgs, setMsgs] = useState(messages)
@@ -653,18 +662,25 @@ export default function CriteriaBoard({
               {groups.map((g) => (
                 <Fragment key={g.area}>
                   <tr>
-                    <td colSpan={cols} className="px-3 py-2" style={{ background: '#ECFDF3', borderTop: '1px solid #D1FAE5' }}>
-                      <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: '#1B4332' }}>{g.area}</span>
-                      <span className="text-[11px] font-semibold ml-2" style={{ color: '#6B9080' }}>· {g.rows.length}</span>
-                    </td>
+                    {stepBadges ? (
+                      <td colSpan={cols} className="px-4 py-3" style={{ background: 'linear-gradient(90deg, #D8F3DC, #F1FAF3)', borderTop: '1px solid #B7E4C7' }}>
+                        <span className="text-base font-extrabold" style={{ color: '#1B4332' }}>🌱 {g.area}</span>
+                        <span className="text-sm font-semibold ml-2" style={{ color: '#40916C' }}>· {g.rows.length} steps to the Green Flag</span>
+                      </td>
+                    ) : (
+                      <td colSpan={cols} className="px-3 py-2" style={{ background: '#ECFDF3', borderTop: '1px solid #D1FAE5' }}>
+                        <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: '#1B4332' }}>{g.area}</span>
+                        <span className="text-[11px] font-semibold ml-2" style={{ color: '#6B9080' }}>· {g.rows.length}</span>
+                      </td>
+                    )}
                   </tr>
                   {g.rows.map((c) => (
                     lockedRefs.includes(c.ref) ? (
                       <tr key={c.ref} className="align-top" style={{ background: '#F8FAFC' }}>
                         <td className="px-3 py-2.5 min-w-[180px]">
-                          <div className="flex items-start gap-1.5 opacity-60">
-                            <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>
-                            <span style={{ color: '#475569' }}>{c.title}</span>
+                          <div className={`flex opacity-60 ${stepBadges?.[c.ref] ? 'items-center gap-3' : 'items-start gap-1.5'}`}>
+                            {stepBadges?.[c.ref] ?? <span className="text-xs font-mono font-semibold mt-0.5" style={{ color: '#94A3B8' }}>{c.ref}</span>}
+                            <span className={stepBadges?.[c.ref] ? 'text-base font-bold' : ''} style={{ color: '#475569' }}>{c.title}</span>
                           </div>
                         </td>
                         <td colSpan={20} className="px-3 py-2.5">
@@ -677,7 +693,7 @@ export default function CriteriaBoard({
                       year={year} applicationId={applicationId} applicantId={applicantId}
                       estCanEdit={estCanEdit && (editableCriteria === null || editableCriteria.includes(c.ref))} isOperator={isOperator} canComment={canComment} editAudit={editAudit}
                       cbPreEditable={cbPreEditable} cbFinalEditable={cbFinalEditable} showExternal={showExternal} selAudit={selAudit}
-                      onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onCbPre={onCbPre} onCbFinal={onCbFinal} onPost={onPost} onDesc={onDesc} />
+                      onStatus={onStatus} onOp={onOp} onAudit={onAudit} onAuditNote={onAuditNote} onCbPre={onCbPre} onCbFinal={onCbFinal} onPost={onPost} onDesc={onDesc} badge={stepBadges?.[c.ref]} />
                   )).flatMap((el, i) => {
                     // Step extras (e.g. Eco-Schools themes + Green Flag questions) in a full-width row under the step.
                     const ref = g.rows[i].ref
@@ -685,7 +701,7 @@ export default function CriteriaBoard({
                     return extra ? [el, (
                       <tr key={`${ref}-extra`}>
                         <td colSpan={cols} className="px-3 pb-3 pt-0" style={{ borderTop: 'none' }}>
-                          <div className="space-y-2 pl-6">{extra}</div>
+                          <div className={stepBadges ? 'space-y-3 pl-4 pr-1' : 'space-y-2 pl-6'}>{extra}</div>
                         </td>
                       </tr>
                     )] : [el]

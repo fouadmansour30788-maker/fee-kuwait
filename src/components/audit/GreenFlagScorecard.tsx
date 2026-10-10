@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Award, Save, Loader2, Check, AlertCircle, ChevronDown, Paperclip } from 'lucide-react'
+import { Award, Save, Loader2, Check, AlertCircle, ChevronDown, Paperclip, Trophy, PencilLine, CheckCircle2 } from 'lucide-react'
 import {
   GREEN_FLAG_SECTIONS, GREEN_FLAG_PASS, GREEN_FLAG_MAX, sectionScore,
   type ScoreAnswers, type ScoreAnswer,
@@ -55,6 +55,8 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
   const canEdit = editable
   const answered = sec.questions.filter((q) => q.kind !== 'upload' && q.kind !== 'themes' && answers[q.id]).length
   const toAnswer = sec.questions.filter((q) => q.kind !== 'upload' && q.kind !== 'themes').length
+  // Upload / themes questions are answered elsewhere on the step, so they count as done here.
+  const done = (id: string, kind: string) => kind === 'upload' || kind === 'themes' || !!answers[id]
   const set = (id: string, patch: Partial<ScoreAnswer>) => { setMsg(null); setAnswers((a) => ({ ...a, [id]: { ...a[id], ...patch } })) }
 
   function save() {
@@ -68,73 +70,94 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
   }
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #D1FAE5', background: '#FBFEFC' }}>
-      <button type="button" onClick={() => setExpanded((e) => !e)} className="w-full flex items-center gap-2 px-3 py-2 text-left">
-        <ChevronDown className="w-4 h-4 transition-transform" style={{ color: '#40916C', transform: expanded ? 'none' : 'rotate(-90deg)' }} />
-        <Award className="w-3.5 h-3.5" style={{ color: '#40916C' }} />
-        <span className="text-xs font-bold flex-1" style={{ color: '#065F46' }}>
-          Green Flag questions — {sec.title}
-          <span className="font-medium ml-2" style={{ color: answered === toAnswer ? '#047857' : '#94A3B8' }}>{answered}/{toAnswer} answered</span>
-          {editable && answered < toAnswer && <span className="font-medium ml-2" style={{ color: '#B45309' }}>· please answer</span>}
+    <div className="rounded-2xl overflow-hidden" style={{ border: '1.5px solid #B7E4C7', background: '#F7FCF8', boxShadow: '0 2px 10px rgba(64,145,108,0.08)' }}>
+      <button type="button" onClick={() => setExpanded((e) => !e)} className="w-full flex items-center gap-3 px-4 py-3 text-left flex-wrap">
+        <ChevronDown className="w-5 h-5 transition-transform flex-shrink-0" style={{ color: '#40916C', transform: expanded ? 'none' : 'rotate(-90deg)' }} />
+        <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#FDF6E3', border: '1px solid #E8D5A3' }}>
+          <Trophy className="w-5 h-5" style={{ color: '#B08D2E' }} />
         </span>
-        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#ECFDF3', color: '#047857' }}>{got} / {sec.max} pts</span>
+        <span className="flex-1 min-w-[220px]">
+          <span className="block text-base font-bold" style={{ color: '#1B4332' }}>Green Flag questions — {sec.title}</span>
+          <span className="flex items-center gap-2 mt-1.5">
+            <span className="h-2 rounded-full overflow-hidden flex-1 max-w-[220px]" style={{ background: '#E2F0E6' }}>
+              <span className="block h-full rounded-full" style={{ width: `${toAnswer ? (answered / toAnswer) * 100 : 0}%`, background: 'linear-gradient(90deg, #52B788, #1B4332)' }} />
+            </span>
+            <span className="text-sm font-semibold" style={{ color: answered === toAnswer ? '#047857' : '#5B7568' }}>{answered} / {toAnswer} answered</span>
+          </span>
+        </span>
+        {editable && answered < toAnswer && (
+          <span className="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full" style={{ background: '#FEF3C7', color: '#92400E' }}>
+            <PencilLine className="w-4 h-4" /> Please answer
+          </span>
+        )}
+        {answered === toAnswer && (
+          <span className="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full" style={{ background: '#D1FAE5', color: '#047857' }}>
+            <CheckCircle2 className="w-4 h-4" /> All answered
+          </span>
+        )}
+        <span className="inline-flex items-center gap-1.5 text-base font-extrabold px-3.5 py-1.5 rounded-full" style={{ background: '#1B4332', color: '#fff' }}>
+          <Award className="w-4 h-4" style={{ color: '#E8D5A3' }} /> {got} <span className="text-sm font-semibold opacity-75">/ {sec.max} pts</span>
+        </span>
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 pt-1 space-y-4">
+        <div className="px-5 pb-5 pt-4 space-y-5 border-t" style={{ borderColor: '#D8F3DC' }}>
           {sec.questions.map((q) => {
             const a = answers[q.id] ?? {}
             return (
               <div key={q.id} className="space-y-1.5">
-                <p className="text-sm font-semibold" style={{ color: '#1E293B' }}><span style={{ color: '#94A3B8' }}>{sec.step}.{q.n}</span> {q.text}</p>
-                {q.hint && <p className="text-[11px]" style={{ color: '#94A3B8' }}>{q.hint}</p>}
+                <p className="text-base font-semibold flex items-start gap-2.5" style={{ color: '#1E293B' }}>
+                  <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold flex-shrink-0" style={done(q.id, q.kind) ? { background: '#40916C', color: '#fff' } : { background: '#E2F0E6', color: '#2D6A4F' }}>{q.n}</span>
+                  <span className="pt-0.5">{q.text}</span>
+                </p>
+                {q.hint && <p className="text-xs pl-[38px]" style={{ color: '#64748B' }}>💡 {q.hint}</p>}
 
                 {q.kind === 'upload' && (
-                  <p className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg" style={(stepDocs[sec.step] ?? 0) > 0 ? { background: '#ECFDF3', color: '#047857' } : { background: '#FEF2F2', color: '#B91C1C' }}>
+                  <p className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg ml-[38px]" style={(stepDocs[sec.step] ?? 0) > 0 ? { background: '#ECFDF3', color: '#047857' } : { background: '#FEF2F2', color: '#B91C1C' }}>
                     <Paperclip className="w-3.5 h-3.5" /> {(stepDocs[sec.step] ?? 0) > 0 ? `${stepDocs[sec.step]} attachment(s) on this step` : 'No attachment yet on this step'}
                   </p>
                 )}
 
                 {q.kind === 'themes' && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 pl-[38px]">
                     {themes.length ? ES_THEMES.filter((t) => themes.includes(t.en)).map((t) => <div key={t.en} className="w-[88px]"><ThemeTile t={t} on size="sm" /></div>)
                       : <span className="text-xs" style={{ color: '#94A3B8' }}>No themes selected on Step 2</span>}
                   </div>
                 )}
 
                 {q.kind === 'choice' && (
-                  <div className="space-y-1">
+                  <div className="space-y-1.5 pl-[38px]">
                     {q.options!.map((opt, i) => {
                       const on = a.choice === i
                       if (!canEdit && !on) return null
                       return (
-                        <label key={i} className={`flex items-start gap-2 text-xs rounded-lg px-2.5 py-1.5 ${canEdit ? 'cursor-pointer' : ''}`}
-                          style={on ? { background: '#ECFDF3', border: '1px solid #A7F3D0' } : { border: '1px solid #F1F5F9', background: '#fff' }}>
-                          {canEdit && <input type="radio" name={`${applicationId}-${q.id}`} checked={on} onChange={() => set(q.id, { choice: i })} className="mt-0.5 accent-green-700" />}
-                          <span className="font-bold whitespace-nowrap" style={{ color: '#40916C' }}>{opt.pts} pts</span>
+                        <label key={i} className={`flex items-start gap-2.5 text-sm rounded-xl px-3 py-2.5 transition-colors ${canEdit ? 'cursor-pointer hover:bg-[#F1FAF3]' : ''}`}
+                          style={on ? { background: '#D8F3DC', border: '1.5px solid #52B788' } : { border: '1px solid #E2EDE5', background: '#fff' }}>
+                          {canEdit && <input type="radio" name={`${applicationId}-${q.id}`} checked={on} onChange={() => set(q.id, { choice: i })} className="mt-0.5 w-4 h-4 accent-green-700" />}
+                          <span className="font-extrabold whitespace-nowrap text-xs px-2 py-0.5 rounded-full" style={on ? { background: '#1B4332', color: '#fff' } : { background: '#ECFDF3', color: '#2D6A4F' }}>{opt.pts} pts</span>
                           <span style={{ color: opt.earlyYears ? '#6366F1' : '#334155', fontStyle: opt.earlyYears ? 'italic' : 'normal' }}>
                             {opt.earlyYears && 'Only for Early Years: '}{opt.text}
                           </span>
                         </label>
                       )
                     })}
-                    {!canEdit && a.choice == null && <span className="text-xs" style={{ color: '#CBD5E1' }}>Not answered</span>}
+                    {!canEdit && a.choice == null && <span className="text-sm" style={{ color: '#94A3B8' }}>Not answered</span>}
                     {q.link && (canEdit
                       ? <input value={a.link ?? ''} onChange={(e) => set(q.id, { link: e.target.value })} placeholder="Link (optional)" className="w-full text-xs px-2.5 py-1.5 rounded-lg outline-none bg-white" style={field} />
                       : a.link ? <a href={a.link} target="_blank" rel="noopener" className="text-xs underline break-all" style={{ color: '#1D4ED8' }}>{a.link}</a> : null)}
                   </div>
                 )}
 
-                {(q.kind === 'number' || q.kind === 'date' || q.kind === 'text') && (canEdit ? (
+                {(q.kind === 'number' || q.kind === 'date' || q.kind === 'text') && <div className="pl-[38px]">{canEdit ? (
                   q.kind === 'text'
                     ? <textarea value={a.value ?? ''} onChange={(e) => set(q.id, { value: e.target.value })} rows={3} className="w-full text-sm px-3 py-2 rounded-lg outline-none resize-y bg-white" style={field} />
                     : <input type={q.kind} min={q.kind === 'number' ? 0 : undefined} value={a.value ?? ''} onChange={(e) => set(q.id, { value: e.target.value })} className="w-48 text-sm px-3 py-1.5 rounded-lg outline-none bg-white" style={field} />
-                ) : <p className="text-sm whitespace-pre-wrap" style={{ color: a.value ? '#334155' : '#CBD5E1' }}>{a.value || '—'}</p>)}
+                ) : <p className="text-sm whitespace-pre-wrap" style={{ color: a.value ? '#334155' : '#CBD5E1' }}>{a.value || '—'}</p>}</div>}
 
                 {(q.kind === 'gender' || q.kind === 'agerange') && (
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-3 pl-[38px]">
                     {(q.kind === 'gender' ? GENDERS : ['Youngest member', 'Oldest member']).map((k) => (
-                      <label key={k} className="inline-flex items-center gap-1.5 text-xs" style={{ color: '#475569' }}>
+                      <label key={k} className="inline-flex items-center gap-1.5 text-sm" style={{ color: '#475569' }}>
                         {k}
                         {canEdit
                           ? <input type="number" min={0} value={a.values?.[k] ?? ''} onChange={(e) => set(q.id, { values: { ...(a.values ?? {}), [k]: e.target.value } })} className="w-16 text-xs px-2 py-1 rounded-lg outline-none bg-white" style={field} />
@@ -148,8 +171,8 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
           })}
 
           {canEdit && (
-            <div className="flex items-center gap-3 flex-wrap pt-1">
-              <button onClick={save} disabled={pending} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
+            <div className="flex items-center gap-3 flex-wrap pt-2 pl-[38px]">
+              <button onClick={save} disabled={pending} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold text-white disabled:opacity-60 shadow-sm" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
                 {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save {sec.title} answers
               </button>
               {msg && <span className="flex items-center gap-1.5 text-xs" style={{ color: msg.ok ? '#047857' : '#DC2626' }}>{msg.ok ? <Check className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />} {msg.text}</span>}

@@ -1,10 +1,33 @@
 import type { ReactNode } from 'react'
+import { Users, Search, BookOpen, ClipboardList, LineChart, Megaphone, ScrollText, type LucideIcon } from 'lucide-react'
 import EcoThemesPicker from '@/components/audit/EcoThemesPicker'
 import GreenFlagSection, { GreenFlagTotal } from '@/components/audit/GreenFlagScorecard'
 import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
 import { GREEN_FLAG_SECTIONS, sectionScore } from '@/lib/data/greenFlagScorecard'
 import GreenFlagResults from '@/components/audit/GreenFlagResults'
 import type { EcoBoard } from '@/lib/db/ecoSchools'
+
+// The Seven Steps, each with a friendly icon + colour for the board's step column.
+const STEP_STYLE: Record<string, { Icon: LucideIcon; color: string }> = {
+  '1': { Icon: Users, color: '#2D6A4F' },          // Eco-Committee
+  '2': { Icon: Search, color: '#40916C' },         // Sustainability Audit
+  '3': { Icon: BookOpen, color: '#B08D2E' },       // Curriculum
+  '4': { Icon: ClipboardList, color: '#52B788' },  // Action Plan
+  '5': { Icon: LineChart, color: '#1B4332' },      // Monitor & Evaluate
+  '6': { Icon: Megaphone, color: '#C8A951' },      // Inform & Involve
+  '7': { Icon: ScrollText, color: '#2D6A4F' },     // Eco-Code
+}
+
+export function ecoStepBadges(): Record<string, ReactNode> {
+  return Object.fromEntries(Object.entries(STEP_STYLE).map(([ref, { Icon, color }]) => [ref, (
+    <span key={ref} className="flex flex-col items-center flex-shrink-0 w-12">
+      <span className="w-11 h-11 rounded-full flex items-center justify-center shadow-sm" style={{ background: color, boxShadow: `0 4px 12px ${color}40` }}>
+        <Icon className="w-5 h-5 text-white" strokeWidth={2.2} />
+      </span>
+      <span className="text-[10px] font-extrabold uppercase tracking-wider mt-1" style={{ color }}>Step {ref}</span>
+    </span>
+  )]))
+}
 
 // Eco-Schools content shown inside the criteria board: under each step its
 // Green Flag questions (and the themes picker on Step 2), plus the score strip
