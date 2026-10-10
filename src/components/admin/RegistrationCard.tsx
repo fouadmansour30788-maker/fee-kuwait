@@ -30,7 +30,7 @@ const f = (label: string, value: unknown): Field => ({ label, value: text(value)
 
 // Details keys rendered in a named section; anything else lands in "Other".
 const KNOWN = new Set([
-  'accountName', 'latitude', 'longitude', 'numEmployees', 'payment', 'institutionKind', 'sector', 'international', 'levels',
+  'accountName', 'numTeachers', 'numAdminStaff', 'numOtherStaff', 'latitude', 'longitude', 'numEmployees', 'payment', 'institutionKind', 'sector', 'international', 'levels',
   'gender', 'specialNeedsSchool', 'socialLinks', 'coordinatorName', 'teachers', 'teacherContacts', 'parentRep', 'parentContact',
   'whyInterested', 'committeeFrequency', 'themes', 'comments', 'coordinatorSignature', 'declaration', 'signatureName', 'signedAt',
   'website', 'numRooms', 'numGuestsYear', 'numGuestNightsYear', 'generalManager', 'environmentalDirector', 'contactPerson',
@@ -54,6 +54,7 @@ function sections(r: RegistrationFull): Section[] {
       f('Students', d.gender), f('School for students with special needs', d.specialNeedsSchool),
       f('Governorate', r.governorate), f('Phone number', r.contactPhone),
       f('Principal name', r.contactName), f('Number of students', r.studentsCount),
+      f('Number of teachers', d.numTeachers), f('Number of admin staff', d.numAdminStaff), f('Number of other staff', d.numOtherStaff),
       f('Address', r.address), f('Location (lat, lng)', location),
     ] })
   } else {

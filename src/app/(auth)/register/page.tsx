@@ -50,6 +50,9 @@ interface FormData {
   latitude: string
   longitude: string
   studentsCount: string
+  numTeachers: string
+  numAdminStaff: string
+  numOtherStaff: string
   numEmployees: string
   contactName: string
   contactPhone: string
@@ -195,7 +198,7 @@ const EMPTY: FormData = {
   name: '', email: '', password: '', confirmPassword: '',
   institutionName: '', institutionNameAr: '',
   schoolType: '', schoolInternational: '', schoolLevels: [], schoolGender: '', specialNeeds: '', businessType: '', governorate: '',
-  address: '', latitude: '', longitude: '', studentsCount: '', numEmployees: '', contactName: '', contactPhone: '',
+  address: '', latitude: '', longitude: '', studentsCount: '', numTeachers: '', numAdminStaff: '', numOtherStaff: '', numEmployees: '', contactName: '', contactPhone: '',
   programmes: [],
   website: '', socialLinks: '',
   numRooms: '', numGuestsYear: '', numGuestNightsYear: '',
@@ -507,6 +510,9 @@ function RegisterForm() {
         const details = {
           ...common,
           institutionKind: isUni ? 'University' : 'School',
+          numTeachers: data.numTeachers ? Number(data.numTeachers) : null,
+          numAdminStaff: data.numAdminStaff ? Number(data.numAdminStaff) : null,
+          numOtherStaff: data.numOtherStaff ? Number(data.numOtherStaff) : null,
           sector: data.schoolType === 'private' ? 'Private' : data.schoolType === 'public' ? 'Public' : null,
           ...(!isUni ? {
             international: data.schoolInternational === 'yes',
@@ -1111,6 +1117,20 @@ function RegisterForm() {
                         </div>
                       </div>
                     )}
+                    {institutionType === 'school' && ([
+                      { key: 'numTeachers', en: 'Number of Teachers', ar: 'عدد المعلمين', ph: 'e.g. 60' },
+                      { key: 'numAdminStaff', en: 'Number of Admin Staff', ar: 'عدد الموظفين الإداريين', ph: 'e.g. 15' },
+                      { key: 'numOtherStaff', en: 'Number of Other Staff', ar: 'عدد الموظفين الآخرين', ph: 'e.g. 10' },
+                    ] as const).map((fld) => (
+                      <div key={fld.key}>
+                        <Label>{lang === 'ar' ? fld.ar : fld.en}</Label>
+                        <div className="relative">
+                          <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#7A9080' }} />
+                          <input type="number" min="0" value={data[fld.key]} onChange={e => set(fld.key, e.target.value)}
+                            className="input pl-10" placeholder={fld.ph} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Address */}
