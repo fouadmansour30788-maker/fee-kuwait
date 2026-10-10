@@ -7,13 +7,14 @@ import { submitForReview } from '@/lib/actions/applications'
 
 const fmt = (d: string) => new Date(d).toLocaleString('en-GB', { timeZone: 'Asia/Kuwait', dateStyle: 'medium', timeStyle: 'short' })
 
-// Green Key: the establishment declares its application ready and notifies the
-// National Operator. Can be sent again (e.g. after making changes).
-export default function SubmitForReview({ applicationId, lastSubmittedAt, done, total }: {
+// Green Key / Eco-Schools: the applicant declares its application ready and
+// notifies the National Operator. Can be sent again (e.g. after making changes).
+export default function SubmitForReview({ applicationId, lastSubmittedAt, done, total, unit = 'criteria' }: {
   applicationId: string
   lastSubmittedAt: string | null
   done: number
   total: number
+  unit?: 'criteria' | 'steps'
 }) {
   const [declared, setDeclared] = useState(false)
   const [sentAt, setSentAt] = useState<string | null>(lastSubmittedAt)
@@ -34,15 +35,15 @@ export default function SubmitForReview({ applicationId, lastSubmittedAt, done, 
   return (
     <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
       <h2 className="text-base font-bold mb-1" style={{ color: '#0F2318' }}>Submit for review</h2>
-      <p className="text-xs mb-4" style={{ color: '#5B7568' }}>When your criteria and evidence are ready, notify the National Operator to review your application.</p>
+      <p className="text-xs mb-4" style={{ color: '#5B7568' }}>When your {unit} and evidence are ready, notify the National Operator to review your application.</p>
 
       <p className="text-sm mb-3" style={{ color: '#334155' }}>
-        Criteria marked Complete / N/A: <strong>{done} / {total}</strong>
+        {unit === 'steps' ? 'Steps' : 'Criteria'} marked Complete / N/A: <strong>{done} / {total}</strong>
       </p>
       {incomplete > 0 && (
         <p className="flex items-start gap-1.5 text-xs mb-3 rounded-lg px-3 py-2" style={{ background: '#FEF9EC', color: '#92400E' }}>
           <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-          {incomplete} criteri{incomplete === 1 ? 'on is' : 'a are'} not yet marked Complete or N/A. You can still submit, but the operator may ask you to complete {incomplete === 1 ? 'it' : 'them'}.
+          {incomplete} {unit === 'steps' ? (incomplete === 1 ? 'step is' : 'steps are') : (incomplete === 1 ? 'criterion is' : 'criteria are')} not yet marked Complete or N/A. You can still submit, but the operator may ask you to complete {incomplete === 1 ? 'it' : 'them'}.
         </p>
       )}
 

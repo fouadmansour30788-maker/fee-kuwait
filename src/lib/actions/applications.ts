@@ -81,6 +81,9 @@ export async function manualOverrideStatus(applicationId: string, newStatus: str
   return { ok: true }
 }
 
+// Programmes whose applicants can declare "I hereby submit my application for review".
+const REVIEW_PROGRAMMES = ['green-key', 'eco-schools']
+
 const escapeHtml = (t: string) => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
 
 // Establishment declares "I hereby submit my application for review": records it
@@ -95,12 +98,14 @@ export async function submitForReview(applicationId: string, declared: boolean):
   const admin = createAdminClient()
   const { data: app } = await admin.from('applications').select('applicant_id, programme, status').eq('id', applicationId).single()
   if (!app || app.applicant_id !== user.id) return { error: 'Not allowed' }
-  if (app.programme !== 'green-key') return { error: 'Only available for Green Key applications.' }
+  if (!REVIEW_PROGRAMMES.includes(app.programme)) return { error: 'Not available for this programme.' }
+  const prog = PROGRAMME_LABEL[app.programme] ?? app.programme
+  const progAr = app.programme === 'eco-schools' ? 'المدارس البيئية' : 'المفتاح الأخضر'
   if (!establishmentCanEdit(app.status)) return { error: 'The application is not open for submission at this stage.' }
 
   const { data: me } = await admin.from('users').select('name_en, email, role').eq('id', user.id).maybeSingle()
-  const { data: biz } = await admin.from('businesses').select('name_en').eq('user_id', user.id).maybeSingle()
-  const estName = biz?.name_en || me?.name_en || me?.email || 'An establishment'
+  const { data: ent } = await admin.from(app.programme === 'eco-schools' ? 'schools' : 'businesses').select('name_en').eq('user_id', user.id).maybeSingle()
+  const estName = ent?.name_en || me?.name_en || me?.email || 'An applicant'
   const at = new Date().toISOString()
 
   const { error } = await admin.from('audit_trail').insert({
@@ -115,19 +120,20 @@ export async function submitForReview(applicationId: string, declared: boolean):
   if (staff?.length) {
     await admin.from('notifications').insert(staff.map((s) => ({
       user_id: s.id, type: 'submitted_for_review',
-      title_en: 'Green Key application submitted for review', title_ar: 'تم تقديم طلب المفتاح الأخضر للمراجعة',
-      message_en: `${estName} has submitted its Green Key application for your review.`,
-      message_ar: `${estName} قدّم طلب المفتاح الأخضر للمراجعة.`,
+      title_en: `${prog} application submitted for review`, title_ar: `تم تقديم طلب ${progAr} للمراجعة`,
+      message_en: `${estName} has submitted its ${prog} application for your review.`,
+      message_ar: `${estName} قدّم طلب ${progAr} للمراجعة.`,
       action_url: url,
     })))
     const link = `${siteUrl()}${url}`
     await Promise.all(staff.filter((s) => s.email).map((s) => sendEmail({
-      to: s.email!, subject: `Green Key application submitted for review — ${estName}`,
-      html: `<p><strong>${escapeHtml(estName)}</strong> has submitted its Green Key application for review.</p><p><a href="${link}">Open the application</a></p>`,
+      to: s.email!, subject: `${prog} application submitted for review — ${estName}`,
+      html: `<p><strong>${escapeHtml(estName)}</strong> has submitted its ${prog} application for review.</p><p><a href="${link}">Open the application</a></p>`,
     })))
   }
 
   revalidatePath(url)
   revalidatePath(`/business/application/${applicationId}`)
+  revalidatePath(`/school/application/${applicationId}`)
   return { ok: true, at }
 }
