@@ -39,7 +39,7 @@ export default function AuditorLayout({ children }: { children: React.ReactNode 
             <ShieldCheck className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-white font-bold text-sm leading-tight">FEE Kuwait</p>
+            <p className="text-white font-bold text-sm leading-tight">Eco Flow Portal</p>
             <p className="text-[10px] font-semibold" style={{ color: '#74C69D' }}>Auditor Workspace</p>
           </div>
           <button className="ml-auto lg:hidden text-white/40 hover:text-white" onClick={() => setSidebarOpen(false)}>

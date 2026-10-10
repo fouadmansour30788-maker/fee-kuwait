@@ -35,7 +35,7 @@ export default function CbLayout({ children }: { children: React.ReactNode }) {
             <Gavel className="w-4 h-4" style={{ color: '#2A2410' }} />
           </div>
           <div>
-            <p className="text-white font-bold text-sm leading-tight">FEE Kuwait</p>
+            <p className="text-white font-bold text-sm leading-tight">Eco Flow Portal</p>
             <p className="text-[10px] font-semibold" style={{ color: '#E8D5A3' }}>Certification Body</p>
           </div>
           <button className="ml-auto lg:hidden text-white/40 hover:text-white" onClick={() => setSidebarOpen(false)}>

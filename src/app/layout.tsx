@@ -19,24 +19,24 @@ const cairo = Cairo({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | FEE Kuwait',
-    default: 'FEE Kuwait — Foundation for Environmental Education',
+    template: '%s | Eco Flow Portal',
+    default: 'Eco Flow Portal — Foundation for Environmental Education',
   },
   description:
-    'FEE Kuwait is the national operator of FEE International in Kuwait, running 6 environmental education and certification programmes: Eco-Schools, Blue Flag, Green Key, LEAF, YRE, and Eco-Campus.',
-  keywords: ['FEE Kuwait', 'environmental education', 'Eco-Schools', 'Blue Flag', 'Green Key', 'sustainability', 'Kuwait'],
+    'Eco Flow Portal is the certification platform for the Foundation for Environmental Education programmes in Kuwait: Eco-Schools, Blue Flag, Green Key, LEAF, YRE, and Eco-Campus.',
+  keywords: ['Eco Flow Portal', 'Eco Flow Portal', 'environmental education', 'Eco-Schools', 'Blue Flag', 'Green Key', 'sustainability', 'Kuwait'],
   openGraph: {
-    title: 'FEE Kuwait — Building a Sustainable Future',
+    title: 'Eco Flow Portal — Building a Sustainable Future',
     description: 'International environmental certification programmes in Kuwait.',
     url: 'https://feekuwait.org',
-    siteName: 'FEE Kuwait',
+    siteName: 'Eco Flow Portal',
     locale: 'en_US',
     type: 'website',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'FEE Kuwait' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Eco Flow Portal' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FEE Kuwait',
+    title: 'Eco Flow Portal',
     description: 'Environmental excellence in Kuwait.',
     images: ['/og-image.jpg'],
   },

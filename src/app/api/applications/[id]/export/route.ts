@@ -75,7 +75,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   h2 { font-family: Arial, sans-serif; }
 </style></head>
 <body>
-  <h2>FEE Kuwait — ${esc(PROGRAMME_LABEL[app.programme] ?? app.programme)} criteria board</h2>
+  <h2>Eco Flow Portal — ${esc(PROGRAMME_LABEL[app.programme] ?? app.programme)} criteria board</h2>
   <table class="meta">
     <tr><td><b>Applicant</b></td><td>${esc(applicant)}</td></tr>
     <tr><td><b>Programme</b></td><td>${esc(PROGRAMME_LABEL[app.programme] ?? app.programme)}</td></tr>
@@ -88,7 +88,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     <thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody>
   </table>
-  <p style="font-family:Arial;font-size:10px;color:#64748B;">Document links stay valid — you must be signed in to FEE Kuwait in your browser to open them.</p>
+  <p style="font-family:Arial;font-size:10px;color:#64748B;">Document links stay valid — you must be signed in to Eco Flow Portal in your browser to open them.</p>
 </body></html>`
 
   const safeName = `${(PROGRAMME_LABEL[app.programme] ?? app.programme)}-${applicant}`.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60)

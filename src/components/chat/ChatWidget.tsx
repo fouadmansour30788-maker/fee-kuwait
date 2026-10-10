@@ -11,8 +11,8 @@ interface Message {
 }
 
 const WELCOME: Record<string, string> = {
-  en: "Hello! I'm the FEE Kuwait assistant. How can I help you today? I can answer questions about our 6 environmental programmes, certification requirements, and how to apply.",
-  ar: 'مرحباً! أنا مساعد FEE الكويت. كيف يمكنني مساعدتك اليوم؟ يمكنني الإجابة على أسئلتك حول برامجنا البيئية الستة ومتطلبات الاعتماد وكيفية التقديم.',
+  en: "Hello! I'm the Eco Flow Portal assistant. How can I help you today? I can answer questions about our 6 environmental programmes, certification requirements, and how to apply.",
+  ar: 'مرحباً! أنا مساعد Eco Flow Portal. كيف يمكنني مساعدتك اليوم؟ يمكنني الإجابة على أسئلتك حول برامجنا البيئية الستة ومتطلبات الاعتماد وكيفية التقديم.',
 }
 
 export default function ChatWidget() {
@@ -94,7 +94,7 @@ export default function ChatWidget() {
                 <Leaf className="w-5 h-5 text-white" />
               </div>
               <div>
-                <div className="text-white font-semibold text-sm">FEE Kuwait Assistant</div>
+                <div className="text-white font-semibold text-sm">Eco Flow Portal Assistant</div>
                 <div className="text-light/60 text-xs">Bilingual · Always available</div>
               </div>
               <div className="ml-auto w-2 h-2 rounded-full bg-light animate-pulse" />

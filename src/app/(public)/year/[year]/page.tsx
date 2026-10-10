@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export async function generateMetadata({ params }: { params: { year: string } }) {
   const y = params.year
   return {
-    title: `FEE Kuwait ${y} — Year in Review`,
+    title: `Eco Flow Portal ${y} — Year in Review`,
     description: `A year of environmental certification in Kuwait with the Foundation for Environmental Education: new Green Key and programme certifications, milestones and reach across ${y}.`,
   }
 }

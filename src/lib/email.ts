@@ -9,7 +9,7 @@ type SendArgs = { to: string; subject: string; html: string }
 export async function sendEmail({ to, subject, html }: SendArgs): Promise<boolean> {
   const key = process.env.RESEND_API_KEY
   if (!key || !to) return false
-  const from = process.env.EMAIL_FROM || 'FEE Kuwait <onboarding@resend.dev>'
+  const from = process.env.EMAIL_FROM || 'Eco Flow Portal <onboarding@resend.dev>'
 
   try {
     const res = await fetch('https://api.resend.com/emails', {
@@ -34,7 +34,7 @@ function shell(title: string, body: string): string {
   <div style="margin:0;padding:24px;background:#F1F5F9;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
     <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;">
       <div style="background:linear-gradient(135deg,#1B4332,#40916C);padding:20px 28px;">
-        <span style="color:#ffffff;font-size:16px;font-weight:700;letter-spacing:.2px;">FEE Kuwait</span>
+        <span style="color:#ffffff;font-size:16px;font-weight:700;letter-spacing:.2px;">Eco Flow Portal</span>
       </div>
       <div style="padding:28px;">
         <h1 style="margin:0 0 12px;font-size:18px;color:#0F172A;">${title}</h1>

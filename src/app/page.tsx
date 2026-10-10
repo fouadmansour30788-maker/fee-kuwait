@@ -19,7 +19,7 @@ import { getTestimonials } from '@/lib/db/testimonials'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'FEE Kuwait — Foundation for Environmental Education',
+  title: 'Eco Flow Portal — Foundation for Environmental Education',
   description: 'The national operator of FEE International in Kuwait — running Eco-Schools, Blue Flag, Green Key, LEAF, YRE, and Eco-Campus programmes.',
 }
 

@@ -29,7 +29,7 @@ export default function ContactMessageItem({ m }: { m: ContactMessage }) {
 
   const subjectLabel = m.subject ? (SUBJECT_LABEL[m.subject] ?? m.subject) : 'General'
   const when = new Date(m.created_at).toLocaleString('en-GB', { timeZone: 'Asia/Kuwait', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-  const mailto = `mailto:${m.email ?? ''}?subject=${encodeURIComponent(`Re: ${subjectLabel} — FEE Kuwait`)}`
+  const mailto = `mailto:${m.email ?? ''}?subject=${encodeURIComponent(`Re: ${subjectLabel} — Eco Flow Portal`)}`
 
   return (
     <div className="rounded-2xl border overflow-hidden" style={{ borderColor: m.read ? '#E2E8F0' : '#C8E6D0', background: m.read ? '#fff' : '#F4FBF7' }}>

@@ -119,7 +119,7 @@ export const CERT_BODIES: CbMember[] = [
 // Signed-in demo users for each workspace
 export const CURRENT_AUDITOR = AUDITORS[0]  // Layla (AUD-01)
 export const CURRENT_CB = CERT_BODIES[0]    // Dr. Mariam (CB-01)
-export const CURRENT_NO = { name: 'Mostafa Kanjo', org: 'FEE Kuwait — National Operator' }
+export const CURRENT_NO = { name: 'Mostafa Kanjo', org: 'Eco Flow Portal — National Operator' }
 
 // Status groupings for each role's queues
 export const NO_OPEN: AuditStatus[] = ['no_review', 'changes_requested']

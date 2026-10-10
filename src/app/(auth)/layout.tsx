@@ -21,7 +21,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             style={{ background: 'linear-gradient(135deg, #40916C, #52B788)' }}>
             <Leaf className="w-4.5 h-4.5 text-white" />
           </div>
-          <span className="font-bold text-white text-lg tracking-tight">FEE Kuwait</span>
+          <span className="font-bold text-white text-lg tracking-tight">Eco Flow Portal</span>
         </Link>
         <Link href="/login" className="text-sm font-medium transition-colors hover:text-white"
           style={{ color: 'rgba(255,255,255,0.55)' }}>

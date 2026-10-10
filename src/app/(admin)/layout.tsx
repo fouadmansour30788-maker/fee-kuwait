@@ -90,7 +90,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Leaf className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-white font-bold text-sm leading-tight">FEE Kuwait</p>
+            <p className="text-white font-bold text-sm leading-tight">Eco Flow Portal</p>
             <p className="text-[10px] font-semibold" style={{ color: '#64B5F6' }}>National Operator</p>
           </div>
           <button className="ml-auto lg:hidden text-white/40 hover:text-white" onClick={() => setSidebarOpen(false)}>

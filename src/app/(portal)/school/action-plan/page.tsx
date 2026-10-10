@@ -79,8 +79,8 @@ const STEPS = [
     desc_en: 'Create a school motto or pledge that captures your commitment to the environment.',
     desc_ar: 'إنشاء شعار أو تعهد مدرسي يعكس الالتزام بالبيئة.',
     status: 'pending',
-    tasks_en: ['Run student competition', 'Vote on winning eco-code', 'Display in school', 'Share with FEE Kuwait'],
-    tasks_ar: ['إجراء مسابقة طلابية', 'التصويت على الرمز الفائز', 'عرضه في المدرسة', 'مشاركته مع FEE الكويت'],
+    tasks_en: ['Run student competition', 'Vote on winning eco-code', 'Display in school', 'Share with Eco Flow Portal'],
+    tasks_ar: ['إجراء مسابقة طلابية', 'التصويت على الرمز الفائز', 'عرضه في المدرسة', 'مشاركته مع Eco Flow Portal'],
     done: [false, false, false, false],
   },
 ]

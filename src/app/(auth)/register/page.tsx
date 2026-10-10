@@ -706,8 +706,8 @@ function RegisterForm() {
         </h1>
         <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.55)' }}>
           {lang === 'ar'
-            ? 'تسجّل الجامعات والكليات في برنامج الحرم البيئي عبر استمارة تسجيل خاصة بها. يرجى التواصل مع FEE الكويت للبدء.'
-            : 'Universities and colleges register for Eco-Campus through a dedicated registration form. Please contact FEE Kuwait to get started.'}
+            ? 'تسجّل الجامعات والكليات في برنامج الحرم البيئي عبر استمارة تسجيل خاصة بها. يرجى التواصل مع المشغّل الوطني للبدء.'
+            : 'Universities and colleges register for Eco-Campus through a dedicated registration form. Please contact the National Operator to get started.'}
         </p>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Link href="/contact" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #1B4332, #40916C)' }}>
@@ -735,8 +735,8 @@ function RegisterForm() {
           </h2>
           <p className="text-base mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
             {lang === 'ar'
-              ? 'مرحباً بك في FEE الكويت. جاري توجيهك إلى لوحة التحكم...'
-              : 'Welcome to FEE Kuwait. Redirecting you to your dashboard...'}
+              ? 'مرحباً بك في Eco Flow Portal. جاري توجيهك إلى لوحة التحكم...'
+              : 'Welcome to Eco Flow Portal. Redirecting you to your dashboard...'}
           </p>
           <div className="flex justify-center gap-1.5">
             {[0,1,2].map(i => (

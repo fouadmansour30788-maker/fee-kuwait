@@ -61,7 +61,7 @@ function LoginForm() {
         <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-sm">
           {lang === 'ar'
             ? 'سجّل دخولك للوصول إلى لوحة التحكم الخاصة بك.'
-            : 'Sign in to access your FEE Kuwait portal.'}
+            : 'Sign in to access your Eco Flow Portal.'}
         </p>
       </motion.div>
 

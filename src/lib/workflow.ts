@@ -1,4 +1,4 @@
-// FEE Kuwait — application workflow (whiteboard state machine).
+// Eco Flow Portal — application workflow (whiteboard state machine).
 //
 // Client-safe: pure data + helpers, no next/headers, so operator / CB / auditor
 // client dropdowns can import the transitions and status metadata directly.
