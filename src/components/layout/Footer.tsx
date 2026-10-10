@@ -29,7 +29,7 @@ export default function Footer({ settings }: { settings?: SiteSettings }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/fee-logo.jpg" alt="FEE — Foundation for Environmental Education"
                 className="h-9 w-auto rounded-md transition-transform group-hover:scale-105" />
-              <span className="font-bold text-xl text-white tracking-tight">Eco Flow Portal</span>
+              <span className="font-bold text-xl text-white tracking-tight">FEE Kuwait</span>
             </Link>
             <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(183,228,199,0.65)' }}>
               {t(lang, 'footer.tagline')}

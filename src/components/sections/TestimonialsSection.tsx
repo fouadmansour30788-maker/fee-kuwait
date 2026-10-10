@@ -54,8 +54,8 @@ export default function TestimonialsSection({ testimonials }: { testimonials?: T
           </h2>
           <p className="text-base max-w-xl mx-auto leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
             {lang === 'ar'
-              ? 'ما يقوله شركاؤنا المعتمدون عن رحلتهم مع Eco Flow Portal.'
-              : 'What our certified partners say about their journey with Eco Flow Portal.'}
+              ? 'ما يقوله شركاؤنا المعتمدون عن رحلتهم مع FEE الكويت.'
+              : 'What our certified partners say about their journey with FEE Kuwait.'}
           </p>
         </motion.div>
 

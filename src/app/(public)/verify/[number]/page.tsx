@@ -63,7 +63,7 @@ export default async function VerifyPage({ params }: { params: { number: string 
         )}
 
         <p className="text-center text-xs mt-6" style={{ color: 'rgba(255,255,255,0.5)' }}>
-          Verified against the Eco Flow Portal certification registry · <Link href="/certified" className="underline">all certified establishments</Link>
+          Verified against the FEE Kuwait certification registry · <Link href="/certified" className="underline">all certified establishments</Link>
         </p>
       </div>
     </div>

@@ -18,7 +18,7 @@ export const translations = {
     hero: {
       tagline: 'Environmental Excellence in Kuwait',
       headline: 'Building a Sustainable Future for Kuwait',
-      subheadline: 'Eco Flow Portal brings together 6 international environmental programmes — certifying schools, businesses, and beaches committed to a greener tomorrow.',
+      subheadline: 'FEE Kuwait runs 6 international environmental programmes — certifying schools, businesses, and beaches committed to a greener tomorrow.',
       cta_school: 'Join as a School',
       cta_business: 'Join as a Hospitality Establishment',
       cta_learn: 'Explore Programmes',
@@ -51,7 +51,7 @@ export const translations = {
     },
     footer: {
       tagline: 'The national operator of FEE International in Kuwait.',
-      rights: '© 2024 Eco Flow Portal. All rights reserved.',
+      rights: '© 2024 FEE Kuwait. All rights reserved.',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
     },
@@ -96,7 +96,7 @@ export const translations = {
     hero: {
       tagline: 'التميز البيئي في الكويت',
       headline: 'نبني مستقبلاً مستداماً للكويت',
-      subheadline: 'تدير Eco Flow Portal 6 برامج بيئية دولية — تعتمد المدارس والشركات والشواطئ الملتزمة بغدٍ أكثر خضرة.',
+      subheadline: 'تدير FEE الكويت 6 برامج بيئية دولية — تعتمد المدارس والشركات والشواطئ الملتزمة بغدٍ أكثر خضرة.',
       cta_school: 'انضم كمدرسة',
       cta_business: 'انضم كمنشأة ضيافة',
       cta_learn: 'استكشف البرامج',
@@ -129,7 +129,7 @@ export const translations = {
     },
     footer: {
       tagline: 'المشغل الوطني لـ FEE الدولية في الكويت.',
-      rights: '© 2024 Eco Flow Portal. جميع الحقوق محفوظة.',
+      rights: '© 2024 FEE الكويت. جميع الحقوق محفوظة.',
       privacy: 'سياسة الخصوصية',
       terms: 'شروط الخدمة',
     },

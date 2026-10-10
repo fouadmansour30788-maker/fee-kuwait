@@ -1,5 +1,8 @@
 import Link from 'next/link'
 import { Leaf } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { title: { template: '%s | Eco Flow Portal', default: 'Eco Flow Portal' } }
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

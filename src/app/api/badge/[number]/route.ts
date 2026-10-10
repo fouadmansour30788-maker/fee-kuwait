@@ -30,7 +30,7 @@ export async function GET(_req: NextRequest, { params }: { params: { number: str
   <text x="100" y="103" text-anchor="middle" font-size="19" font-weight="900" fill="${accent}">Green Key</text>
   <text x="100" y="127" text-anchor="middle" font-size="14" font-weight="700" letter-spacing="1.5" fill="${ink}">${statusText}</text>
   ${year ? `<text x="100" y="163" text-anchor="middle" font-size="34" font-weight="900" fill="${accent}">${year}</text>` : ''}
-  <text x="100" y="196" text-anchor="middle" font-size="9" fill="${muted}">Eco Flow Portal · verify online</text>
+  <text x="100" y="196" text-anchor="middle" font-size="9" fill="${muted}">FEE Kuwait · verify online</text>
 </svg>`
 
   return new NextResponse(svg, {

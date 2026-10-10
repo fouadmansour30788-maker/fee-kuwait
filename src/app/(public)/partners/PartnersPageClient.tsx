@@ -47,8 +47,8 @@ export default function PartnersPageClient({ localPartners, gkGroups }: { localP
             </h1>
             <p className="text-lg leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
               {lang === 'ar'
-                ? 'Eco Flow Portal مدعومة بشبكة من الشركاء الحكوميين والمؤسسيين والأكاديميين.'
-                : 'Eco Flow Portal is backed by a network of government, corporate, and institutional partners.'}
+                ? 'FEE الكويت مدعومة بشبكة من الشركاء الحكوميين والمؤسسيين والأكاديميين.'
+                : 'FEE Kuwait is backed by a network of government, corporate, and institutional partners.'}
             </p>
           </motion.div>
         </div>

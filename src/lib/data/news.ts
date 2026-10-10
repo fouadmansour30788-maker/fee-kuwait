@@ -2,8 +2,8 @@ export const DEMO_NEWS = [
   {
     id: '1',
     slug: 'eco-schools-2024-ceremony',
-    title_en: 'Eco Flow Portal Hosts Annual Eco-Schools Award Ceremony 2024',
-    title_ar: 'Eco Flow Portal تستضيف حفل توزيع جوائز المدارس البيئية السنوي 2024',
+    title_en: 'FEE Kuwait Hosts Annual Eco-Schools Award Ceremony 2024',
+    title_ar: 'FEE الكويت تستضيف حفل توزيع جوائز المدارس البيئية السنوي 2024',
     excerpt_en: 'Over 45 schools received their Green Flag certification in a landmark ceremony held at the Kuwait National Museum.',
     excerpt_ar: 'حصلت أكثر من 45 مدرسة على شهادة العلم الأخضر في حفل تاريخي أقيم في المتحف الوطني الكويتي.',
     // Award ceremony / conference hall
@@ -72,8 +72,8 @@ export const DEMO_NEWS = [
   {
     id: '6',
     slug: 'fee-kuwait-annual-report-2023',
-    title_en: 'Eco Flow Portal Publishes 2023 Annual Impact Report',
-    title_ar: 'Eco Flow Portal تنشر تقرير الأثر السنوي لعام 2023',
+    title_en: 'FEE Kuwait Publishes 2023 Annual Impact Report',
+    title_ar: 'FEE الكويت تنشر تقرير الأثر السنوي لعام 2023',
     excerpt_en: '2023 was a record year for environmental certification in Kuwait, with 42 new institutions joining our certified community.',
     excerpt_ar: 'كان عام 2023 عاماً قياسياً للاعتماد البيئي في الكويت، حيث انضمت 42 مؤسسة جديدة إلى مجتمعنا المعتمد.',
     // Report / sustainability meeting

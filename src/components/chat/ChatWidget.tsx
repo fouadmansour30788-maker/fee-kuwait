@@ -10,16 +10,16 @@ interface Message {
   content: string
 }
 
-const WELCOME: Record<string, string> = {
-  en: "Hello! I'm the Eco Flow Portal assistant. How can I help you today? I can answer questions about our 6 environmental programmes, certification requirements, and how to apply.",
-  ar: 'مرحباً! أنا مساعد Eco Flow Portal. كيف يمكنني مساعدتك اليوم؟ يمكنني الإجابة على أسئلتك حول برامجنا البيئية الستة ومتطلبات الاعتماد وكيفية التقديم.',
-}
+const welcome = (brand: string, lang: string) => lang === 'ar'
+  ? `مرحباً! أنا مساعد ${brand === 'FEE Kuwait' ? 'FEE الكويت' : brand}. كيف يمكنني مساعدتك اليوم؟ يمكنني الإجابة على أسئلتك حول برامجنا البيئية الستة ومتطلبات الاعتماد وكيفية التقديم.`
+  : `Hello! I'm the ${brand} assistant. How can I help you today? I can answer questions about our 6 environmental programmes, certification requirements, and how to apply.`
 
-export default function ChatWidget() {
+// `brand`: 'FEE Kuwait' on the public website, 'Eco Flow Portal' inside the platform.
+export default function ChatWidget({ brand = 'FEE Kuwait' }: { brand?: string }) {
   const { lang } = useLang()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: WELCOME[lang] },
+    { role: 'assistant', content: welcome(brand, lang) },
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -31,8 +31,8 @@ export default function ChatWidget() {
 
   // Update welcome message on lang change
   useEffect(() => {
-    setMessages([{ role: 'assistant', content: WELCOME[lang] }])
-  }, [lang])
+    setMessages([{ role: 'assistant', content: welcome(brand, lang) }])
+  }, [lang, brand])
 
   const send = async () => {
     if (!input.trim() || loading) return
@@ -94,7 +94,7 @@ export default function ChatWidget() {
                 <Leaf className="w-5 h-5 text-white" />
               </div>
               <div>
-                <div className="text-white font-semibold text-sm">Eco Flow Portal Assistant</div>
+                <div className="text-white font-semibold text-sm">{brand} Assistant</div>
                 <div className="text-light/60 text-xs">Bilingual · Always available</div>
               </div>
               <div className="ml-auto w-2 h-2 rounded-full bg-light animate-pulse" />
