@@ -1,10 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeThemes } from '@/lib/data/ecoSchoolsCriteria'
 
 // Themes selected for an Eco-Schools application. Falls back to the themes the
 // school ticked at registration until a selection is saved on the board.
+// Service role (like getEcoState/getEcoGate), so the school, operator, CB and
+// auditor all see the same themes — RLS on `schools` hides the registration
+// themes from the CB and auditor. Callers only pass applications the viewer can open.
 export async function getEcoThemes(applicationId: string): Promise<string[]> {
-  const supabase = createClient()
+  const supabase = createAdminClient()
   const { data: app, error } = await supabase.from('applications').select('es_themes, entity_type, entity_id').eq('id', applicationId).maybeSingle()
   if (error || !app) {
     // Before migration 052 the column doesn't exist — use registration themes.
@@ -17,6 +20,6 @@ export async function getEcoThemes(applicationId: string): Promise<string[]> {
 
 async function registrationThemes(entityType: string | null, entityId: string | null): Promise<string[]> {
   if (entityType !== 'school' || !entityId) return []
-  const { data } = await createClient().from('schools').select('details').eq('id', entityId).maybeSingle()
+  const { data } = await createAdminClient().from('schools').select('details').eq('id', entityId).maybeSingle()
   return normalizeThemes((data?.details as { themes?: unknown } | null)?.themes)
 }
