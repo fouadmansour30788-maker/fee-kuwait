@@ -5,6 +5,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { myEntity } from '@/lib/db/establishment'
 import { PROGRAMME_LABEL, STATUS_META } from '@/lib/db/applications'
 import { revalidatePath } from 'next/cache'
+import { establishmentCanEdit } from '@/lib/workflow'
+import { sendEmail } from '@/lib/email'
+import { siteUrl } from '@/lib/qr'
+import { REVIEW_SUBMISSION_FIELD } from '@/lib/db/reviewSubmission'
 
 const PROGRAMMES = ['eco-schools', 'blue-flag', 'green-key', 'leaf', 'yre', 'eco-campus']
 
@@ -75,4 +79,55 @@ export async function manualOverrideStatus(applicationId: string, newStatus: str
 
   revalidatePath(`/applications/${applicationId}`)
   return { ok: true }
+}
+
+const escapeHtml = (t: string) => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
+
+// Establishment declares "I hereby submit my application for review": records it
+// in the audit trail and notifies the National Operator (in-app + email). It does
+// not lock or move the application — the operator decides the next step.
+export async function submitForReview(applicationId: string, declared: boolean): Promise<{ ok?: true; at?: string; error?: string }> {
+  if (!declared) return { error: 'Please tick the declaration first.' }
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+
+  const admin = createAdminClient()
+  const { data: app } = await admin.from('applications').select('applicant_id, programme, status').eq('id', applicationId).single()
+  if (!app || app.applicant_id !== user.id) return { error: 'Not allowed' }
+  if (app.programme !== 'green-key') return { error: 'Only available for Green Key applications.' }
+  if (!establishmentCanEdit(app.status)) return { error: 'The application is not open for submission at this stage.' }
+
+  const { data: me } = await admin.from('users').select('name_en, email, role').eq('id', user.id).maybeSingle()
+  const { data: biz } = await admin.from('businesses').select('name_en').eq('user_id', user.id).maybeSingle()
+  const estName = biz?.name_en || me?.name_en || me?.email || 'An establishment'
+  const at = new Date().toISOString()
+
+  const { error } = await admin.from('audit_trail').insert({
+    application_id: applicationId, entity: 'application', field: REVIEW_SUBMISSION_FIELD,
+    previous_value: app.status, new_value: 'I hereby submit my application for review',
+    user_id: user.id, user_name: estName, user_role: me?.role ?? null,
+  })
+  if (error) return { error: error.message }
+
+  const url = `/applications/${applicationId}`
+  const { data: staff } = await admin.from('users').select('id, email').in('role', ['admin', 'super_admin'])
+  if (staff?.length) {
+    await admin.from('notifications').insert(staff.map((s) => ({
+      user_id: s.id, type: 'submitted_for_review',
+      title_en: 'Green Key application submitted for review', title_ar: 'تم تقديم طلب المفتاح الأخضر للمراجعة',
+      message_en: `${estName} has submitted its Green Key application for your review.`,
+      message_ar: `${estName} قدّم طلب المفتاح الأخضر للمراجعة.`,
+      action_url: url,
+    })))
+    const link = `${siteUrl()}${url}`
+    await Promise.all(staff.filter((s) => s.email).map((s) => sendEmail({
+      to: s.email!, subject: `Green Key application submitted for review — ${estName}`,
+      html: `<p><strong>${escapeHtml(estName)}</strong> has submitted its Green Key application for review.</p><p><a href="${link}">Open the application</a></p>`,
+    })))
+  }
+
+  revalidatePath(url)
+  revalidatePath(`/business/application/${applicationId}`)
+  return { ok: true, at }
 }

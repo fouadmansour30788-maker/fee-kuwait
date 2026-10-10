@@ -20,6 +20,8 @@ import CriteriaBoard from '@/components/audit/CriteriaBoard'
 import CompliancePanel from '@/components/audit/CompliancePanel'
 import InvoicesReadonly from '@/components/invoices/InvoicesReadonly'
 import { listInvoicesForApplication } from '@/lib/db/invoices'
+import SubmitForReview from '@/components/audit/SubmitForReview'
+import { lastReviewSubmission } from '@/lib/db/reviewSubmission'
 
 export default async function BusinessApplicationDetail({ params }: { params: { id: string } }) {
   const app = await getApplication(params.id)
@@ -36,6 +38,9 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
   const reports = showExternal ? docs.filter((d) => d.criterion_ref === AUDIT_REPORT_REF) : []
   const ncCount = criteria.filter((c) => assessments[c.ref]?.external === 'no_pass').length
   const s = statusMeta(app.status)
+  const showSubmit = app.programme === 'green-key' && !locked && criteria.length > 0
+  const lastSubmittedAt = showSubmit ? await lastReviewSubmission(params.id) : null
+  const doneCount = criteria.filter((c) => ['complete', 'na'].includes(assessments[c.ref]?.applicantStatus ?? '')).length
 
   // The application stays closed until the National Operator approves the
   // registration (registration under review / pending).
@@ -121,6 +126,8 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
           <CriteriaBoard role="establishment" applicationId={app.id} criteria={criteria} assessments={assessments} docs={docs} messages={messages} showExternal={showExternal} locked={locked} applicantId={app.applicant_id} audits={audits} editableCriteria={editableCriteria} />
         </div>
       )}
+
+      {showSubmit && <SubmitForReview applicationId={app.id} lastSubmittedAt={lastSubmittedAt} done={doneCount} total={criteria.length} />}
 
       {criteria.length > 0 && (
         <div className="bg-white rounded-2xl border p-6" style={{ borderColor: '#D4E7DA' }}>
