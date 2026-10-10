@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Users, Search, BookOpen, ClipboardList, LineChart, Megaphone, ScrollText, type LucideIcon } from 'lucide-react'
+import { STEP_STYLE } from '@/lib/ecoStepStyle'
 import EcoThemesPicker from '@/components/audit/EcoThemesPicker'
 import GreenFlagSection, { GreenFlagTotal } from '@/components/audit/GreenFlagScorecard'
 import { ES_THEMES_STEP } from '@/lib/data/ecoSchoolsCriteria'
@@ -7,18 +7,6 @@ import { GREEN_FLAG_SECTIONS, sectionScore } from '@/lib/data/greenFlagScorecard
 import GreenFlagResults from '@/components/audit/GreenFlagResults'
 import type { EcoBoard } from '@/lib/db/ecoSchools'
 import { darken } from '@/lib/utils/color'
-
-// The Seven Steps, each with its own icon + colour (palette of the "How to apply
-// for your certification" wheel) for the step badge and its Green Flag questions.
-export const STEP_STYLE: Record<string, { Icon: LucideIcon; color: string }> = {
-  '1': { Icon: Users, color: '#E2A92B' },          // Eco-Committee — yellow
-  '2': { Icon: Search, color: '#E08A2E' },         // Sustainability Audit — orange
-  '3': { Icon: BookOpen, color: '#CF6A2C' },       // Curriculum — burnt orange
-  '4': { Icon: ClipboardList, color: '#B4566A' },  // Action Plan — rose
-  '5': { Icon: LineChart, color: '#6E5C8E' },      // Monitor & Evaluate — purple
-  '6': { Icon: Megaphone, color: '#3F86C6' },      // Inform & Involve — blue
-  '7': { Icon: ScrollText, color: '#4E9A5B' },     // Eco-Code — green
-}
 
 export function ecoStepBadges(): Record<string, ReactNode> {
   return Object.fromEntries(Object.entries(STEP_STYLE).map(([ref, { Icon, color }]) => [ref, (
