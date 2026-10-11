@@ -73,7 +73,7 @@ export default function EcoSchoolsGuide() {
         ))}
       </Card>
 
-      <Card Icon={Trophy} color="#B08D2E" title="Is your school Green Flag ready?" subtitle={`The Green Flag questions under each step add up to ${GREEN_FLAG_MAX} points — over ${GREEN_FLAG_PASS} means you're ready to be assessed.`}>
+      <Card Icon={Trophy} color="#B08D2E" title="Is your School Green Flag Ready?" subtitle={`The questions under each step add up to ${GREEN_FLAG_MAX} points — over ${GREEN_FLAG_PASS} means you're ready to be assessed.`}>
         <div className="space-y-2.5">
           {GREEN_FLAG_SECTIONS.map((sec) => {
             const st = STEP_STYLE[sec.step]

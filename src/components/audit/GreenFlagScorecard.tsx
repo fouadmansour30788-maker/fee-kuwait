@@ -26,7 +26,7 @@ export function GreenFlagTotal({ total, scoredAt }: { total: number | null; scor
       <span className="text-sm font-semibold" style={{ color: '#065F46' }}>Is the school Green Flag ready?</span>
       <span className="text-sm font-bold px-2.5 py-0.5 rounded-full" style={{ background: '#fff', color: '#065F46', border: '1px solid #A7F3D0' }}>{t} / {GREEN_FLAG_MAX} pts</span>
       <span className="text-xs flex-1" style={{ color: ready ? '#047857' : '#64748B' }}>
-        {total == null ? 'The school answers the Green Flag questions under each step.'
+        {total == null ? 'The school answers the “Is your School Green Flag Ready?” questions under each step.'
           : ready ? 'Over 800 — ready to be assessed for the Eco-Schools Green Flag.'
             : `Over ${GREEN_FLAG_PASS} points = ready for the Green Flag assessment.`}
       </span>
@@ -83,7 +83,7 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
           <span className="text-sm font-semibold opacity-80 leading-none">/ {sec.max} pts</span>
         </span>
         <span className="min-w-[220px]">
-          <span className="block text-base font-bold" style={{ color: '#1B4332' }}>Green Flag questions — {sec.title}</span>
+          <span className="block text-base font-bold" style={{ color: '#1B4332' }}>Is your School Green Flag Ready? — {sec.title}</span>
           <span className="flex items-center gap-2 mt-1.5">
             <span className="h-2 rounded-full overflow-hidden w-40" style={{ background: '#E2F0E6' }}>
               <span className="block h-full rounded-full" style={{ width: `${toAnswer ? (answered / toAnswer) * 100 : 0}%`, background: accent }} />

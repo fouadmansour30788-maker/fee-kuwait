@@ -29,7 +29,7 @@ export default function GreenFlagResults({ sections, total, scored, scoredAt }: 
   if (!scored) {
     return (
       <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B' }}>
-        <Clock className="w-4 h-4" /> No Green Flag answers yet. The school answers the Green Flag questions under each step. Eligibility: over {GREEN_FLAG_PASS} / {GREEN_FLAG_MAX} points.
+        <Clock className="w-4 h-4" /> No Green Flag answers yet. The school answers the “Is your School Green Flag Ready?” questions under each step. Eligibility: over {GREEN_FLAG_PASS} / {GREEN_FLAG_MAX} points.
       </div>
     )
   }

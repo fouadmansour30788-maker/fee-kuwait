@@ -68,7 +68,7 @@ export async function saveGreenFlagSection(applicationId: string, sectionId: str
     .select('programme, applicant_id, status, reopened_criteria, es_score').eq('id', applicationId).single()
   if (readErr) return { error: readErr.message.includes('es_score') ? 'Run migration 053 (Eco-Schools phases) first.' : readErr.message }
   if (!app || app.programme !== 'eco-schools') return { error: 'Not an Eco-Schools application.' }
-  if (app.applicant_id !== user.id) return { error: 'Only the school can answer the Green Flag questions.' }
+  if (app.applicant_id !== user.id) return { error: 'Only the school can answer the “Is your School Green Flag Ready?” questions.' }
   if (!establishmentCanEdit(app.status)) return { error: 'The application is locked — answers can no longer be changed.' }
   if (await isYearClosed(applicationId)) return { error: 'This academic year is closed — it is read-only.' }
   if (PARTIAL_EDIT_STATUSES.includes(app.status) && !(app.reopened_criteria ?? []).includes(sec.step)) return { error: 'This step is not reopened for changes.' }

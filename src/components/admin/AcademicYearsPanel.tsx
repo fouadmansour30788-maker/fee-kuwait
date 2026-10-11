@@ -69,7 +69,7 @@ export default function AcademicYearsPanel({ applicationId, years, linkBase }: {
           ) : (
             <div className="rounded-xl px-4 py-3 space-y-2.5" style={{ background: '#FEF9EC', border: '1px solid #FDE68A' }}>
               <p className="text-sm" style={{ color: '#854D0E' }}>
-                <strong>{formatAcademicYear(latest.academicYear)}</strong> will be locked (read-only for the school) and a new application for <strong>{formatAcademicYear(next)}</strong> opens with all seven steps fresh — new themes, Steps 1–2 approval again and new Green Flag questions. The school is notified.
+                <strong>{formatAcademicYear(latest.academicYear)}</strong> will be locked (read-only for the school) and a new application for <strong>{formatAcademicYear(next)}</strong> opens with all seven steps fresh — new themes, Steps 1–2 approval again and new “Is your School Green Flag Ready?” questions. The school is notified.
               </p>
               <div className="flex items-center gap-2">
                 <button onClick={open} disabled={pending}
