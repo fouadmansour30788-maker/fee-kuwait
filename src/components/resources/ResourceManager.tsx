@@ -4,8 +4,9 @@ import { useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Upload, Link2, Loader2, Trash2, Eye, EyeOff, FileText, ExternalLink, AlertCircle, Check, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { createResource, setResourcePublished, deleteResource } from '@/lib/actions/resources'
-import { RESOURCE_PROGRAMMES, RESOURCE_CATEGORIES, programmeLabel, type ResourceItem } from '@/lib/resources'
+import { createResource, setResourcePublished, setResourceCategory, deleteResource } from '@/lib/actions/resources'
+import { ImageUploadButton, Thumb } from '@/app/(admin)/content/ImageUpload'
+import { RESOURCE_PROGRAMMES, RESOURCE_CATEGORIES, RESOURCE_CATEGORY_COLOR, programmeLabel, type ResourceItem } from '@/lib/resources'
 
 const MAX_BYTES = 50 * 1024 * 1024 // 50 MB
 const field = 'w-full text-sm px-3 py-2 rounded-xl outline-none bg-white'
@@ -19,6 +20,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
   const [mode, setMode] = useState<'file' | 'link'>('file')
   const [form, setForm] = useState({ titleEn: '', titleAr: '', descriptionEn: '', programme: '', language: 'both' as 'en' | 'ar' | 'both', category: '', link: '' })
   const [file, setFile] = useState<File | null>(null)
+  const [cover, setCover] = useState('')
   const [filter, setFilter] = useState('all')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -31,7 +33,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
 
   function reset() {
     setForm({ titleEn: '', titleAr: '', descriptionEn: '', programme: '', language: 'both', category: '', link: '' })
-    setFile(null); setMode('file'); setError(''); setAdding(false)
+    setFile(null); setCover(''); setMode('file'); setError(''); setAdding(false)
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -54,6 +56,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
       programme: form.programme || null, language: form.language, category: form.category,
       path, linkUrl: mode === 'link' ? form.link : null,
       fileType: file ? (file.name.split('.').pop() ?? '').toUpperCase() : null, fileSize: file?.size ?? null,
+      coverUrl: cover || null,
     })
     setBusy(false)
     if (r.error) return setError(r.error)
@@ -89,7 +92,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
               {RESOURCE_PROGRAMMES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
             <select value={form.category} onChange={(e) => set('category', e.target.value)} className={field} style={fieldStyle}>
-              <option value="">Category…</option>
+              <option value="">Category (board column)…</option>
               {RESOURCE_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
             <select value={form.language} onChange={(e) => set('language', e.target.value)} className={field} style={fieldStyle}>
@@ -110,6 +113,12 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
           {mode === 'file'
             ? <input ref={fileRef} type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-sm" />
             : <input value={form.link} onChange={(e) => set('link', e.target.value)} placeholder="https://…" className={field} style={fieldStyle} />}
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-xs font-semibold" style={{ color: '#475569' }}>Cover image (optional)</span>
+            <ImageUploadButton onUploaded={(u) => setCover(u[0])} label={cover ? 'Replace cover' : 'Upload cover'} />
+            {cover && <><Thumb url={cover} /><button type="button" onClick={() => setCover('')} className="text-xs font-semibold" style={{ color: '#B91C1C' }}>Remove</button></>}
+          </div>
 
           <div className="flex items-center gap-2 pt-1">
             <button onClick={save} disabled={busy} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-60" style={{ background: '#1B4332' }}>
@@ -134,10 +143,17 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
             <div className="flex-1 min-w-0">
               <a href={`/api/resources/${r.id}`} target="_blank" rel="noopener" className="text-sm font-semibold hover:underline" style={{ color: '#0F172A' }}>{r.title_en}</a>
               <p className="text-xs" style={{ color: '#94A3B8' }}>
-                {programmeLabel(r.programme)}{r.category ? ` · ${r.category}` : ''} · {r.language === 'both' ? 'EN & AR' : r.language.toUpperCase()}
+                {programmeLabel(r.programme)} · {r.language === 'both' ? 'EN & AR' : r.language.toUpperCase()}
                 {r.file_size ? ` · ${fmtSize(r.file_size)}` : ''} · {r.downloads} open{r.downloads === 1 ? '' : 's'}{r.published ? '' : ' · hidden'}
               </p>
             </div>
+            <select value={(RESOURCE_CATEGORIES as readonly string[]).includes(r.category ?? '') ? r.category! : ''} disabled={pending}
+              onChange={(e) => act(() => setResourceCategory(r.id, e.target.value))} title="Board column"
+              className="text-xs font-semibold px-2 py-1.5 rounded-lg outline-none max-w-[190px]"
+              style={{ background: RESOURCE_CATEGORY_COLOR[r.category ?? ''] ?? RESOURCE_CATEGORY_COLOR.Other, color: '#1E293B', border: 'none' }}>
+              <option value="">Other (no category)</option>
+              {RESOURCE_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
             <button onClick={() => act(() => setResourcePublished(r.id, !r.published))} disabled={pending} title={r.published ? 'Hide from members' : 'Publish'}
               className="p-2 rounded-lg hover:bg-slate-100" style={{ color: '#475569' }}>
               {r.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}

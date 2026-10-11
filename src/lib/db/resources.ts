@@ -7,9 +7,14 @@ const COLS = 'id, title_en, title_ar, description_en, description_ar, programme,
 // `programmes` limits to those programmes plus the all-programme resources.
 export async function listResources(programmes?: string[]): Promise<ResourceItem[]> {
   const supabase = createClient()
-  let q = supabase.from('resources').select(COLS).order('created_at', { ascending: false })
-  if (programmes) q = q.or(`programme.is.null,programme.in.(${programmes.join(',')})`)
-  const { data, error } = await q
+  const run = (cols: string) => {
+    let q = supabase.from('resources').select(cols).order('created_at', { ascending: false })
+    if (programmes) q = q.or(`programme.is.null,programme.in.(${programmes.join(',')})`)
+    return q
+  }
+  // cover_url arrives with migration 056 — fall back without it until then.
+  let { data, error } = await run(`${COLS}, cover_url`)
+  if (error) ({ data, error } = await run(COLS))
   if (error) { console.error('listResources:', error.message); return [] }
-  return (data ?? []) as ResourceItem[]
+  return (data ?? []) as unknown as ResourceItem[]
 }

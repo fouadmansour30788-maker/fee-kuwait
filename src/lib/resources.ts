@@ -21,7 +21,22 @@ export const RESOURCE_PROGRAMMES = [
   { id: 'eco-campus', label: 'Eco-Campus', color: '#40916C' },
 ] as const
 
-export const RESOURCE_CATEGORIES = ['Guide', 'Toolkit', 'Template', 'Activity sheet', 'Presentation', 'Video', 'Policy', 'Other'] as const
+// Document categories — each is a column on the resources board, with its colour.
+export const RESOURCE_CATEGORIES = [
+  'Branding & Marketing', 'Greening Education Partnership', 'Handbooks', 'Eco School Steps',
+  'Eco Schools in a New Country', 'Eco-Schools Global Network', 'FEE Academy', 'Resources on Themes',
+] as const
+export const RESOURCE_CATEGORY_COLOR: Record<string, string> = {
+  'Branding & Marketing': '#F8D3B0',
+  'Greening Education Partnership': '#DCCFF3',
+  'Handbooks': '#C7E6D3',
+  'Eco School Steps': '#F5CED3',
+  'Eco Schools in a New Country': '#CFE2EA',
+  'Eco-Schools Global Network': '#F6EEBF',
+  'FEE Academy': '#8FC9F4',
+  'Resources on Themes': '#D8EBC3',
+  'Other': '#E2E8F0',
+}
 
 export const programmeLabel = (id: string | null) => (id ? RESOURCE_PROGRAMMES.find((p) => p.id === id)?.label ?? id : 'All programmes')
 
@@ -41,6 +56,7 @@ export interface ResourceItem {
   downloads: number
   published: boolean
   created_at: string
+  cover_url?: string | null     // optional card image (migration 056)
 }
 
 // Which programmes' resources a member sees by default, by institution type.

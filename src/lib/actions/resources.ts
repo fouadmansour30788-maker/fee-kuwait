@@ -34,6 +34,7 @@ export interface NewResource {
   linkUrl?: string | null
   fileType?: string | null
   fileSize?: number | null
+  coverUrl?: string | null   // optional card image (public site-assets URL)
 }
 
 // Operator adds a resource (an uploaded file or a link) for one programme or all.
@@ -52,8 +53,10 @@ export async function createResource(r: NewResource): Promise<{ ok?: true; error
     programme: r.programme, language: r.language, category: r.category || null,
     path: r.path ?? null, file_url: link, file_type: r.fileType ?? (link ? 'link' : null), file_size: r.fileSize ?? null,
     published: true, created_by: gate.userId,
+    ...(r.coverUrl ? { cover_url: r.coverUrl } : {}),
   })
-  if (error) return { error: error.message.includes('path') || error.message.includes('created_by') ? 'Run migration 055 (programme resources) first.' : error.message }
+  if (error) return { error: error.message.includes('cover_url') ? 'Run migration 056 (resource covers) first, or save without a cover image.'
+    : error.message.includes('path') || error.message.includes('created_by') ? 'Run migration 055 (programme resources) first.' : error.message }
   revalidate()
   return { ok: true }
 }
@@ -62,6 +65,15 @@ export async function setResourcePublished(id: string, published: boolean): Prom
   const gate = await requireStaff()
   if ('error' in gate) return gate
   const { error } = await createAdminClient().from('resources').update({ published }).eq('id', id)
+  if (error) return { error: error.message }
+  revalidate()
+  return { ok: true }
+}
+
+export async function setResourceCategory(id: string, category: string): Promise<{ ok?: true; error?: string }> {
+  const gate = await requireStaff()
+  if ('error' in gate) return gate
+  const { error } = await createAdminClient().from('resources').update({ category: category || null }).eq('id', id)
   if (error) return { error: error.message }
   revalidate()
   return { ok: true }
