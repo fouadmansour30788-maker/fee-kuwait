@@ -658,7 +658,7 @@ export default function CriteriaBoard({
                 {showExternal && <th className={th}>Comments &amp; Clarifications — Post auditor review</th>}
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: '#F1F5F9' }}>
+            <tbody className="divide-y divide-slate-100">
               {groups.map((g) => (
                 <Fragment key={g.area}>
                   <tr>
@@ -699,8 +699,9 @@ export default function CriteriaBoard({
                     const ref = g.rows[i].ref
                     const extra = !lockedRefs.includes(ref) ? rowExtras?.[ref] : undefined
                     return extra ? [el, (
-                      <tr key={`${ref}-extra`}>
-                        <td colSpan={cols} className="px-3 pb-3 pt-0" style={{ borderTop: 'none' }}>
+                      // No divider above: the extras read as part of the step row.
+                      <tr key={`${ref}-extra`} style={{ borderTopWidth: 0 }}>
+                        <td colSpan={cols} className="px-3 pb-4 pt-0">
                           <div className={stepBadges ? 'space-y-3 pl-4 pr-1' : 'space-y-2 pl-6'}>{extra}</div>
                         </td>
                       </tr>
