@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Award, Save, Loader2, Check, AlertCircle, ChevronDown, Paperclip, Trophy, PencilLine, CheckCircle2 } from 'lucide-react'
+import { Award, Save, Loader2, Check, AlertCircle, ChevronDown, Paperclip, PencilLine, CheckCircle2 } from 'lucide-react'
 import {
   GREEN_FLAG_SECTIONS, GREEN_FLAG_PASS, GREEN_FLAG_MAX, sectionScore,
   type ScoreAnswers, type ScoreAnswer,
@@ -76,13 +76,16 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
     <div className="rounded-2xl overflow-hidden" style={{ border: `1.5px solid ${accent}55`, borderLeft: `6px solid ${accent}`, background: `${accent}0D`, boxShadow: `0 2px 10px ${accent}1A` }}>
       <button type="button" onClick={() => setExpanded((e) => !e)} className="w-full flex items-center gap-3 px-4 py-3 text-left flex-wrap">
         <ChevronDown className="w-5 h-5 transition-transform flex-shrink-0" style={{ color: accent, transform: expanded ? 'none' : 'rotate(-90deg)' }} />
-        <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: accent }}>
-          <Trophy className="w-5 h-5 text-white" />
+        {/* Score first — right next to the title, so it's seen at a glance */}
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl flex-shrink-0" style={{ background: strong, color: '#fff', boxShadow: `0 6px 16px ${accent}55` }}>
+          <Award className="w-5 h-5" />
+          <span className="text-2xl font-extrabold leading-none tabular-nums">{got}</span>
+          <span className="text-sm font-semibold opacity-80 leading-none">/ {sec.max} pts</span>
         </span>
-        <span className="flex-1 min-w-[220px]">
+        <span className="min-w-[220px]">
           <span className="block text-base font-bold" style={{ color: '#1B4332' }}>Green Flag questions — {sec.title}</span>
           <span className="flex items-center gap-2 mt-1.5">
-            <span className="h-2 rounded-full overflow-hidden flex-1 max-w-[220px]" style={{ background: '#E2F0E6' }}>
+            <span className="h-2 rounded-full overflow-hidden w-40" style={{ background: '#E2F0E6' }}>
               <span className="block h-full rounded-full" style={{ width: `${toAnswer ? (answered / toAnswer) * 100 : 0}%`, background: accent }} />
             </span>
             <span className="text-sm font-semibold" style={{ color: answered === toAnswer ? '#047857' : '#5B7568' }}>{answered} / {toAnswer} answered</span>
@@ -98,9 +101,6 @@ export default function GreenFlagSection({ applicationId, sectionId, initial, ed
             <CheckCircle2 className="w-4 h-4" /> All answered
           </span>
         )}
-        <span className="inline-flex items-center gap-1.5 text-base font-extrabold px-3.5 py-1.5 rounded-full" style={{ background: strong, color: '#fff' }}>
-          <Award className="w-4 h-4" /> {got} <span className="text-sm font-semibold opacity-75">/ {sec.max} pts</span>
-        </span>
       </button>
 
       {expanded && (
