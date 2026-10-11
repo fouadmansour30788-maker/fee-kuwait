@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { WF_STATUS_META } from '@/lib/workflow'
 
 export interface AppRow {
@@ -138,13 +139,16 @@ export async function getApplication(id: string): Promise<AppDetail | null> {
   if (error) { console.error('getApplication:', error.message); return null }
   const app = data as unknown as AppDetail
 
-  // The Green Key number lives on the establishment record (assigned by the CB).
-  if (app.entity_id && app.entity_type) {
-    const { data: ent } = await supabase
-      .from(app.entity_type === 'school' ? 'schools' : 'businesses')
-      .select('green_key_number').eq('id', app.entity_id).maybeSingle()
-    app.green_key_number = ent?.green_key_number ?? null
-  }
+  // The Green Key number lives on the establishment record. Read it with the
+  // service role: RLS hides establishment records from the CB and auditor, yet
+  // everyone who can open this application should see its number. Falls back to
+  // the applicant's record when the application has no entity link.
+  const admin = createAdminClient()
+  const table = app.entity_type === 'school' ? 'schools' : 'businesses'
+  const { data: ent } = app.entity_id
+    ? await admin.from(table).select('green_key_number').eq('id', app.entity_id).maybeSingle()
+    : await admin.from(table).select('green_key_number').eq('user_id', app.applicant_id).maybeSingle()
+  app.green_key_number = ent?.green_key_number ?? null
   return app
 }
 

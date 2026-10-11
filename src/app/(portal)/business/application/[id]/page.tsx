@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, FileText, Download, Inbox, Clock } from 'lucide-react'
+import { ArrowLeft, FileText, Download, Inbox, Clock, KeyRound } from 'lucide-react'
 import { getApplication, PROGRAMME_LABEL, statusMeta, CB_DECISION_LABEL, AUDIT_PUBLISHED_STATUSES } from '@/lib/db/applications'
 import { establishmentCanEdit, PARTIAL_EDIT_STATUSES, ESTABLISHMENT_ACTIONS, canonicalStatus, type AppStatus } from '@/lib/workflow'
 import WorkflowActions from '@/components/audit/WorkflowActions'
@@ -71,7 +71,11 @@ export default async function BusinessApplicationDetail({ params }: { params: { 
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl font-bold" style={{ color: '#0F2318' }}>{PROGRAMME_LABEL[app.programme] ?? app.programme}</h1>
             <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
-            {app.green_key_number && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>{app.green_key_number}</span>}
+            {app.green_key_number && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg" style={{ background: '#ECFDF3', color: '#065F46', border: '1px solid #A7F3D0' }}>
+                <KeyRound className="w-3.5 h-3.5" /> Green Key № {app.green_key_number}
+              </span>
+            )}
             {app.programme === 'green-key' && (
               <a href={`/api/applications/${app.id}/export`} className="ms-auto inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg"
                 style={{ background: '#F1F5F9', color: '#1D6F42' }} title="Download your criteria board, progress and documents as an Excel file">
