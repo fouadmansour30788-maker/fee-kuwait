@@ -5,6 +5,7 @@ import ReadinessSelfCheck from './ReadinessSelfCheck'
 import SavingsEstimator from './SavingsEstimator'
 import BrandCard from './BrandCard'
 import ProgrammeResources from './ProgrammeResources'
+import EcoSchoolsGuide from './EcoSchoolsGuide'
 import type { ResourceItem } from '@/lib/resources'
 
 function Section({ Icon, color, title, subtitle, children }: { Icon: LucideIcon; color: string; title: string; subtitle: string; children: React.ReactNode }) {
@@ -20,27 +21,33 @@ function Section({ Icon, color, title, subtitle, children }: { Icon: LucideIcon;
   )
 }
 
-export default function EstablishmentResources({ resources = [] }: { resources?: ResourceItem[] }) {
+// Schools get the Eco-Schools guide; establishments get the Green Key / Blue Flag
+// tools. Both get the operator's programme resources and the brand assets.
+export default function EstablishmentResources({ resources = [], kind = 'business' }: { resources?: ResourceItem[]; kind?: 'school' | 'business' }) {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: '#0F2318' }}>Resources &amp; tools</h1>
-        <p className="text-sm mt-0.5" style={{ color: '#5B7568' }}>Interactive tools to help you prepare, plus FEE brand assets and guides.</p>
+        <p className="text-sm mt-0.5" style={{ color: '#5B7568' }}>{kind === 'school' ? 'Your Eco-Schools guide, resources from the National Operator, and FEE brand assets.' : 'Interactive tools to help you prepare, plus FEE brand assets and guides.'}</p>
       </div>
 
       <ProgrammeResources resources={resources} />
 
-      <Section Icon={Calculator} color="#2563EB" title="Requirement calculator" subtitle="How many imperative and guideline criteria you need to meet, by programme and certificate age.">
-        <RequirementCalculator />
-      </Section>
+      {kind === 'school' ? <EcoSchoolsGuide /> : (
+        <>
+          <Section Icon={Calculator} color="#2563EB" title="Requirement calculator" subtitle="How many imperative and guideline criteria you need to meet, by programme and certificate age.">
+            <RequirementCalculator />
+          </Section>
 
-      <Section Icon={ClipboardCheck} color="#7C3AED" title="Readiness self-check" subtitle="Estimate how ready you are across the key areas — this isn't the official assessment.">
-        <ReadinessSelfCheck />
-      </Section>
+          <Section Icon={ClipboardCheck} color="#7C3AED" title="Readiness self-check" subtitle="Estimate how ready you are across the key areas — this isn't the official assessment.">
+            <ReadinessSelfCheck />
+          </Section>
 
-      <Section Icon={Leaf} color="#059669" title="Savings estimators" subtitle="Quick water, energy and waste calculators to size the impact of efficiency measures.">
-        <SavingsEstimator />
-      </Section>
+          <Section Icon={Leaf} color="#059669" title="Savings estimators" subtitle="Quick water, energy and waste calculators to size the impact of efficiency measures.">
+            <SavingsEstimator />
+          </Section>
+        </>
+      )}
 
       <BrandCard />
     </div>
